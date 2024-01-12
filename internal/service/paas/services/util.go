@@ -49,7 +49,6 @@ const (
 	Kilobyte
 	Megabyte
 	Gigabyte
-	Terabyte
 )
 
 const (
@@ -57,7 +56,6 @@ const (
 	KiB = "KiB"
 	MiB = "MiB"
 	GiB = "GiB"
-	TiB = "TiB"
 )
 
 // DimensionToBytes converts a dimension string to its corresponding value in bytes.
@@ -72,8 +70,6 @@ func DimensionToBytes(dimension string) (int, error) {
 		return Megabyte, nil
 	case GiB:
 		return Gigabyte, nil
-	case TiB:
-		return Terabyte, nil
 	default:
 		return 0, fmt.Errorf("unsupported dimension: %s", dimension)
 	}

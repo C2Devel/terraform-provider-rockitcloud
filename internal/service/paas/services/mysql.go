@@ -79,13 +79,11 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(1, 64),
 		},
 		"innodb_buffer_pool_size": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: true,
-			Default:  128 * Megabyte,
-			// FIXME: max should be 2^63-1
-			// https://github.com/hashicorp/terraform-plugin-sdk/issues/1215
-			ValidateFunc: validation.IntBetween(5*Megabyte, 4611686018427387903), // 2^62-1
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			Default:      128 * Megabyte,
+			ValidateFunc: validation.IntAtLeast(5 * Megabyte),
 		},
 		"innodb_change_buffering": {
 			Type:     schema.TypeString,
@@ -108,27 +106,23 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(0, 2),
 		},
 		"innodb_io_capacity": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: true,
-			Default:  200,
-			// FIXME: max should be 2^63-1
-			// https://github.com/hashicorp/terraform-plugin-sdk/issues/1215
-			ValidateFunc: validation.IntBetween(100, 4611686018427387903), // 2^62-1
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			Default:      200,
+			ValidateFunc: validation.IntAtLeast(100),
 		},
 		"innodb_io_capacity_max": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: true,
-			// FIXME: max should be 2^63-1
-			// https://github.com/hashicorp/terraform-plugin-sdk/issues/1215
-			ValidateFunc: validation.IntBetween(100, 4611686018427387903), // 2^62-1
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntAtLeast(100),
 		},
 		"innodb_log_file_size": {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.IntBetween(4*Megabyte, 512*Gigabyte),
+			ValidateFunc: validation.IntAtLeast(4 * Megabyte),
 		},
 		"innodb_log_files_in_group": {
 			Type:         schema.TypeInt,
@@ -172,13 +166,11 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(16*Megabyte, 1*Gigabyte),
 		},
 		"max_connect_errors": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: true,
-			Default:  100,
-			// FIXME: max should be 2^63-1
-			// https://github.com/hashicorp/terraform-plugin-sdk/issues/1215
-			ValidateFunc: validation.IntBetween(1, 4611686018427387903), // 2^62-1
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			Default:      100,
+			ValidateFunc: validation.IntAtLeast(1),
 		},
 		"max_connections": {
 			Type:         schema.TypeInt,
@@ -192,7 +184,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ForceNew:     true,
 			Default:      16 * Megabyte,
-			ValidateFunc: validation.IntBetween(16*Kilobyte, 4294966272),
+			ValidateFunc: validation.IntAtLeast(16 * Kilobyte),
 		},
 		"options": {
 			Type:     schema.TypeMap,
@@ -224,7 +216,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ForceNew:     true,
 			Default:      16 * Megabyte,
-			ValidateFunc: validation.IntBetween(1*Kilobyte, 4294967295),
+			ValidateFunc: validation.IntAtLeast(1 * Kilobyte),
 		},
 		"transaction_isolation": {
 			Type:     schema.TypeString,

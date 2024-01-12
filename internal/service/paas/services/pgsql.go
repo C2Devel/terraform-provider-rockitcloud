@@ -93,7 +93,7 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Default:  64 * Megabyte,
 			ValidateFunc: validation.All(
-				validation.IntBetween(1*Megabyte, 2*Gigabyte),
+				validation.IntAtLeast(1*Megabyte),
 				validation.IntDivisibleBy(Kilobyte),
 			),
 		},
@@ -110,7 +110,7 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Default:  1 * Gigabyte,
 			ValidateFunc: validation.All(
-				validation.IntBetween(2*Megabyte, 2147483647*Megabyte),
+				validation.IntAtLeast(2*Megabyte),
 				validation.IntDivisibleBy(Megabyte),
 			),
 		},
@@ -149,7 +149,7 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Default:  80 * Megabyte,
 			ValidateFunc: validation.All(
-				validation.IntBetween(32*Megabyte, 2147483647*Megabyte),
+				validation.IntAtLeast(32*Megabyte),
 				validation.IntDivisibleBy(Megabyte),
 			),
 		},
@@ -209,7 +209,7 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Default:  4 * Megabyte,
 			ValidateFunc: validation.All(
-				validation.IntBetween(64*Kilobyte, 2147483647*Kilobyte),
+				validation.IntAtLeast(64*Kilobyte),
 				validation.IntDivisibleBy(Kilobyte),
 			),
 		},
