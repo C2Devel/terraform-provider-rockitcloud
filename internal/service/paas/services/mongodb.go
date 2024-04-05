@@ -54,9 +54,10 @@ func (s mongoDBManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(0, 36000000),
 		},
 		"storage_engine_cache_size": {
-			Type:         schema.TypeFloat,
-			Optional:     true,
-			ValidateFunc: validation.FloatAtLeast(0.25),
+			Type:     schema.TypeList,
+			Optional: true,
+			ForceNew: true,
+			Elem:     getFloatValueWithDimensionResourceSchema(),
 		},
 		"quiet": {
 			Type:     schema.TypeBool,
@@ -106,8 +107,20 @@ func (s mongoDBManager) serviceParametersDataSourceSchema() map[string]*schema.S
 			Computed: true,
 		},
 		"storage_engine_cache_size": {
-			Type:     schema.TypeFloat,
+			Type:     schema.TypeList,
 			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"value": {
+						Type:     schema.TypeFloat,
+						Computed: true,
+					},
+					"dimension": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
 		},
 		"quiet": {
 			Type:     schema.TypeBool,
@@ -201,10 +214,11 @@ func (s mongoDBManager) expandServiceParameters(tfMap map[string]interface{}) Se
 		serviceParameters["slowms"] = int64(v)
 	}
 
-	if v, ok := tfMap["storage_engine_cache_size"].(float64); ok && v != 0.0 {
+	if v, ok := tfMap["storage_engine_cache_size"].([]interface{}); ok && len(v) > 0 {
+		var vMap = v[0].(map[string]interface{})
 		serviceParameters["storage_engine_cache_size"] = map[string]interface{}{
-			"dimension": GiB,
-			"value":     v,
+			"value":     vMap["value"].(float64),
+			"dimension": vMap["dimension"].(string),
 		}
 	}
 
@@ -280,6 +294,7 @@ func (s mongoDBManager) flattenServiceParameters(serviceParameters ServiceParame
 	}
 
 	if vMap, okMap := serviceParameters["storageEngineCacheSize"].(map[string]interface{}); okMap {
+		// todo: refactor
 		if v, ok := vMap["value"]; ok && vMap["dimension"].(string) == GiB {
 			if int64Val, int64Ok := v.(int64); int64Ok {
 				tfMap["storage_engine_cache_size"] = float64(int64Val)
@@ -289,6 +304,7 @@ func (s mongoDBManager) flattenServiceParameters(serviceParameters ServiceParame
 				log.Printf("[ERROR] Unknown type '%T' for storageEngineCacheSize %s", v, v)
 			}
 		}
+		//tfMap["storage_engine_cache_size"] = flattenFloatValueWithDimension(vMap)
 	}
 
 	// incorrect naming of parameter in api

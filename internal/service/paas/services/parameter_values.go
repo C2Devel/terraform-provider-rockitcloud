@@ -10,6 +10,12 @@ const (
 	postgreSQLWalKeepSegmentsDefault               = -1
 )
 
+// Default vaules for postgresql fields
+const (
+	postgreSQLWorkMemDefaultValue     int64 = 4
+	postgreSQLWorkMemDefaultDimension       = KiB
+)
+
 func mySQLDatabaseUserPrivileges() []string {
 	return []string{
 		"ALL",
