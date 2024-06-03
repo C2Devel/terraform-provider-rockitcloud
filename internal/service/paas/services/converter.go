@@ -4,6 +4,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/paas"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-provider-aws/internal/experimental/nullable"
+	"log"
+	"strconv"
 )
 
 func (s service) ExpandServiceParameters(tfMap map[string]interface{}) ServiceParameters {
@@ -184,6 +187,39 @@ func (s service) expandDatabaseParameters(_ map[string]interface{}) DatabasePara
 //
 // If PaaS service has specific database user parameters, it should override this method.
 func (s service) expandDatabaseUserParameters(_ map[string]interface{}) DatabaseUserParameters {
+	return nil
+}
+
+// todo: doc
+func (s service) expandIntByteParameter(tfByteParameter interface{}) map[string]interface{} {
+	if vList, okList := tfByteParameter.([]interface{}); okList && len(vList) > 0 {
+		var vMap = vList[0].(map[string]interface{})
+
+		// todo: check if not ok
+		if v, _, _ := nullable.Int(vMap["value"].(string)).Value(); v != 0 {
+			return map[string]interface{}{
+				"value":     v,
+				"dimension": vMap["dimension"].(string),
+			}
+		}
+	}
+
+	return nil
+}
+
+// todo: doc
+func (s service) expandFloatByteParameter(tfByteParameter interface{}) map[string]interface{} {
+	if vList, okList := tfByteParameter.([]interface{}); okList && len(vList) > 0 {
+		var vMap = vList[0].(map[string]interface{})
+
+		if v, ok := vMap["value"].(float64); ok && v != 0.0 {
+			return map[string]interface{}{
+				"value":     v,
+				"dimension": vMap["dimension"].(string),
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -376,5 +412,43 @@ func (s service) flattenDatabaseParameters(_ DatabaseParameters) map[string]inte
 //
 // If PaaS service has specific database user parameters, it should override this method.
 func (s service) flattenDatabaseUserParameters(_ DatabaseUserParameters) map[string]interface{} {
+	return nil
+}
+
+// todo: doc
+func (s service) flattenIntByteParameter(byteParameter interface{}) []map[string]interface{} {
+	if vMap, okMap := byteParameter.(map[string]interface{}); okMap {
+		if v, ok := vMap["value"].(int64); ok {
+			return []map[string]interface{}{
+				{
+					"value":     strconv.FormatInt(v, 10),
+					"dimension": vMap["dimension"].(string), // todo: optional?
+				},
+			}
+		}
+	}
+
+	return nil
+}
+
+// todo: doc
+func (s service) flattenFloatByteParameter(byteParameter interface{}) []map[string]interface{} {
+	if vMap, okMap := byteParameter.(map[string]interface{}); okMap {
+		var res map[string]interface{}
+
+		if int64Val, int64Ok := vMap["value"].(int64); int64Ok {
+			res["value"] = float64(int64Val)
+		} else if floatVal, floatOk := vMap["value"].(float64); floatOk {
+			res["value"] = floatVal
+		} else {
+			log.Printf("[ERROR] Unknown type '%T' for float parameter", vMap["value"])
+			return nil
+		}
+
+		res["dimension"] = vMap["dimension"].(string)
+
+		return []map[string]interface{}{res}
+	}
+
 	return nil
 }

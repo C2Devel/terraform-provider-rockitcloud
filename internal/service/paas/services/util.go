@@ -3,9 +3,6 @@ package services
 import (
 	"fmt"
 	"log"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 const (
@@ -121,62 +118,4 @@ func Manager(serviceType string) ServiceManager {
 
 	log.Printf("[ERROR] Unknown service type: %s", serviceType)
 	return nil
-}
-
-func getIntValueWithDimensionResourceSchema() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"value": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-			},
-			"dimension": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  KiB,
-				ValidateFunc: validation.StringInSlice(
-					[]string{KiB, MiB, GiB, TiB},
-					false,
-				),
-			},
-		},
-	}
-}
-
-func getFloatValueWithDimensionResourceSchema() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"value": {
-				Type:         schema.TypeFloat,
-				Optional:     true,
-				ValidateFunc: validation.FloatAtLeast(0.25),
-			},
-			"dimension": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  KiB,
-				ValidateFunc: validation.StringInSlice(
-					[]string{KiB, MiB, GiB, TiB},
-					false,
-				),
-			},
-		},
-	}
-}
-
-func flattenIntValueWithDimension(valMap map[string]interface{}) []map[string]interface{} {
-	var value = map[string]interface{}{
-		"value":     valMap["value"].(int64),
-		"dimension": valMap["dimension"].(string),
-	}
-	return []map[string]interface{}{value}
-}
-
-func flattenFloatValueWithDimension(valMap map[string]interface{}) []map[string]interface{} {
-	var value = map[string]interface{}{
-		"value":     valMap["value"].(float64),
-		"dimension": valMap["dimension"].(string),
-	}
-	return []map[string]interface{}{value}
 }

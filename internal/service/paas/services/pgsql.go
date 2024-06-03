@@ -80,24 +80,14 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(0, 1000),
 		},
-		"maintenance_work_mem": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"maintenance_work_mem": s.intByteParameterSchema(),
 		"max_connections": {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 262143),
 		},
-		"max_wal_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"max_wal_size": s.intByteParameterSchema(),
 		// TODO: add validation that depends on version value
 		"max_parallel_maintenance_workers": {
 			Type:         schema.TypeInt,
@@ -124,12 +114,7 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(0, 262143),
 		},
-		"min_wal_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"min_wal_size": s.intByteParameterSchema(),
 		"options": {
 			Type:     schema.TypeMap,
 			Optional: true,
@@ -179,13 +164,7 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(8, 262143),
 		},
-		"work_mem": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			MaxItems: 1,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"work_mem": s.intByteParameterSchema(),
 	}
 }
 
@@ -223,42 +202,12 @@ func (s postgreSQLManager) serviceParametersDataSourceSchema() map[string]*schem
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-		"maintenance_work_mem": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"value": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"dimension": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
+		"maintenance_work_mem": s.intByteParameterDataSourceSchema(),
 		"max_connections": {
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-		"max_wal_size": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"value": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"dimension": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
+		"max_wal_size": s.intByteParameterDataSourceSchema(),
 		"max_parallel_maintenance_workers": {
 			Type:     schema.TypeInt,
 			Computed: true,
@@ -275,22 +224,7 @@ func (s postgreSQLManager) serviceParametersDataSourceSchema() map[string]*schem
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-		"min_wal_size": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"value": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"dimension": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
+		"min_wal_size": s.intByteParameterDataSourceSchema(),
 		"options": {
 			Type:     schema.TypeMap,
 			Computed: true,
@@ -316,22 +250,7 @@ func (s postgreSQLManager) serviceParametersDataSourceSchema() map[string]*schem
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-		"work_mem": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"value": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"dimension": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
+		"work_mem": s.intByteParameterDataSourceSchema(),
 	}
 }
 
@@ -462,24 +381,16 @@ func (s postgreSQLManager) expandServiceParameters(tfMap map[string]interface{})
 		serviceParameters["effective_io_concurrency"] = int64(v)
 	}
 
-	if v, ok := tfMap["maintenance_work_mem"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["maintenance_work_mem"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["maintenance_work_mem"]); v != nil {
+		serviceParameters["maintenance_work_mem"] = v
 	}
 
 	if v, ok := tfMap["max_connections"].(int); ok && v != 0 {
 		serviceParameters["max_connections"] = int64(v)
 	}
 
-	if v, ok := tfMap["max_wal_size"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["max_wal_size"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["max_wal_size"]); v != nil {
+		serviceParameters["max_wal_size"] = v
 	}
 
 	if v, ok := tfMap["max_parallel_maintenance_workers"].(int); ok && v != postgreSQLMaxParallelMaintenanceWorkersDefault {
@@ -498,12 +409,8 @@ func (s postgreSQLManager) expandServiceParameters(tfMap map[string]interface{})
 		serviceParameters["max_worker_processes"] = int64(v)
 	}
 
-	if v, ok := tfMap["min_wal_size"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["min_wal_size"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["min_wal_size"]); v != nil {
+		serviceParameters["min_wal_size"] = v
 	}
 
 	if v, ok := tfMap["options"].(map[string]interface{}); ok && len(v) > 0 {
@@ -529,19 +436,9 @@ func (s postgreSQLManager) expandServiceParameters(tfMap map[string]interface{})
 	if v, ok := tfMap["wal_buffers"].(int); ok && v != 0 {
 		serviceParameters["wal_buffers"] = int64(v)
 	}
-	if workMem, workMemOk := tfMap["work_mem"].([]interface{}); workMemOk {
-		var param = map[string]interface{}{
-			"value":     postgreSQLWorkMemDefaultValue,
-			"dimension": postgreSQLWorkMemDefaultDimension,
-		}
-		if len(workMem) != 0 {
-			var vMap = workMem[0].(map[string]interface{})
-			param = map[string]interface{}{
-				"value":     int64(vMap["value"].(int)),
-				"dimension": vMap["dimension"].(string),
-			}
-		}
-		serviceParameters["work_mem"] = param
+
+	if v := s.expandIntByteParameter(tfMap["work_mem"]); v != nil {
+		serviceParameters["work_mem"] = v
 	}
 
 	return serviceParameters
@@ -634,16 +531,16 @@ func (s postgreSQLManager) flattenServiceParameters(serviceParameters ServicePar
 		tfMap["effective_io_concurrency"] = v
 	}
 
-	if vMap, okMap := serviceParameters["maintenanceWorkMem"].(map[string]interface{}); okMap {
-		tfMap["maintenance_work_mem"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["maintenanceWorkMem"]); v != nil {
+		tfMap["maintenance_work_mem"] = v
 	}
 
 	if v, ok := serviceParameters["maxConnections"].(int64); ok {
 		tfMap["max_connections"] = v
 	}
 
-	if vMap, okMap := serviceParameters["maxWalSize"].(map[string]interface{}); okMap {
-		tfMap["max_wal_size"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["maxWalSize"]); v != nil {
+		tfMap["max_wal_size"] = v
 	}
 
 	if v, ok := serviceParameters["maxParallelMaintenanceWorkers"].(int64); ok {
@@ -664,8 +561,8 @@ func (s postgreSQLManager) flattenServiceParameters(serviceParameters ServicePar
 		tfMap["max_worker_processes"] = v
 	}
 
-	if vMap, okMap := serviceParameters["minWalSize"].(map[string]interface{}); okMap {
-		tfMap["min_wal_size"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["minWalSize"]); v != nil {
+		tfMap["min_wal_size"] = v
 	}
 
 	if v, ok := serviceParameters["options"].(map[string]interface{}); ok {
@@ -694,9 +591,10 @@ func (s postgreSQLManager) flattenServiceParameters(serviceParameters ServicePar
 		tfMap["wal_buffers"] = v
 	}
 
-	if vMap, okMap := serviceParameters["workMem"].(map[string]interface{}); okMap {
-		tfMap["work_mem"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["workMem"]); v != nil {
+		tfMap["work_mem"] = v
 	}
+
 	return tfMap
 }
 

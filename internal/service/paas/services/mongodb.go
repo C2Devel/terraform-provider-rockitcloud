@@ -53,12 +53,7 @@ func (s mongoDBManager) serviceParametersSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ValidateFunc: validation.IntBetween(0, 36000000),
 		},
-		"storage_engine_cache_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getFloatValueWithDimensionResourceSchema(),
-		},
+		"storage_engine_cache_size": s.floatByteParameterSchema(),
 		"quiet": {
 			Type:     schema.TypeBool,
 			Optional: true,
@@ -106,22 +101,7 @@ func (s mongoDBManager) serviceParametersDataSourceSchema() map[string]*schema.S
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-		"storage_engine_cache_size": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"value": {
-						Type:     schema.TypeFloat,
-						Computed: true,
-					},
-					"dimension": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
+		"storage_engine_cache_size": s.floatByteParameterDataSourceSchema(),
 		"quiet": {
 			Type:     schema.TypeBool,
 			Computed: true,

@@ -42,12 +42,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"gcache_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"gcache_size": s.intByteParameterSchema(),
 		"gcs_fc_factor": {
 			Type:         schema.TypeFloat,
 			Optional:     true,
@@ -79,12 +74,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 64),
 		},
-		"innodb_buffer_pool_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"innodb_buffer_pool_size": s.intByteParameterSchema(),
 		"innodb_change_buffering": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -116,12 +106,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(100, math.MaxInt64),
 		},
-		"innodb_log_file_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"innodb_log_file_size": s.intByteParameterSchema(),
 		"innodb_log_files_in_group": {
 			Type:         schema.TypeInt,
 			Optional:     true,
@@ -154,12 +139,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 1024),
 		},
-		"max_allowed_packet": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"max_allowed_packet": s.intByteParameterSchema(),
 		"max_connect_errors": {
 			Type:         nullable.TypeNullableInt,
 			Optional:     true,
@@ -172,12 +152,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 100000),
 		},
-		"max_heap_table_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"max_heap_table_size": s.intByteParameterSchema(),
 		"options": {
 			Type:     schema.TypeMap,
 			Optional: true,
@@ -203,12 +178,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			Default:      mySQLThreadCacheSizeDefault,
 			ValidateFunc: validation.IntBetween(0, 16*Kilobyte),
 		},
-		"tmp_table_size": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Elem:     getIntValueWithDimensionResourceSchema(),
-		},
+		"tmp_table_size": s.intByteParameterSchema(),
 		"transaction_isolation": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -574,12 +544,8 @@ func (s mySQLManager) expandServiceParameters(tfMap map[string]interface{}) Serv
 		serviceParameters["galera_options"] = v
 	}
 
-	if v, ok := tfMap["gcache_size"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["gcache_size"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["gcache_size"]); v != nil {
+		serviceParameters["gcache_size"] = v
 	}
 
 	if v, ok := tfMap["gcs_fc_factor"].(float64); ok && v != mySQLGcsFcFactorDefault {
@@ -602,12 +568,8 @@ func (s mySQLManager) expandServiceParameters(tfMap map[string]interface{}) Serv
 		serviceParameters["innodb_buffer_pool_instances"] = int64(v)
 	}
 
-	if v, ok := tfMap["innodb_buffer_pool_size"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["innodb_buffer_pool_size"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["innodb_buffer_pool_size"]); v != nil {
+		serviceParameters["innodb_buffer_pool_size"] = v
 	}
 
 	if v, ok := tfMap["innodb_change_buffering"].(string); ok && v != "" {
@@ -626,12 +588,8 @@ func (s mySQLManager) expandServiceParameters(tfMap map[string]interface{}) Serv
 		serviceParameters["innodb_io_capacity_max"] = v
 	}
 
-	if v, ok := tfMap["innodb_log_file_size"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["innodb_log_file_size"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["innodb_log_file_size"]); v != nil {
+		serviceParameters["innodb_log_file_size"] = v
 	}
 
 	if v, ok := tfMap["innodb_log_files_in_group"].(int); ok && v != 0 {
@@ -654,12 +612,8 @@ func (s mySQLManager) expandServiceParameters(tfMap map[string]interface{}) Serv
 		serviceParameters["innodb_sync_array_size"] = int64(v)
 	}
 
-	if v, ok := tfMap["max_allowed_packet"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["max_allowed_packet"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["max_allowed_packet"]); v != nil {
+		serviceParameters["max_allowed_packet"] = v
 	}
 
 	if v, _, _ := nullable.Int(tfMap["max_connect_errors"].(string)).Value(); v != 0 {
@@ -670,12 +624,8 @@ func (s mySQLManager) expandServiceParameters(tfMap map[string]interface{}) Serv
 		serviceParameters["max_connections"] = int64(v)
 	}
 
-	if v, ok := tfMap["max_heap_table_size"].([]interface{}); ok && len(v) > 0 {
-		var vMap = v[0].(map[string]interface{})
-		serviceParameters["max_heap_table_size"] = map[string]interface{}{
-			"value":     int64(vMap["value"].(int)),
-			"dimension": vMap["dimension"].(string),
-		}
+	if v := s.expandIntByteParameter(tfMap["max_heap_table_size"]); v != nil {
+		serviceParameters["max_heap_table_size"] = v
 	}
 
 	if v, ok := tfMap["options"].(map[string]interface{}); ok && len(v) > 0 {
@@ -694,11 +644,8 @@ func (s mySQLManager) expandServiceParameters(tfMap map[string]interface{}) Serv
 		serviceParameters["thread_cache_size"] = int64(v)
 	}
 
-	if v, _, _ := nullable.Int(tfMap["tmp_table_size"].(string)).Value(); v != 0 {
-		serviceParameters["tmp_table_size"] = map[string]interface{}{
-			"dimension": B,
-			"value":     v,
-		}
+	if v := s.expandIntByteParameter(tfMap["tmp_table_size"]); v != nil {
+		serviceParameters["tmp_table_size"] = v
 	}
 
 	if v, ok := tfMap["transaction_isolation"].(string); ok && v != "" {
@@ -797,8 +744,8 @@ func (s mySQLManager) flattenServiceParameters(serviceParameters ServiceParamete
 		tfMap["galera_options"] = v
 	}
 
-	if vMap, okMap := serviceParameters["gcacheSize"].(map[string]interface{}); okMap {
-		tfMap["gcache_size"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["gcacheSize"]); v != nil {
+		tfMap["gcache_size"] = v
 	}
 
 	if v, ok := serviceParameters["gcsFcFactor"].(float64); ok {
@@ -823,8 +770,8 @@ func (s mySQLManager) flattenServiceParameters(serviceParameters ServiceParamete
 		tfMap["innodb_buffer_pool_instances"] = v
 	}
 
-	if vMap, okMap := serviceParameters["innodbBufferPoolSize"].(map[string]interface{}); okMap {
-		tfMap["innodb_buffer_pool_size"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["innodbBufferPoolSize"]); v != nil {
+		tfMap["innodb_buffer_pool_size"] = v
 	}
 
 	if v, ok := serviceParameters["innodbChangeBuffering"].(string); ok {
@@ -843,8 +790,8 @@ func (s mySQLManager) flattenServiceParameters(serviceParameters ServiceParamete
 		tfMap["innodb_io_capacity_max"] = strconv.FormatInt(v, 10)
 	}
 
-	if vMap, okMap := serviceParameters["innodbLogFileSize"].(map[string]interface{}); okMap {
-		tfMap["innodb_log_file_size"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["innodbLogFileSize"]); v != nil {
+		tfMap["innodb_log_file_size"] = v
 	}
 
 	if v, ok := serviceParameters["innodbLogFilesInGroup"].(int64); ok {
@@ -869,8 +816,8 @@ func (s mySQLManager) flattenServiceParameters(serviceParameters ServiceParamete
 		tfMap["innodb_sync_array_size"] = v
 	}
 
-	if vMap, okMap := serviceParameters["maxAllowedPacket"].(map[string]interface{}); okMap {
-		tfMap["max_allowed_packet"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["maxAllowedPacket"]); v != nil {
+		tfMap["max_allowed_packet"] = v
 	}
 
 	if v, ok := serviceParameters["maxConnectErrors"].(int64); ok {
@@ -881,8 +828,8 @@ func (s mySQLManager) flattenServiceParameters(serviceParameters ServiceParamete
 		tfMap["max_connections"] = v
 	}
 
-	if vMap, okMap := serviceParameters["maxHeapTableSize"].(map[string]interface{}); okMap {
-		tfMap["max_heap_table_size"] = flattenIntValueWithDimension(vMap)
+	if v := s.flattenIntByteParameter(serviceParameters["maxHeapTableSize"]); v != nil {
+		tfMap["max_heap_table_size"] = v
 	}
 
 	if v, ok := serviceParameters["options"].(map[string]interface{}); ok {
@@ -903,12 +850,8 @@ func (s mySQLManager) flattenServiceParameters(serviceParameters ServiceParamete
 		tfMap["thread_cache_size"] = mySQLThreadCacheSizeDefault
 	}
 
-	if vMap, okMap := serviceParameters["tmpTableSize"].(map[string]interface{}); okMap {
-		bytes, err := parseBytes(vMap["value"].(int64), vMap["dimension"].(string))
-
-		if err == nil {
-			tfMap["tmp_table_size"] = strconv.FormatInt(bytes, 10)
-		}
+	if v := s.flattenIntByteParameter(serviceParameters["tmpTableSize"]); v != nil {
+		tfMap["tmp_table_size"] = v
 	}
 
 	if v, ok := serviceParameters["transactionIsolation"].(string); ok {

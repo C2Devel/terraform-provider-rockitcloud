@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-provider-aws/internal/experimental/nullable"
 )
 
 // ResourceSchema returns a full schema of service parameters for resource.
@@ -210,6 +211,60 @@ func (s service) databaseUserParametersSchema() map[string]*schema.Schema {
 	return nil
 }
 
+// todo: doc
+// todo: parametrize default value
+func (s service) intByteParameterSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		MaxItems: 1,
+		Optional: true,
+		ForceNew: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"value": {
+					Type:     nullable.TypeNullableInt,
+					Required: true,
+				},
+				"dimension": {
+					Type:     schema.TypeString,
+					Required: true,
+					ValidateFunc: validation.StringInSlice(
+						[]string{B, KiB, MiB, GiB, TiB},
+						false,
+					),
+				},
+			},
+		},
+	}
+}
+
+// todo: doc
+// todo: parametrize forceNew
+func (s service) floatByteParameterSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		MaxItems: 1,
+		Optional: true,
+		ForceNew: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"value": {
+					Type:     schema.TypeFloat,
+					Required: true,
+				},
+				"dimension": {
+					Type:     schema.TypeString,
+					Required: true,
+					ValidateFunc: validation.StringInSlice(
+						[]string{B, KiB, MiB, GiB, TiB},
+						false,
+					),
+				},
+			},
+		},
+	}
+}
+
 // DataSourceSchema returns a full schema of service parameters for datasource.
 //
 // It includes the same blocks as ResourceSchema.
@@ -375,4 +430,44 @@ func (s service) databaseParametersDataSourceSchema() map[string]*schema.Schema 
 // If PaaS service has specific database user parameters, it should override this method.
 func (s service) databaseUserParametersDataSourceSchema() map[string]*schema.Schema {
 	return nil
+}
+
+// todo: doc
+func (s service) intByteParameterDataSourceSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"value": {
+					Type:     nullable.TypeNullableInt,
+					Computed: true,
+				},
+				"dimension": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
+// todo: doc
+func (s service) floatByteParameterDataSourceSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"value": {
+					Type:     schema.TypeFloat,
+					Computed: true,
+				},
+				"dimension": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
 }

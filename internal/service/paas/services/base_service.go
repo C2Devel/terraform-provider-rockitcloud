@@ -34,11 +34,17 @@ type schemaBuilder interface {
 	databaseParametersSchema() map[string]*schema.Schema
 	databaseUserParametersSchema() map[string]*schema.Schema
 
+	intByteParameterSchema() *schema.Schema
+	floatByteParameterSchema() *schema.Schema
+
 	DataSourceSchema() *schema.Schema
 	serviceParametersDataSourceSchema() map[string]*schema.Schema
 	userParametersDataSourceSchema() map[string]*schema.Schema
 	databaseParametersDataSourceSchema() map[string]*schema.Schema
 	databaseUserParametersDataSourceSchema() map[string]*schema.Schema
+
+	intByteParameterDataSourceSchema() *schema.Schema
+	floatByteParameterDataSourceSchema() *schema.Schema
 }
 
 // Interface converter provides methods for mapping service parameters
@@ -58,6 +64,9 @@ type converter interface {
 	expandDatabaseParameters(map[string]interface{}) DatabaseParameters
 	expandDatabaseUserParameters(map[string]interface{}) DatabaseUserParameters
 
+	expandIntByteParameter(interface{}) map[string]interface{}
+	expandFloatByteParameter(interface{}) map[string]interface{}
+
 	FlattenServiceParametersUsersDatabases(
 		ServiceParameters, []*paas.UserResponse, []*paas.DatabaseResponse,
 	) map[string]interface{}
@@ -69,6 +78,9 @@ type converter interface {
 	flattenUserParameters(UserParameters) map[string]interface{}
 	flattenDatabaseParameters(DatabaseParameters) map[string]interface{}
 	flattenDatabaseUserParameters(DatabaseUserParameters) map[string]interface{}
+
+	flattenIntByteParameter(interface{}) []map[string]interface{}
+	flattenFloatByteParameter(interface{}) []map[string]interface{}
 }
 
 // ServiceManager is a main public interface that includes all methods,
