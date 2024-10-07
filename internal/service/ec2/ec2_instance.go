@@ -30,7 +30,7 @@ import (
 )
 
 func ResourceInstance() *schema.Resource {
-	//lintignore:R011
+	// lintignore:R011
 	return &schema.Resource{
 		Create: resourceInstanceCreate,
 		Read:   resourceInstanceRead,
@@ -1091,7 +1091,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 	tags := KeyValueTags(instance.Tags).IgnoreAWS().IgnoreConfig(ignoreTagsConfig)
 
-	//lintignore:AWSR002
+	// lintignore:AWSR002
 	if err := d.Set("tags", tags.RemoveDefaultConfig(defaultTagsConfig).Map()); err != nil {
 		return fmt.Errorf("error setting tags: %w", err)
 	}
@@ -3183,7 +3183,7 @@ func flattenInstanceLaunchTemplate(conn *ec2.EC2, instanceID, previousLaunchTemp
 }
 
 func findInstanceLaunchTemplateID(conn *ec2.EC2, id string) (string, error) {
-	launchTemplateID, err := findInstanceTagValue(conn, id, "aws:ec2launchtemplate:id")
+	launchTemplateID, err := findInstanceTagValue(conn, id, "cloud:ec2launchtemplate:id")
 
 	if err != nil {
 		return "", fmt.Errorf("reading EC2 Instance (%s) launch template ID tag: %w", id, err)
@@ -3193,7 +3193,7 @@ func findInstanceLaunchTemplateID(conn *ec2.EC2, id string) (string, error) {
 }
 
 func findInstanceLaunchTemplateVersion(conn *ec2.EC2, id string) (string, error) {
-	launchTemplateVersion, err := findInstanceTagValue(conn, id, "aws:ec2launchtemplate:version")
+	launchTemplateVersion, err := findInstanceTagValue(conn, id, "cloud:ec2launchtemplate:version")
 
 	if err != nil {
 		return "", fmt.Errorf("reading EC2 Instance (%s) launch template version tag: %w", id, err)
