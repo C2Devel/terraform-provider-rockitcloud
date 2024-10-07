@@ -574,6 +574,7 @@ func TestValidLaunchTemplateName(t *testing.T) {
 func TestValidLaunchTemplateID(t *testing.T) {
 	validIds := []string{
 		"lt-foobar123456",
+		"lt-FOOBAR123456",
 	}
 	for _, v := range validIds {
 		_, errors := ValidLaunchTemplateID(v, "id")
