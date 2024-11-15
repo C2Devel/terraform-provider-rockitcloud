@@ -1,0 +1,49 @@
+name: Run tests
+
+on:
+    pull_request:
+      types: [opened, labeled]
+      branches: [develop]
+
+jobs:
+    unit-tests:
+        runs-on: ubuntu-22.04
+        steps:
+        - name: Setup Go
+          uses: actions/setup-go@v2
+          with:
+            go-version: 1.21.x
+
+        - uses: actions/checkout@v3
+
+        - name: Install tools
+          run: |
+            make tools
+        - name: Install Docker
+          uses: crazy-max/ghaction-setup-docker@v3
+
+        - name: Run Unit tests
+          run: |
+            make lint
+            make docs-lint
+            make website-lint
+            make test
+    acc-tests:
+        runs-on: ubuntu-22.04
+        if: contains(github.event.pull_request.labels.*.name, 'acc')
+        steps:
+        - name: Setup Go
+          uses: actions/setup-go@v2
+          with:
+            go-version: 1.21.x
+
+        - uses: actions/checkout@v3
+
+        - name: Run acceptance tests
+          env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.secret_access_key }}
+            EC2_URL: ${{ secrets.ec2_url }}
+            PAAS_URL: ${{ secrets.paas_url }}
+          run: |
+            make testacc TESTS=TestAccPaaSServiceElasticSearch_basic PKG=paas
