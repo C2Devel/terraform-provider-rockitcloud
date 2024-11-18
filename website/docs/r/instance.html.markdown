@@ -185,6 +185,7 @@ Any other instance parameters that you specify will override the same parameters
 
 The `launch_template` block supports the following:
 
+* `id` - The ID of the launch template.
 * `name` - The name of the launch template.
 * `version` - Template version. Valid values are a specific version number, `$Latest`, `$Default`. Defaults to `$Default`.
 
@@ -204,10 +205,6 @@ In addition to all arguments above, the following attributes are exported:
 For `ebs_block_device`, in addition to the arguments above, the following attribute is exported:
 
 * `volume_id` - ID of the volume. For example, the ID can be accessed like this, `aws_instance.web.ebs_block_device.2.volume_id`.
-
-For `launch_template`, in addition to the arguments above, the following attribute is exported:
-
-* `id` - The ID of the launch template.
 
 For `root_block_device`, in addition to the arguments above, the following attributes are exported:
 
