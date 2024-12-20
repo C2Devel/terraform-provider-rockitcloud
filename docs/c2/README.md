@@ -235,6 +235,12 @@ $ make docscheck
 
 Для выпуска внутренней документации нужно удостовериться, что все страницы из `website/docs/r` и `website/docs/d` добавлены в секцию `nav:` файла `docs/c2/mkdocs.yml` и проставлены в соответствующие разделы. Например, ресурс **aws_autoscaling_policy** в раздел **Auto Scaling**.
 
+Для локальной проверки внутренней документации можно использовать скрипт
+
+```
+$ ./script/build-docs.sh local
+```
+
 ## Выпуск релиза
 
 Релиз провайдера формируется в соответствии с требованиями к публикации в terraform registry.
@@ -534,7 +540,7 @@ $ ./update-s3-registry.sh
 
 ```
 $ export S3_DOCS_BUCKET_NAME="docs.tf.k2.cloud"
-$ scripts/build-docs.sh
+$ scripts/build-docs.sh push
 ```
 
 ## Использование провайдера
