@@ -233,12 +233,14 @@ $ make docscheck
 
 ### Подготовка внутренней документации к выпуску
 
-Для выпуска внутренней документации нужно удостовериться, что все страницы из `website/docs/r` и `website/docs/d` добавлены в секцию `nav:` файла `docs/c2/mkdocs.yml` и проставлены в соответствующие разделы. Например, ресурс **aws_autoscaling_policy** в раздел **Auto Scaling**.
-
 Для локальной проверки внутренней документации можно использовать скрипт
 
 ```
-$ ./script/build-docs.sh local
+$ ./script/build-docs.sh --local
+```
+**Важно!** Если скрипт использутся впервые, возможно понадобится установить необходимые зависимости.
+```
+$ ./script/build-docs.sh --tools
 ```
 
 ## Выпуск релиза
@@ -540,7 +542,7 @@ $ ./update-s3-registry.sh
 
 ```
 $ export S3_DOCS_BUCKET_NAME="docs.tf.k2.cloud"
-$ scripts/build-docs.sh push
+$ scripts/build-docs.sh --push
 ```
 
 ## Использование провайдера
