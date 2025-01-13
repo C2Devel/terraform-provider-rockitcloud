@@ -2,7 +2,7 @@
 layout: "aws"
 page_title: "Provider: Rockit Cloud"
 description: |-
-  Use the Terraform Rockit Cloud Provider to interact with the various resources supported by Rockit Cloud. You must configure the provider with the proper credentials before you can use it.
+  Use the Terraform Rockit Cloud Provider to manage resources in public and private clouds based on K2 Cloud and Rockit Cloud platforms. You must configure the provider with the proper credentials before you can use it.
 ---
 
 [hashicorp-tutorials]: https://learn.hashicorp.com/tutorials/terraform/infrastructure-as-code?in=terraform/aws-get-started&utm_source=WEBSITE&utm_medium=WEB_IO&utm_offer=ARTICLE_PAGE&utm_content=DOCS
@@ -14,10 +14,10 @@ description: |-
 # Rockit Cloud Provider
 
 The Rockit Cloud Provider is based on the AWS Provider.
-Use it to interact with Rockit Cloud services.
-The provider needs to be configured with the proper credentials before you can use it.
+It is designed for managing resources in public and private clouds based on K2 Cloud and Rockit Cloud platforms.
+The provider must be configured with the proper credentials before you can use it.
 
-Use the navigation to the left to read about the available resources.
+Use the navigation on the left to read about the available resources.
 
 ~> **Note**
 Resource names in the navigation bar have an automatically generated prefix that matches the *rockitcloud* name.
