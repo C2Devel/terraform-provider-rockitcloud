@@ -151,7 +151,7 @@ for version in $tf_provider_versions; do
       "${TF_REGISTRY_URL}/${tf_provider_prefix}/${PROVIDER_NAME}/${version}/download/${os}/${arch}" \
       "${TMP_DIR}/${version}_${os}_${arch}.json"
 
-    s3cmd put --dry-run --config="./.s3cfg" --quiet --acl-public --content-type=application/json "${TMP_DIR}/${version}_${os}_${arch}.json" \
+    s3cmd put --config="./.s3cfg" --quiet --acl-public --content-type=application/json "${TMP_DIR}/${version}_${os}_${arch}.json" \
       "s3://${S3_BUCKET_NAME}/${s3_provider_prefix}/${PROVIDER_NAME}/${version}/download/${os}/${arch}/index.json"
 
     rm -f "${TMP_DIR}/${version}_${os}_${arch}.json"
@@ -168,7 +168,7 @@ if [[ $new_versions_count -gt 0 ]]; then
 
   echo "Update versions meta in s3 registry"
 
-  s3cmd put --dry-run --config="./.s3cfg" --quiet --acl-public --content-type=application/json "${TF_VERSIONS_FILE}" \
+  s3cmd put --config="./.s3cfg" --quiet --acl-public --content-type=application/json "${TF_VERSIONS_FILE}" \
     "s3://${S3_BUCKET_NAME}/${s3_provider_prefix}/${PROVIDER_NAME}/versions/index.json"
 
   echo "Finish versions meta update"

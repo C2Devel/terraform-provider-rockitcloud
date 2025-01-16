@@ -7,7 +7,7 @@ on:
 
 jobs:
     tests:
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-22.04-large
         steps:
         - uses: actions/checkout@v3
 
@@ -20,7 +20,7 @@ jobs:
         - name: Run GoReleaser
           uses: goreleaser/goreleaser-action@v6
           with:
-              version: '~> v2'
+              version: '~> v1'
               args: release --clean --timeout 180m
           env:
               GITHUB_TOKEN: ${{ secrets.AUTOMATION_PAT }}
