@@ -1,4 +1,4 @@
-name: Release of the provider to public registry
+name: Building the provider for the public registry
 
 on:
     push:

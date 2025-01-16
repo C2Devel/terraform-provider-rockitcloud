@@ -567,16 +567,14 @@ $ scripts/build-docs.sh
 ```
 #### Использование автоматизации Github Actions
 
-Для упрощения проесса запуска скрипта по публикации новых версий в private terraform registry из официального terraform registry можно использовать автоматизацию [rockitcloud_private_release](../../.github/workflows/rockitcloud_private_release.yml).
+Для упрощения процесса запуска скрипта по публикации новых версий в private terraform registry из официального terraform registry можно использовать автоматизацию [rockitcloud_private_release](../../.github/workflows/rockitcloud_private_release.yml).
 
-В секретах и переменных репозитория уже должны быть преднастроены(делается один раз в рамках одного репозитория):
+В секретах репозитория уже должны быть преднастроены(делается один раз в рамках одного репозитория):
 
 1) Конфигурационный файл s3cmd - под секретом s3_config
-2) URL официального terraform registry - переменная TF_REGISTRY_URL
-3) URL бакета в private terraform registry - переменная S3_REGISTRY_URL
-4) Имя s3 бакета - переменная S3_BUCKET_NAME
-5) Имя провайдера - переменная PROVIDER_NAME
-6) Путь для бэкапа s3 бакета(в случае неуспешного workflow бэкап бакета будет выгружен в артифакты workflow) - переменная S3_BACKUP_DIR
+2) github token с правами public_repo -  AUTOMATION_PAT
+3) Приватный ключ GPG(без пароля) -  GPG_PRIVATE_KEY
+
 
 Запуск автоматизации:
 

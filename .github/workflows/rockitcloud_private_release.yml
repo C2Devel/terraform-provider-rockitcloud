@@ -22,12 +22,6 @@ jobs:
 
         - name: Run script
           id: run-script
-          env:
-            TF_REGISTRY_URL: ${{ vars.TF_REGISTRY_URL }}
-            S3_REGISTRY_URL: ${{ vars.S3_REGISTRY_URL }}
-            S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
-            PROVIDER_NAME: ${{ vars.PROVIDER_NAME }}
-            S3_BACKUP_DIR: ${{ vars.S3_BACKUP_DIR }}
           run: |
             ./scripts/gha-update-s3-registry.sh
 
