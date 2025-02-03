@@ -80,10 +80,11 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(1, 64),
 		},
 		"innodb_buffer_pool_size": {
-			Type:         nullable.TypeNullableInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(5*Megabyte, math.MaxInt64),
+			Type:     nullable.TypeNullableInt,
+			Optional: true,
+			ForceNew: true,
+			// FIXME: uncomment the validation after all paas clusters are on v4.0
+			// ValidateFunc: nullable.ValidateTypeStringNullableIntAtLeast(128*Megabyte),
 		},
 		"innodb_change_buffering": {
 			Type:     schema.TypeString,
@@ -105,22 +106,25 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(0, 2),
 		},
 		"innodb_io_capacity": {
-			Type:         nullable.TypeNullableInt,
-			Optional:     true,
-			ForceNew:     true,
+			Type:     nullable.TypeNullableInt,
+			Optional: true,
+			ForceNew: true,
+			// the actual max value is 2^64 - 1, but it doesn't fit in int64
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(100, math.MaxInt64),
 		},
 		"innodb_io_capacity_max": {
-			Type:         nullable.TypeNullableInt,
-			Optional:     true,
-			ForceNew:     true,
+			Type:     nullable.TypeNullableInt,
+			Optional: true,
+			ForceNew: true,
+			// the actual max value is 2^64 - 1, but it doesn't fit in int64
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(100, math.MaxInt64),
 		},
 		"innodb_log_file_size": {
-			Type:         nullable.TypeNullableInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(4*Megabyte, 512*Gigabyte),
+			Type:     nullable.TypeNullableInt,
+			Optional: true,
+			ForceNew: true,
+			// FIXME: uncomment the validation after all paas clusters are on v4.0
+			// ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(4*Megabyte, 4*Gigabyte),
 		},
 		"innodb_log_files_in_group": {
 			Type:         schema.TypeInt,
@@ -162,22 +166,24 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(16*Megabyte, 1*Gigabyte),
 		},
 		"max_connect_errors": {
-			Type:         nullable.TypeNullableInt,
-			Optional:     true,
-			ForceNew:     true,
+			Type:     nullable.TypeNullableInt,
+			Optional: true,
+			ForceNew: true,
+			// the actual max value is 2^64 - 1, but it doesn't fit in int64
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(1, math.MaxInt64),
 		},
 		"max_connections": {
-			Type:         schema.TypeInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntBetween(1, 100000),
+			Type:     schema.TypeInt,
+			Optional: true,
+			ForceNew: true,
+			// FIXME: uncomment the validation after all paas clusters are on v4.0
+			// ValidateFunc: validation.IntBetween(10, 100000),
 		},
 		"max_heap_table_size": {
 			Type:         nullable.TypeNullableInt,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(16*Kilobyte, 4294966272),
+			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(16*Kilobyte, 4*Gigabyte),
 		},
 		"options": {
 			Type:     schema.TypeMap,
@@ -208,7 +214,7 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			Type:         nullable.TypeNullableInt,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(1*Kilobyte, 4294967295),
+			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(1*Kilobyte, 4*Gigabyte),
 		},
 		"transaction_isolation": {
 			Type:     schema.TypeString,
@@ -227,7 +233,6 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"mariadb", "percona", "mysql"}, false),
 		},
-		// TODO: add validation that depends on vendor value
 		"version": {
 			Type:     schema.TypeString,
 			Required: true,
@@ -385,10 +390,13 @@ func (s mySQLManager) userParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(1, 60),
 		},
 		"password": {
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			ValidateFunc: validation.StringDoesNotContainAny("`'\"\\"),
+			Type:      schema.TypeString,
+			Required:  true,
+			Sensitive: true,
+			ValidateFunc: validation.All(
+				validation.StringIsNotEmpty,
+				validation.StringDoesNotContainAny("`'\"\\"),
+			),
 		},
 	}
 }
@@ -474,18 +482,12 @@ func (s mySQLManager) databaseUserParametersDataSourceSchema() map[string]*schem
 		"options": {
 			Type:     schema.TypeSet,
 			Computed: true,
-			Elem: &schema.Schema{
-				Type:         schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{"GRANT", "NONE"}, false),
-			},
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"privileges": {
 			Type:     schema.TypeSet,
 			Computed: true,
-			Elem: &schema.Schema{
-				Type:         schema.TypeString,
-				ValidateFunc: validation.StringInSlice(mySQLDatabaseUserPrivileges(), false),
-			},
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 	}
 }

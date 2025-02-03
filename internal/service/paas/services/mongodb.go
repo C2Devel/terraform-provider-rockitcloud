@@ -72,13 +72,6 @@ func (s mongoDBManager) serviceParametersSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
-			ValidateFunc: validation.StringInSlice([]string{
-				"3.6.23",
-				"4.0.28",
-				"4.2.23",
-				"4.4.17",
-				"5.0.13",
-			}, false),
 		},
 	}
 }
@@ -128,10 +121,13 @@ func (s mongoDBManager) serviceParametersDataSourceSchema() map[string]*schema.S
 func (s mongoDBManager) userParametersSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"password": {
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			ValidateFunc: validation.StringDoesNotContainAny("`'\"\\"),
+			Type:      schema.TypeString,
+			Required:  true,
+			Sensitive: true,
+			ValidateFunc: validation.All(
+				validation.StringIsNotEmpty,
+				validation.StringDoesNotContainAny("`'\"\\"),
+			),
 		},
 	}
 }

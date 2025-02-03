@@ -61,13 +61,15 @@ func TestAccPaaSServiceElasticSearch_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "delete_interfaces_on_destroy", "true"),
 					resource.TestCheckResourceAttr(resourceName, "elasticsearch.#", "1"),
 					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "elasticsearch.*", map[string]string{
-						"class":        "search",
-						"kibana":       "false",
-						"logging.#":    "0",
-						"monitoring.#": "0",
-						"options.%":    "0",
-						"password":     "",
-						"version":      "8.2.2",
+						"allow_anonymous": "",
+						"anonymous_role":  "",
+						"class":           "search",
+						"kibana":          "false",
+						"logging.#":       "0",
+						"monitoring.#":    "0",
+						"options.%":       "0",
+						"password":        "",
+						"version":         "8.2.2",
 					}),
 					resource.TestCheckResourceAttr(resourceName, "endpoints.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "error_code", ""),
@@ -200,7 +202,7 @@ resource "aws_paas_service" "test" {
   ssh_key_name = aws_key_pair.test.key_name
 
   elasticsearch {
-    version = "8.2.2"
+    version = "8.12"
   }
 }
 `, keyName, publicKey, serviceName)

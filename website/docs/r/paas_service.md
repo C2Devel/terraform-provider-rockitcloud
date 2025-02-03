@@ -6,14 +6,22 @@ description: |-
   Manages a PaaS service.
 ---
 
+[doc-effective_cache_size]: https://postgresqlco.nf/doc/en/param/effective_cache_size/
 [doc-innodb_flush_log_at_trx_commit]: https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_flush_log_at_trx_commit
 [doc-innodb_strict_mode]: https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_strict_mode
 [doc-mariadb-charset-collate]: https://mariadb.com/kb/en/supported-character-sets-and-collations/
 [doc-mysql-charset-collate]: https://dev.mysql.com/doc/refman/8.0/en/charset-charsets.html
 [doc-pxc_strict_mode]: https://docs.percona.com/percona-xtradb-cluster/5.7/features/pxc-strict-mode.html
+[doc-shared_buffers]: https://postgresqlco.nf/doc/en/param/shared_buffers/
 [doc-transaction_isolation]: https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_transaction_isolation
 
+[elasticsearch-version]: https://docs.k2.cloud/en/api/paas/parameters/elasticsearch.html#version
+[mongodb-version]: https://docs.k2.cloud/en/api/paas/parameters/mongodb.html#version
+[mysql-version]: https://docs.k2.cloud/en/api/paas/parameters/mysql.html#version
 [paas]: https://docs.cloud.croc.ru/en/services/paas/index.html
+[pgsql-version]: https://docs.k2.cloud/en/api/paas/parameters/pgsql.html#version
+[rabbitmq-version]: https://docs.k2.cloud/en/api/paas/parameters/rabbitmq.html#version
+[redis-version]: https://docs.k2.cloud/en/api/paas/parameters/redis.html#version
 [technical support]: https://support.k2int.ru/app/#/project/CS
 [timeouts]: https://www.terraform.io/docs/configuration/blocks/resources/syntax.html#operation-timeouts
 
@@ -57,12 +65,12 @@ resource "aws_paas_service" "elasticsearch" {
   instance_type = "c5.large"
 
   root_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
   data_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
@@ -73,7 +81,7 @@ resource "aws_paas_service" "elasticsearch" {
   ssh_key_name = "<name>"
 
   elasticsearch {
-    version = "8.2.2"
+    version = "8.12"
     kibana  = true
   }
 }
@@ -89,12 +97,12 @@ resource "aws_paas_service" "memcached" {
   instance_type = "c5.large"
 
   root_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
   data_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
@@ -126,12 +134,12 @@ resource "aws_paas_service" "mongodb" {
   instance_type = "c5.large"
 
   root_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
   data_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
@@ -142,7 +150,7 @@ resource "aws_paas_service" "mongodb" {
   ssh_key_name = "<name>"
 
   mongodb {
-    version = "4.2.23"
+    version = "5.0"
 
     journal_commit_interval = 301
     maxconns                = 16
@@ -179,12 +187,12 @@ resource "aws_paas_service" "mysql" {
   instance_type = "c5.large"
 
   root_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
   data_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
@@ -196,7 +204,7 @@ resource "aws_paas_service" "mysql" {
 
   mysql {
     vendor  = "mariadb"
-    version = "10.7.7"
+    version = "10.11"
 
     user {
       name     = "user1"
@@ -286,12 +294,12 @@ resource "aws_paas_service" "pgsql" {
   instance_type = "c5.large"
 
   root_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
   data_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
@@ -311,11 +319,9 @@ resource "aws_paas_service" "pgsql" {
   }
 
   pgsql {
-    version = "10.21"
+    version = "16"
 
     autovacuum_analyze_scale_factor = 0.3
-    min_wal_size                    = 85 * 1024 * 1024
-    max_wal_size                    = 85 * 1024 * 1024
     work_mem                        = 4 * 1024 * 1024
     maintenance_work_mem            = 1024 * 1024
     wal_keep_segments               = 0
@@ -326,13 +332,18 @@ resource "aws_paas_service" "pgsql" {
       password = "********"
     }
 
+    user {
+      name     = "user2"
+      password = "********"
+    }
+
     database {
       name           = "test_db1"
       owner          = "user1"
       backup_enabled = true
       extensions     = ["bloom", "dict_int"]
       user {
-        name = "user1"
+        name = "user2"
       }
     }
 
@@ -353,7 +364,7 @@ resource "aws_paas_service" "rabbitmq" {
   instance_type = "c5.large"
 
   root_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
@@ -369,7 +380,7 @@ resource "aws_paas_service" "rabbitmq" {
   ssh_key_name = "<name>"
 
   rabbitmq {
-    version  = "3.8.30"
+    version  = "3.10"
     password = "********"
   }
 }
@@ -385,12 +396,12 @@ resource "aws_paas_service" "redis" {
   instance_type = "c5.large"
 
   root_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
   data_volume {
-    type = "st2"
+    type = "gp2"
     size = 32
   }
 
@@ -402,7 +413,7 @@ resource "aws_paas_service" "redis" {
 
   redis {
     class   = "database"
-    version = "5.0.14"
+    version = "7.2"
 
     password = "********"
 
@@ -496,6 +507,10 @@ The `root_volume` block has the following structure:
 In addition to the common arguments for all services [described above](#argument-reference),
 the `elasticsearch` block can contain the following arguments:
 
+* `allow_anonymous` - (Optional) Indicates whether anonymous access is enabled.
+  The parameter can be set only if `kibana` is `true` and `password` is specified.
+* `anonymous_role` - (Optional) The role for anonymous access. Valid values are `viewer`, `editor`.
+  The parameter can be set only if `allow_anonymous` is `true`.
 * `class` - (Optional) The service class. Valid value is `search`. Defaults to `search`.
 * `kibana` - (Optional) Indicates whether the Kibana deployment is enabled. Defaults to `false`.
 * `logging` - (Optional, Editable) The logging settings for the service. The structure of this block is [described below](#logging).
@@ -507,9 +522,9 @@ the `elasticsearch` block can contain the following arguments:
 If you need to use such a parameter, contact [technical support].
 
 * `password` - (Optional) The Elasticsearch user password.
-  The value must be 8 to 128 characters long and must not contain `-`, `!`, `:`, `;`, `%`, `'`, `"`, `` ` `` and `\`.
+  The value must not contain `-`, `!`, `:`, `;`, `%`, `'`, `"`, `` ` `` and `\`.
 * `version` - (Required) The version to install.
-  Valid values are `7.11.2`, `7.12.1`, `7.13.1`, `7.14.2`, `7.15.2`, `7.16.3`, `7.17.4`, `8.0.1`, `8.1.3`, `8.2.2`.
+  List of supported versions is available in the [user documentation][elasticsearch-version].
 
 ## Memcached Argument Reference
 
@@ -548,7 +563,8 @@ If you need to use such a parameter, contact [technical support].
 * `quiet` - (Optional, Editable) Indicates whether the quiet mode of _mongos_ or _mongod_ is enabled. Defaults to `false`.
 * `verbositylevel` - (Optional, Editable) The level of message detail in the message log.
   Valid values are `v`, `vv`, `vvv`, `vvvv`, `vvvvv`.
-* `version` - (Required) The version to install. Valid values are `3.6.23`, `4.0.28`, `4.2.23`, `4.4.17`, `5.0.13`.
+* `version` - (Required) The version to install.
+  List of supported versions is available in the [user documentation][mongodb-version].
 
 ### MongoDB database
 
@@ -614,18 +630,18 @@ This parameter is relevant for Percona 8.0, MySQL 8.0, and MariaDB 10.4, 10.5, 1
   when `innodb_buffer_pool_size` > 1 GiB. This parameter is relevant for Percona 5.7, 8.0 и MariaDB 10.2, 10.3, 10.4.
   Valid values are from 1 to 64.
 * `innodb_buffer_pool_size` - (Optional) The size in bytes of the buffer pool used to cache table data and indexes.
-  Valid values are from 5242880 (5 MiB) to 9223372036854775807.
+  Valid values are from 128 MiB.
 * `innodb_change_buffering` - (Optional) Operations for which change buffering optimization is enabled.
   Valid values are `inserts`, `deletes`, `changes`, `purges`, `all`, `none`.
 * `innodb_flush_log_at_trx_commit` - (Optional) The value of the parameter controls the behaviour for transaction commit operations.
   Valid values are from 0 to 2.
   For more information about the parameter, see the [MySQL documentation][doc-innodb_flush_log_at_trx_commit].
 * `innodb_io_capacity` - (Optional) The number of I/O operations per second (IOPS) available to InnoDB background tasks.
-  Valid values are from 100 to 9223372036854775807. Defaults to `200`.
+  Valid values are from 100 to 9223372036854775807.
 * `innodb_io_capacity_max` - (Optional) The maximum number of IOPS that InnoDB background tasks can perform.
   Valid values are from 100 to 9223372036854775807.
 * `innodb_log_file_size` - (Optional) The size of a single file in bytes in the redo system log
-  Valid values are from 4 MiB to 512 GiB.
+  Valid values are from 4 MiB to 4 GiB.
 * `innodb_log_files_in_group` - (Optional) The number of system log files in a log group.
   Valid values are from 2 to 100.
 * `innodb_purge_threads` - (Optional) The number of background threads allocated for the InnoDB purge operation.
@@ -642,9 +658,9 @@ This parameter is relevant for Percona 8.0, MySQL 8.0, and MariaDB 10.4, 10.5, 1
 * `max_connect_errors` - (Optional) The maximum number of connection errors, at which the server blocks the host from further connections.
   Valid values are from 1 to 9223372036854775807.
 * `max_connections` - (Optional) The maximum permitted number of simultaneous client connections that a host can handle.
-  Valid values are from 1 to 100000.
+  Valid values are from 10 to 100000.
 * `max_heap_table_size` - (Optional) The maximum size in bytes to which user-created `MEMORY` tables are permitted to grow.
-  Valid values are from 16384 (16 KiB) to 4294966272.
+  Valid values are from 16 KiB to 4 GiB.
 * `logging` - (Optional, Editable) The logging settings for the service. The structure of this block is [described below](#logging).
 * `monitoring` - (Optional, Editable) The monitoring settings for the service. The structure of this block is [described below](#monitoring).
 * `options` - (Optional) Map containing other MySQL parameters.
@@ -660,17 +676,15 @@ If you need to use such a parameter, contact [technical support].
 * `thread_cache_size` - (Optional) The number of threads that the server caches to establish new network connections.
   Valid values are from 0 to 16 KiB.
 * `tmp_table_size` - (Optional) The maximum size of internal in-memory temporary tables in bytes.
-  Valid values are from 1024 to 4294967295.
+  Valid values are from 1 KiB to 4 GiB.
 * `transaction_isolation` - (Optional) The transaction isolation level.
   For more information about the parameter, see the [MySQL documentation][doc-transaction_isolation].
   Valid values are `READ-UNCOMMITTED`, `READ-COMMITTED`, `REPEATABLE-READ`, `SERIALIZABLE`.
 * `user` - (Optional, Editable) List of MySQL users with parameters. The maximum number of users is 1000.
   The structure of this block is [described below](#mysql-user).
 * `vendor` - (Required) The engine vendor. Valid values are `mariadb`, `percona`, `mysql`.
-* `version` - (Required) The version to install. Valid values depend on `vendor`.
-  `mariadb`: `10.2.44`, `10.3.35`, `10.4.25`, `10.5.16`, `10.6.8`, `10.7.7`.
-  `percona`: `5.7.38`, `8.0.28`.
-  `mysql`: `5.7.41`, `8.0.32`.
+* `version` - (Required) The version to install.
+  List of supported versions is available in the [user documentation][mysql-version].
 * `wait_timeout` - (Optional) The number of seconds the server waits for activity on a noninteractive connection before closing it.
   Valid values are from 1 to 31536000.
 
@@ -735,8 +749,9 @@ the `pgsql` block can contain the following arguments:
 * `class` - (Optional) The service class. Valid value is `database`. Defaults to `database`.
 * `database` - (Optional, Editable) List of PostgreSQL databases with parameters. The maximum number of databases is 1000.
   The structure of this block is [described below](#postgresql-database).
-* `effective_cache_size` - (Optional) The planner’s assumption about the effective size of the disk cache
-  that is available to a single query. Valid values are from 1 to 2147483647.
+* `effective_cache_size` - (Optional) The planner’s assumption about the effective size of the disk cache in bytes (multiple of 1 KiB)
+  that is available to a single query. Valid values are from 8 to 17179869176 KiB.
+  For more information about the parameter, see the [PostgreSQL documentation][doc-effective_cache_size].
 * `effective_io_concurrency` - (Optional) The number of concurrent disk I/O operations. Valid values are from 0 to 1000.
 * `logging` - (Optional, Editable) The logging settings for the service. The structure of this block is [described below](#logging).
 * `maintenance_work_mem` - (Optional) The maximum amount of memory in bytes (multiple of 1 KiB) used by maintenance operations,
@@ -744,8 +759,12 @@ the `pgsql` block can contain the following arguments:
   Valid values are from 1 MiB to 2 GiB.
 * `max_connections` - (Optional) The maximum number of simultaneous connections to the database server.
   Valid values are from 1 to 262143.
-* `max_wal_size` - (Optional) The maximum size in bytes (multiple of 1 MiB) that WAL can reach at automatic checkpoints.
+* `max_wal_size` - (Optional, **Deprecated**) The maximum size in bytes (multiple of 1 MiB) that WAL can reach at automatic checkpoints.
   Valid values are from 2 to 2147483647 MiB.
+
+~> **Note** The parameter `max_wal_size` is marked as deprecated since it is unsupported for PostgreSQL services
+starting with the _paas_v4_0_ environment version.
+
 * `max_parallel_maintenance_workers` - (Optional) The maximum number of parallel workers that a single utility command can start.
   This parameter is relevant only for PostgreSQL versions 11 and higher. Valid values are from 0 to 1024.
 * `max_parallel_workers` - (Optional) The maximum number of workers that the system can support for parallel operations.
@@ -753,9 +772,13 @@ the `pgsql` block can contain the following arguments:
   Valid values are from 0 to 1024.
 * `max_worker_processes` - (Optional) The maximum number of background processes that the system can support.
   Valid values are from 0 to 262143.
-* `min_wal_size` - (Optional) The minimum size in bytes (multiple of 1 MiB) to shrink the WAL to. As long as WAL disk usage stays below this setting,
+* `min_wal_size` - (Optional, **Deprecated**) The minimum size in bytes (multiple of 1 MiB) to shrink the WAL to. As long as WAL disk usage stays below this setting,
   old WAL files are always recycled for future use at a checkpoint, rather than removed.
   Valid values are from 32 to 2147483647 MiB.
+
+~> **Note** The parameter `min_wal_size` is marked as deprecated since it is unsupported for PostgreSQL services
+starting with the _paas_v4_0_ environment version.
+
 * `monitoring` - (Optional, Editable) The monitoring settings for the service. The structure of this block is [described below](#monitoring).
 * `options` - (Optional) Map containing other PostgreSQL parameters.
   Parameter names must be in camelCase. Values are strings.
@@ -765,16 +788,18 @@ If you need to use such a parameter, contact [technical support].
 
 * `replication_mode` - (Optional) The replication mode in the _Patroni_ cluster.
   The parameter must be set if `high_availability` is `true`. Valid values are `asynchronous`, `synchronous`, `synchronous_strict`.
-* `shared_buffers` - (Optional) The amount of memory in 8 KiB pages the database server uses for shared memory buffers.
-  Valid values are from 16 to 1073741823.
+* `shared_buffers` - (Optional) The amount of memory in bytes (multiple of 1 KiB) the database server uses for shared memory buffers.
+  Valid values are from 128 to 8589934584 KiB.
+  For more information about the parameter, see the [PostgreSQL documentation][doc-shared_buffers].
 * `user` - (Optional, Editable) List of PostgreSQL users with parameters. The maximum number of users is 1000.
   The structure of this block is [described below](#postgresql-user).
-* `version` - (Required) The version to install. Valid values are `10.21`, `11.16`, `12.11`, `13.7`, `14.4`, `15.2`.
+* `version` - (Required) The version to install.
+  List of supported versions is available in the [user documentation][pgsql-version].
 * `wal_buffers` - (Optional) The amount of shared memory in 8 KiB pages used for WAL data not yet written to a volume.
   Valid values are from 8 to 262143.
 * `wal_keep_segments` - (Optional) The minimum number of log files segments that must be kept in the _pg_xlog_ directory,
   in case a standby server needs to fetch them for streaming replication.
-  This parameter is relevant only for PostgreSQL versions 10, 11, 12. Valid values are from 0 to 2147483647.
+  This parameter is relevant only for PostgreSQL version 12. Valid values are from 0 to 2147483647.
 * `work_mem` - (Optional) The base maximum amount of memory in bytes (multiple of 1 KiB) to be used by a query operation
   (such as a sort or hash table) before writing to temporary disk files.
   Valid values are from 64 to 2147483647 KiB.
@@ -817,8 +842,7 @@ The `user` block has the following structure:
 The `user` block has the following structure:
 
 * `name` - (Required) The PostgreSQL user name.
-* `password` - (Required) The PostgreSQL user password.
-  The value must be 8 to 128 characters long and must not contain `'`, `"`, `` ` `` and `\`.
+* `password` - (Required) The PostgreSQL user password. The value must not contain `'`, `"`, `` ` `` and `\`.
 
 ## RabbitMQ Argument Reference
 
@@ -835,8 +859,9 @@ the `rabbitmq` block can contain the following arguments:
 If you need to use such a parameter, contact [technical support].
 
 * `password` - (Required, Editable) The RabbitMQ admin password.
-  The value must be 8 to 128 characters long and must not contain `'`, `"`, `` ` `` and `\`.
-* `version` - (Required) The version to install. Valid values are `3.8.30`, `3.9.16`, `3.10.0`.
+  The value must be 8 to 32 characters long and must not contain `-`, `|`, `[`, `]`, `'`, `"`, `;` and `\`.
+* `version` - (Required) The version to install.
+  List of supported versions is available in the [user documentation][rabbitmq-version].
 
 ## Redis Argument Reference
 
@@ -857,16 +882,16 @@ the `redis` block can contain the following arguments:
 ~> **Note** If a parameter name includes a dot, it cannot be passed in `options`.
 If you need to use such a parameter, contact [technical support].
 
-* `password` - (Optional) The Redis user password.
-  The value must be 8 to 128 characters long and must not contain `'`, `"`, `` ` `` and `\`.
+* `password` - (Optional) The Redis user password. The value must not contain `'`, `"`, `` ` `` and `\`.
 * `persistence_aof` - (Optional, Editable) Indicates whether the AOF storage mode is enabled. Defaults to `false`.
-* `persistence_rdb` - (Optional, Editable) Indicates whether the RDB storage mode is enabled. Defaults to `false`.
+* `persistence_rdb` - (Optional, Editable) Indicates whether the RDB storage mode is enabled. Defaults to `true`.
 * `timeout` - (Optional, Editable) The time in seconds during which the connection to an inactive client is retained.
   Valid values are from 0 to 2147483647.
 * `tcp_backlog` - (Optional, Editable) The size of a connection queue. Valid values are from 1 to 4096.
 * `tcp_keepalive` - (Optional, Editable) The time in seconds during which the service sends ACKs to detect dead peers (unreachable clients).
   The value must be non-negative.
-* `version` - (Required) The version to install. Valid values are `5.0.14`, `6.2.6`, `7.0.11`.
+* `version` - (Required) The version to install.
+  List of supported versions is available in the [user documentation][redis-version].
 
 ## Common Service Argument Reference
 

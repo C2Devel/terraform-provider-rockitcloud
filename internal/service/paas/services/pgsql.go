@@ -72,10 +72,14 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.FloatBetween(0, 100),
 		},
 		"effective_cache_size": {
-			Type:         schema.TypeInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntBetween(1, 2147483647),
+			Type:     nullable.TypeNullableInt,
+			Optional: true,
+			ForceNew: true,
+			// FIXME: uncomment the validation after all paas clusters are on v4.0
+			// ValidateFunc: validation.All(
+			// 	nullable.ValidateTypeStringNullableIntBetween(8*Kilobyte, 17179869176*Kilobyte),
+			// 	nullable.ValidateTypeStringNullableIntDivisibleBy(Kilobyte),
+			// ),
 		},
 		"effective_io_concurrency": {
 			Type:         schema.TypeInt,
@@ -106,8 +110,10 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 				nullable.ValidateTypeStringNullableIntBetween(2*Megabyte, 2147483647*Megabyte),
 				nullable.ValidateTypeStringNullableIntDivisibleBy(Megabyte),
 			),
+			// FIXME: remove parameter after all paas clusters are on v4.0
+			Deprecated: "The max_wal_size parameter is unsupported for PostgreSQL services " +
+				"starting with the paas_v4_0 environment version.",
 		},
-		// TODO: add validation that depends on version value
 		"max_parallel_maintenance_workers": {
 			Type:         schema.TypeInt,
 			Optional:     true,
@@ -141,6 +147,9 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 				nullable.ValidateTypeStringNullableIntBetween(32*Megabyte, 2147483647*Megabyte),
 				nullable.ValidateTypeStringNullableIntDivisibleBy(Megabyte),
 			),
+			// FIXME: remove parameter after all paas clusters are on v4.0
+			Deprecated: "The min_wal_size parameter is unsupported for PostgreSQL services " +
+				"starting with the paas_v4_0 environment version.",
 		},
 		"options": {
 			Type:     schema.TypeMap,
@@ -159,25 +168,20 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"shared_buffers": {
-			Type:         schema.TypeInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntBetween(16, 1073741823),
+			Type:     nullable.TypeNullableInt,
+			Optional: true,
+			ForceNew: true,
+			// FIXME: uncomment the validation after all paas clusters are on v4.0
+			// ValidateFunc: validation.All(
+			// 	nullable.ValidateTypeStringNullableIntBetween(128*Kilobyte, 8589934584*Kilobyte),
+			// 	nullable.ValidateTypeStringNullableIntDivisibleBy(Kilobyte),
+			// ),
 		},
 		"version": {
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
-			ValidateFunc: validation.StringInSlice([]string{
-				"10.21",
-				"11.16",
-				"12.11",
-				"13.7",
-				"14.4",
-				"15.2",
-			}, false),
 		},
-		// TODO: add validation that depends on version value
 		"wal_keep_segments": {
 			Type:         schema.TypeInt,
 			Optional:     true,
@@ -222,15 +226,15 @@ func (s postgreSQLManager) serviceParametersDataSourceSchema() map[string]*schem
 			Computed: true,
 		},
 		"autovacuum_analyze_scale_factor": {
-			Type:     schema.TypeInt,
+			Type:     schema.TypeFloat,
 			Computed: true,
 		},
 		"autovacuum_vacuum_scale_factor": {
-			Type:     schema.TypeInt,
+			Type:     schema.TypeFloat,
 			Computed: true,
 		},
 		"effective_cache_size": {
-			Type:     schema.TypeInt,
+			Type:     nullable.TypeNullableInt,
 			Computed: true,
 		},
 		"effective_io_concurrency": {
@@ -279,7 +283,7 @@ func (s postgreSQLManager) serviceParametersDataSourceSchema() map[string]*schem
 			Computed: true,
 		},
 		"shared_buffers": {
-			Type:     schema.TypeInt,
+			Type:     nullable.TypeNullableInt,
 			Computed: true,
 		},
 		"version": {
@@ -308,7 +312,7 @@ func (s postgreSQLManager) userParametersSchema() map[string]*schema.Schema {
 			Required:  true,
 			Sensitive: true,
 			ValidateFunc: validation.All(
-				validation.StringLenBetween(8, 128),
+				validation.StringIsNotEmpty,
 				validation.StringDoesNotContainAny("`'\"\\"),
 			),
 		},
@@ -420,8 +424,8 @@ func (s postgreSQLManager) expandServiceParameters(tfMap map[string]interface{})
 		serviceParameters["autovacuum_vacuum_scale_factor"] = v
 	}
 
-	if v, ok := tfMap["effective_cache_size"].(int); ok && v != 0 {
-		serviceParameters["effective_cache_size"] = int64(v)
+	if v, _, _ := nullable.Int(tfMap["effective_cache_size"].(string)).Value(); v != 0 {
+		serviceParameters["effective_cache_size"] = v
 	}
 
 	if v, ok := tfMap["effective_io_concurrency"].(int); ok {
@@ -477,8 +481,8 @@ func (s postgreSQLManager) expandServiceParameters(tfMap map[string]interface{})
 		serviceParameters["replication_mode"] = v
 	}
 
-	if v, ok := tfMap["shared_buffers"].(int); ok && v != 0 {
-		serviceParameters["shared_buffers"] = int64(v)
+	if v, _, _ := nullable.Int(tfMap["shared_buffers"].(string)).Value(); v != 0 {
+		serviceParameters["shared_buffers"] = v
 	}
 
 	if v, ok := tfMap["version"].(string); ok && v != "" {
@@ -582,8 +586,15 @@ func (s postgreSQLManager) flattenServiceParameters(serviceParameters ServicePar
 		tfMap["autovacuum_vacuum_scale_factor"] = v
 	}
 
+	// FIXME: remove int64 option after all paas clusters are on v4.0
 	if v, ok := serviceParameters["effectiveCacheSize"].(int64); ok {
-		tfMap["effective_cache_size"] = v
+		tfMap["effective_cache_size"] = strconv.FormatInt(v, 10)
+	} else if vMap, okMap := serviceParameters["effectiveCacheSize"].(map[string]interface{}); okMap {
+		bytes, err := parseBytes(vMap["value"].(int64), vMap["dimension"].(string))
+
+		if err == nil {
+			tfMap["effective_cache_size"] = strconv.FormatInt(bytes, 10)
+		}
 	}
 
 	if v, ok := serviceParameters["effectiveIoConcurrency"].(int64); ok {
@@ -644,8 +655,15 @@ func (s postgreSQLManager) flattenServiceParameters(serviceParameters ServicePar
 		tfMap["replication_mode"] = v
 	}
 
+	// FIXME: remove int64 option after all paas clusters are on v4.0
 	if v, ok := serviceParameters["sharedBuffers"].(int64); ok {
-		tfMap["shared_buffers"] = v
+		tfMap["shared_buffers"] = strconv.FormatInt(v, 10)
+	} else if vMap, okMap := serviceParameters["sharedBuffers"].(map[string]interface{}); okMap {
+		bytes, err := parseBytes(vMap["value"].(int64), vMap["dimension"].(string))
+
+		if err == nil {
+			tfMap["shared_buffers"] = strconv.FormatInt(bytes, 10)
+		}
 	}
 
 	if v, ok := serviceParameters["version"].(string); ok {

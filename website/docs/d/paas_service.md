@@ -124,6 +124,8 @@ The `root_volume` block has the following structure:
 In addition to the common attributes for all services [described above](#attribute-reference),
 the following attributes are exported only for an Elasticsearch service:
 
+* `allow_anonymous` - Indicates whether anonymous access is enabled.
+* `anonymous_role` - The role for anonymous access.
 * `class` - The service class.
 * `kibana` - Indicates whether the Kibana deployment is enabled.
 * `logging` - The logging settings for the service. The structure of this block is [described below](#logging).
@@ -285,7 +287,7 @@ the following attributes are exported only for a PostgreSQL service:
   when deciding whether to trigger a `VACUUM`.
 * `class` - The service class.
 * `database` - List of PostgreSQL databases with parameters. The structure of this block is [described below](#postgresql-database).
-* `effective_cache_size` - The planner’s assumption about the effective size of the disk cache
+* `effective_cache_size` - The planner’s assumption about the effective size of the disk cache in bytes
   that is available to a single query.
 * `effective_io_concurrency` - The number of concurrent disk I/O operations.
 * `logging` - The logging settings for the service. The structure of this block is [described below](#logging).
@@ -302,7 +304,7 @@ the following attributes are exported only for a PostgreSQL service:
 * `monitoring` - The monitoring settings for the service. The structure of this block is [described below](#monitoring).
 * `options` - Other PostgreSQL parameters.
 * `replication_mode` - The replication mode in the _Patroni_ cluster.
-* `shared_buffers` - The amount of memory the database server uses for shared memory buffers.
+* `shared_buffers` - The amount of memory in bytes the database server uses for shared memory buffers.
 * `user` - List of PostgreSQL users with parameters. The structure of this block is [described below](#postgresql-user).
 * `version` - The installed version.
 * `wal_buffers` - The amount of shared memory used for WAL data not yet written to a volume.

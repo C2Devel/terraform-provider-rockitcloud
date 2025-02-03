@@ -36,15 +36,14 @@ func (s rabbitMQManager) serviceParametersSchema() map[string]*schema.Schema {
 			Required:  true,
 			Sensitive: true,
 			ValidateFunc: validation.All(
-				validation.StringLenBetween(8, 128),
-				validation.StringDoesNotContainAny("`'\"\\"),
+				validation.StringLenBetween(8, 32),
+				validation.StringDoesNotContainAny(`-|[]\'";`),
 			),
 		},
 		"version": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringInSlice([]string{"3.8.30", "3.9.16", "3.10.0"}, false),
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
 		},
 	}
 }

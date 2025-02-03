@@ -62,7 +62,7 @@ func (s redisManager) serviceParametersSchema() map[string]*schema.Schema {
 			Sensitive: true,
 			ForceNew:  true,
 			ValidateFunc: validation.All(
-				validation.StringLenBetween(8, 128),
+				validation.StringIsNotEmpty,
 				validation.StringDoesNotContainAny("`'\"\\"),
 			),
 		},
@@ -74,7 +74,7 @@ func (s redisManager) serviceParametersSchema() map[string]*schema.Schema {
 		"persistence_rdb": {
 			Type:     schema.TypeBool,
 			Optional: true,
-			Default:  false,
+			Default:  true,
 		},
 		"timeout": {
 			Type:         schema.TypeInt,
@@ -92,10 +92,9 @@ func (s redisManager) serviceParametersSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"version": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringInSlice([]string{"5.0.14", "6.2.6", "7.0.11"}, false),
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
 		},
 	}
 }
