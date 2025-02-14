@@ -20,7 +20,7 @@ This provider is maintained internally by the HashiCorp AWS Provider team.
 
 Please note: We take Terraform's security and our users' trust very seriously. If you believe you have found a security issue in the Terraform AWS Provider, please responsibly disclose by contacting us at security@hashicorp.com.
 
-## Terraform Provider for C2
+## Terraform Provider for K2
 
 Documentation: [docs/c2/README](docs/c2/README.md)
 
