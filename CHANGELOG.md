@@ -1,3 +1,25 @@
+## 25.2.0
+
+FEATURES:
+
+* resource/aws_paas_service, data-source/aws_paas_service: add `available_environment_versions` and `environment_version` attributes
+
+BUG FIXES:
+
+* resource/aws_eks_cluster: fix `InvalidKubernetesCluster.NotFound` API error handling
+* resource/aws_eks_node_group: fix `InvalidKubernetesNodegroup.NotFound` API error handling
+* resource/aws_eks_node_group: add `CLAIMED` as pending status when creating a nodegroup
+
+ENHANCEMENTS:
+
+* resource/aws_eks_cluster: retry to create cluster when the same name or IP address is used
+* resource/aws_eks_node_group: retry to create nodegroup when the same name is used
+
+DOCUMENTATION FIXES:
+
+* Add list of supported API endpoints to the index page
+* Change the region value to `ru-msk` in examples
+
 ## 25.1.0
 
 NOTES:
