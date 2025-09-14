@@ -19,6 +19,10 @@ default: build
 build: fmtcheck
 	go install
 
+changelog-misspell: ## [CI] CHANGELOG Misspell / misspell
+	@echo "make: CHANGELOG Misspell / misspell..."
+	@misspell -error -source text CHANGELOG.md .changelog
+
 gen:
 	rm -f .github/labeler-issue-triage.yml
 	rm -f .github/labeler-pr-triage.yml

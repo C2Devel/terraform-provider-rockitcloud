@@ -1,0 +1,27 @@
+name: CHANGELOG Misspell
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    paths:
+      - .changelog/*
+      - go.sum
+      - CHANGELOG.md
+
+jobs:
+  misspell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: .ci/tools/go.mod
+      - uses: actions/cache@v4.2.4
+        continue-on-error: true
+        timeout-minutes: 2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-pkg-mod-${{ hashFiles('go.sum') }}
+      - run: cd .ci/tools && go install github.com/client9/misspell/cmd/misspell
+      - run: make changelog-misspell
