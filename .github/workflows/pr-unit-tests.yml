@@ -8,6 +8,10 @@ on:
       - opened
       - synchronize
 
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+  
 jobs:
   unit-test:
     runs-on: ubuntu-22.04
