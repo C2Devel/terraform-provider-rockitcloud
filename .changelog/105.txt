@@ -1,0 +1,3 @@
+```release-note:enhancement
+resource/aws_eks_cluster, data-source/aws_eks_cluster: add userdata for EKS clusters
+```
