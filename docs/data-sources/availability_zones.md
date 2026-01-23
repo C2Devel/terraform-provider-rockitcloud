@@ -6,7 +6,7 @@ description: |-
   Provides a list of availability zone names.
 ---
 
-[describe-azs]: https://docs.k2.cloud/en/api/ec2/placements/DescribeAvailabilityZones.html
+[describe-azs]: https://docs.k2.cloud/en/api/ec2/actions/placements/DescribeAvailabilityZones.html
 
 # Data Source: aws_availability_zones
 

@@ -6,7 +6,7 @@ description: |-
   Provides information about an DHCP options configuration.
 ---
 
-[describe-dhcp-options]: https://docs.k2.cloud/en/api/ec2/dhcp_options/DescribeDhcpOptions.html
+[describe-dhcp-options]: https://docs.k2.cloud/en/api/ec2/actions/dhcp_options/DescribeDhcpOptions.html
 [rfc-2132]: http://www.ietf.org/rfc/rfc2132.txt
 
 # Data Source: aws_vpc_dhcp_options

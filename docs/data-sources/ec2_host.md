@@ -6,7 +6,7 @@ description: |-
   Provides information about a dedicated host.
 ---
 
-[describe-hosts]: https://docs.k2.cloud/en/api/ec2/hosts/DescribeHosts.html
+[describe-hosts]: https://docs.k2.cloud/en/api/ec2/actions/hosts/DescribeHosts.html
 
 # Data Source: aws_ec2_host
 

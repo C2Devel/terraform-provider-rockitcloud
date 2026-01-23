@@ -6,7 +6,7 @@ description: |-
   Provides a list of image IDs.
 ---
 
-[describe-images]: https://docs.k2.cloud/en/api/ec2/images/DescribeImages.html
+[describe-images]: https://docs.k2.cloud/en/api/ec2/actions/images/DescribeImages.html
 
 # Data Source: aws_ami_ids
 

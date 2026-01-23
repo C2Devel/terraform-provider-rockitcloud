@@ -6,7 +6,7 @@ description: |-
   Provides information about the attachment of an EC2 transit gateway to a Direct Connect gateway.
 ---
 
-[describe-transit-gateway-attachments]: https://docs.k2.cloud/en/api/ec2/transit_gateways/DescribeTransitGatewayAttachments.html
+[describe-transit-gateway-attachments]: https://docs.k2.cloud/en/api/ec2/actions/transit_gateways/DescribeTransitGatewayAttachments.html
 
 # Data Source: aws_ec2_transit_gateway_dx_gateway_attachment
 

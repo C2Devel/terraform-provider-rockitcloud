@@ -6,7 +6,7 @@ description: |-
   Provides a list of EBS volume IDs.
 ---
 
-[describe-volumes]: https://docs.k2.cloud/en/api/ec2/volumes/DescribeVolumes.html
+[describe-volumes]: https://docs.k2.cloud/en/api/ec2/actions/volumes/DescribeVolumes.html
 
 # Data Source: aws_ebs_volumes
 

@@ -7,7 +7,7 @@ description: |-
 ---
 
 [base64decode-function]: https://www.terraform.io/docs/configuration/functions/base64decode.html
-[describe-instances]: https://docs.k2.cloud/en/api/ec2/instances/DescribeInstances.html
+[describe-instances]: https://docs.k2.cloud/en/api/ec2/actions/instances/DescribeInstances.html
 
 # Data Source: aws_instance
 

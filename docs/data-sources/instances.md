@@ -6,7 +6,7 @@ description: |-
   Provides lists of instance IDs, private IPs, and public IPs.
 ---
 
-[describe-instances]: https://docs.k2.cloud/en/api/ec2/instances/DescribeInstances.html
+[describe-instances]: https://docs.k2.cloud/en/api/ec2/actions/instances/DescribeInstances.html
 [outputs]: https://www.terraform.io/docs/configuration/outputs.html
 [remote state]: https://www.terraform.io/docs/state/remote.html
 [terraform_remote_state]: https://www.terraform.io/docs/providers/terraform/d/remote_state.html

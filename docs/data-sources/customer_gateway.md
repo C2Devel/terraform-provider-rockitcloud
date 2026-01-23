@@ -6,7 +6,7 @@ description: |-
   Provides information about a customer gateway.
 ---
 
-[describe-customer-gateways]: https://docs.k2.cloud/en/api/ec2/customer_gateways/DescribeCustomerGateways.html
+[describe-customer-gateways]: https://docs.k2.cloud/en/api/ec2/actions/customer_gateways/DescribeCustomerGateways.html
 
 # Data Source: aws_customer_gateway
 

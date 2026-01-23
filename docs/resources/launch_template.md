@@ -8,7 +8,7 @@ description: |-
 
 [asg-create]: https://docs.k2.cloud/en/services/compute/autoscaling.html#createautoscalinggroup
 [default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
-[describe-images]: https://docs.k2.cloud/en/api/ec2/images/DescribeImages.html
+[describe-images]: https://docs.k2.cloud/en/api/ec2/actions/images/DescribeImages.html
 
 # Resource: aws_launch_template
 

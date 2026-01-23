@@ -6,7 +6,7 @@ description: |-
   Provides a list of network ACL IDs for a VPC.
 ---
 
-[describe-network-acls]: https://docs.k2.cloud/en/api/ec2/network_acls/DescribeNetworkAcls.html
+[describe-network-acls]: https://docs.k2.cloud/en/api/ec2/actions/network_acls/DescribeNetworkAcls.html
 
 # Data Source: aws_network_acls
 

@@ -6,7 +6,7 @@ description: |-
   Provides information about a security group.
 ---
 
-[describe-security-groups]: https://docs.k2.cloud/en/api/ec2/security_groups/DescribeSecurityGroups.html
+[describe-security-groups]: https://docs.k2.cloud/en/api/ec2/actions/security_groups/DescribeSecurityGroups.html
 
 # Data Source: aws_security_group
 

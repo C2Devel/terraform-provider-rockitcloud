@@ -6,7 +6,7 @@ description: |-
   Provides information about a route table.
 ---
 
-[describe-route-tables]: https://docs.k2.cloud/en/api/ec2/routes/DescribeRouteTables.html
+[describe-route-tables]: https://docs.k2.cloud/en/api/ec2/actions/routes/DescribeRouteTables.html
 
 # Data Source: aws_route_table
 

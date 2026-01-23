@@ -6,7 +6,7 @@ description: |-
   Provides information about a network interface.
 ---
 
-[describe-network-interfaces]: https://docs.k2.cloud/en/api/ec2/network_interfaces/DescribeNetworkInterfaces.html
+[describe-network-interfaces]: https://docs.k2.cloud/en/api/ec2/actions/network_interfaces/DescribeNetworkInterfaces.html
 
 # aws_network_interface
 

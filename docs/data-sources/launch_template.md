@@ -6,7 +6,7 @@ description: |-
   Provides information about a launch template.
 ---
 
-[describe-lts]: https://docs.k2.cloud/en/api/ec2/launch_templates/DescribeLaunchTemplates.html
+[describe-lts]: https://docs.k2.cloud/en/api/ec2/actions/launch_templates/DescribeLaunchTemplates.html
 
 # Data Source: aws_launch_template
 

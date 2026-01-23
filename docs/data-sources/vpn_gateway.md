@@ -6,7 +6,7 @@ description: |-
   Provides information about a VPN gateway.
 ---
 
-[describe-vpn-gateways]: https://docs.k2.cloud/en/api/ec2/vpn_gateways/DescribeVpnGateways.html
+[describe-vpn-gateways]: https://docs.k2.cloud/en/api/ec2/actions/vpn_gateways/DescribeVpnGateways.html
 
 # Data Source: aws_vpn_gateway
 

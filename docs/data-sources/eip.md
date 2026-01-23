@@ -6,7 +6,7 @@ description: |-
   Provides information about an Elastic IP.
 ---
 
-[describe-addresses]: https://docs.k2.cloud/en/api/ec2/addresses/DescribeAddresses.html
+[describe-addresses]: https://docs.k2.cloud/en/api/ec2/actions/addresses/DescribeAddresses.html
 [vpc-dns-hostnames]: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html#vpc-dns-hostnames
 
 # Data Source: aws_eip

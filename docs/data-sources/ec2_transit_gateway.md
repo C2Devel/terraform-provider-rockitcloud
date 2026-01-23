@@ -6,7 +6,7 @@ description: |-
   Provides information about a transit gateway.
 ---
 
-[describe-tgw]: https://docs.k2.cloud/en/api/ec2/transit_gateways/DescribeTransitGateways.html
+[describe-tgw]: https://docs.k2.cloud/en/api/ec2/actions/transit_gateways/DescribeTransitGateways.html
 
 # Data Source: aws_ec2_transit_gateway
 

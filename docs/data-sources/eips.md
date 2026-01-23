@@ -6,7 +6,7 @@ description: |-
   Provides a list of Elastic IPs.
 ---
 
-[describe-addresses]: https://docs.k2.cloud/en/api/ec2/addresses/DescribeAddresses.html
+[describe-addresses]: https://docs.k2.cloud/en/api/ec2/actions/addresses/DescribeAddresses.html
 
 # Data Source: aws_eips
 

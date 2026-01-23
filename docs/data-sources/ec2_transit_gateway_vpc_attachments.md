@@ -6,7 +6,7 @@ description: |-
   Provides list of transit gateway VPC attachment IDs.
 ---
 
-[describe-tgw-vpc-attachments]: https://docs.k2.cloud/en/api/ec2/transit_gateways/DescribeTransitGatewayVpcAttachments.html
+[describe-tgw-vpc-attachments]: https://docs.k2.cloud/en/api/ec2/actions/transit_gateways/DescribeTransitGatewayVpcAttachments.html
 
 # Data Source: aws_ec2_transit_gateway_vpc_attachments
 

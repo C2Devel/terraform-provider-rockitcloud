@@ -6,7 +6,7 @@ description: |-
   Provides a list of subnet IDs for a VPC.
 ---
 
-[describe-subnets]: https://docs.k2.cloud/en/api/ec2/subnets/DescribeSubnets.html
+[describe-subnets]: https://docs.k2.cloud/en/api/ec2/actions/subnets/DescribeSubnets.html
 
 # Data Source: aws_subnet_ids
 

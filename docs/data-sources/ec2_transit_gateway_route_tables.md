@@ -6,7 +6,7 @@ description: |-
   Provides list of transit gateway route table IDs.
 ---
 
-[describe-tgw-rtb]: https://docs.k2.cloud/en/api/ec2/transit_gateways/DescribeTransitGatewayRouteTables.html
+[describe-tgw-rtb]: https://docs.k2.cloud/en/api/ec2/actions/transit_gateways/DescribeTransitGatewayRouteTables.html
 
 # Data Source: aws_ec2_transit_gateway_route_tables
 

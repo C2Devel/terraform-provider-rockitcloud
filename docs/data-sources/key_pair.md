@@ -6,7 +6,7 @@ description: |-
   Provides information about a key pair.
 ---
 
-[describe-key-pairs]: https://docs.k2.cloud/en/api/ec2/key_pairs/DescribeKeyPairs.html
+[describe-key-pairs]: https://docs.k2.cloud/en/api/ec2/actions/key_pairs/DescribeKeyPairs.html
 
 # Data Source: aws_key_pair
 

@@ -6,7 +6,7 @@ description: |-
   Provides information about an EBS snapshot.
 ---
 
-[describe-snapshots]: https://docs.k2.cloud/en/api/ec2/snapshots/DescribeSnapshots.html
+[describe-snapshots]: https://docs.k2.cloud/en/api/ec2/actions/snapshots/DescribeSnapshots.html
 
 # Data Source: aws_ebs_snapshot
 

@@ -6,7 +6,7 @@ description: |-
   Provides information about an internet gateway.
 ---
 
-[describe-igws]: https://docs.k2.cloud/en/api/ec2/vpcs/DescribeInternetGateways.html
+[describe-igws]: https://docs.k2.cloud/en/api/ec2/actions/vpcs/DescribeInternetGateways.html
 
 # Data Source: aws_internet_gateway
 

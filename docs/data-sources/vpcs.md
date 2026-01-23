@@ -6,7 +6,7 @@ description: |-
   Provides a list of VPC IDs.
 ---
 
-[describe-vpcs]: https://docs.k2.cloud/en/api/ec2/vpcs/DescribeVpcs.html
+[describe-vpcs]: https://docs.k2.cloud/en/api/ec2/actions/vpcs/DescribeVpcs.html
 
 # Data Source: aws_vpcs
 

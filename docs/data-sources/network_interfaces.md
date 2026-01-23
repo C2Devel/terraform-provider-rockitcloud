@@ -6,7 +6,7 @@ description: |-
   Provides a list of network interface IDs.
 ---
 
-[describe-network-interfaces]: https://docs.k2.cloud/en/api/ec2/network_interfaces/DescribeNetworkInterfaces.html
+[describe-network-interfaces]: https://docs.k2.cloud/en/api/ec2/actions/network_interfaces/DescribeNetworkInterfaces.html
 
 # Data Source: aws_network_interfaces
 
