@@ -13,9 +13,9 @@ description: |-
 
 Provides information about an Elastic IP.
 
-## Example Usage
+## Example usage
 
-### Search By Allocation ID
+### Search by allocation ID
 
 ```terraform
 data "aws_eip" "by_allocation_id" {
@@ -23,7 +23,7 @@ data "aws_eip" "by_allocation_id" {
 }
 ```
 
-### Search By Filters
+### Search by filters
 
 ```terraform
 data "aws_eip" "by_filter" {
@@ -34,7 +34,7 @@ data "aws_eip" "by_filter" {
 }
 ```
 
-### Search By Public IP
+### Search by public IP
 
 ```terraform
 data "aws_eip" "by_public_ip" {
@@ -42,7 +42,7 @@ data "aws_eip" "by_public_ip" {
 }
 ```
 
-### Search By Tags
+### Search by tags
 
 ```terraform
 data "aws_eip" "by_tags" {
@@ -52,33 +52,40 @@ data "aws_eip" "by_tags" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The arguments of this data source act as filters for querying the available Elastic IPs.
 The given filters must match exactly one Elastic IP whose data will be exported as attributes.
 
-* `filter` - (Optional) One or more name/value pairs to use as filters.
+* `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-addresses]
-* `id` - (Optional) The ID of the allocation of the specific VPC Elastic IP to retrieve.
-* `public_ip` - (Optional) The public IP of the specific Elastic IP to retrieve.
-* `tags` - (Optional) Map of tags, each pair of which must exactly match a pair on the desired Elastic IP.
+* `id` - (Optional, String) The ID of the allocation of the specific VPC Elastic IP to retrieve.
+* `public_ip` - (Optional, String) The public IP of the specific Elastic IP to retrieve.
+* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired resource.
 
-## Attribute Reference
+### filter
+
+* `name` - (Required, String) The name of the filter.
+    * _Constraints:_ Filter names are case-sensitive
+* `values` - (Required, List of strings) One or more filter values.
+    * _Constraints:_ Filter values are case-sensitive
+
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `association_id` - The ID representing the association of the address with an instance in a VPC.
-* `domain` - Indicates whether the address is for use in EC2-Classic (standard) or in a VPC (vpc).
-* `id` - If VPC Elastic IP, the allocation identifier.
-* `instance_id` - The ID of the instance that the address is associated with (if any).
-* `network_interface_id` - The ID of the network interface.
-* `network_interface_owner_id` - The ID of the project that owns the network interface.
-* `private_ip` - The private IP address associated with the Elastic IP address.
-* `public_ip` - Public IP address of Elastic IP.
-* `public_ipv4_pool` - The ID of an address pool.
-* `tags` - Map of tags assigned to the Elastic IP.
+* `association_id` - (String) The ID representing the association of the address with an instance in a VPC.
+* `domain` - (String) Indicates whether the address is for use in EC2-Classic (standard) or in a VPC (vpc).
+* `id` - (String) If VPC Elastic IP, the allocation identifier.
+* `instance_id` - (String) The ID of the instance that the address is associated with (if any).
+* `network_interface_id` - (String) The ID of the network interface.
+* `network_interface_owner_id` - (String) The ID of the project that owns the network interface.
+* `private_ip` - (String) The private IP address associated with the Elastic IP address.
+* `public_ip` - (String) The public IP address of the Elastic IP.
+* `public_ipv4_pool` - (String) The ID of an address pool.
+* `tags` - (Map of strings) Key-value pairs assigned to the Elastic IP.
 
 ### Unsupported attributes
 

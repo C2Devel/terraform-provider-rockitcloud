@@ -6,7 +6,7 @@ description: |-
   Creates an Amazon Machine Image (AMI) from an instance.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
 
 # Resource: aws_ami_from_instance
@@ -28,7 +28,7 @@ resource. Ongoing updates to the referenced instance will not be propagated into
 the generated image. Users may taint or otherwise recreate the resource in order
 to produce a fresh snapshot.
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "aws_ami_from_instance" "example" {
@@ -37,22 +37,22 @@ resource "aws_ami_from_instance" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `name` - (Required) A region-unique name for the image.
-* `source_instance_id` - (Required) The ID of the instance to use as the basis of the image.
-* `tags` - (Optional) Map of tags to assign to the image. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+* `name` - (Required, Forces new resource, String) A region-unique name for the image.
+* `source_instance_id` - (Required, Forces new resource, String) The ID of the instance to use as the basis of the image.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the image. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
-## Attribute Reference
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - The Amazon Resource Name (ARN) of the image.
-* `id` - The ID of the created image.
+* `arn` - (String) The Amazon Resource Name (ARN) of the image.
+* `id` - (String) The ID of the created image.
 
 This resource also exports a full set of attributes corresponding to the arguments of the
 [`aws_ami`](ami.md) resource, allowing the properties of the created image to be used elsewhere in the configuration.
@@ -70,3 +70,7 @@ The `timeouts` block allows you to specify [timeouts] for certain actions:
 * `create` - (Default `40 minutes`) Used when creating the image.
 * `update` - (Default `40 minutes`) Used when updating the image.
 * `delete` - (Default `90 minutes`) Used when deregistering the image.
+
+## Import
+
+Importing of the AMI from instance is not currently supported.

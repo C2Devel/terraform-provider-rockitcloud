@@ -6,7 +6,7 @@ description: |-
   Manages a key pair.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 
 # Resource: aws_key_pair
 
@@ -21,7 +21,7 @@ Supported public key material formats are:
 * Base64 encoded DER format
 * SSH public key file format as specified in RFC4716
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "aws_key_pair" "deployer" {
@@ -30,32 +30,36 @@ resource "aws_key_pair" "deployer" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `public_key` - (Required) The public key material.
-* `key_name` - (Optional) The name for the key pair.
-    _Constraints:_ If neither `key_name` nor `key_name_prefix` is provided, Terraform will create a unique key name using the prefix `terraform-`
-* `key_name_prefix` - (Optional) Creates a unique name beginning with the specified prefix.
-    _Constraints:_ Conflicts with `key_name`.
-    If neither `key_name` nor `key_name_prefix` is provided, Terraform will create a unique key name using the prefix `terraform-`
-* `tags` - (Optional) Map of tags to assign to the key pair. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+* `public_key` - (Required, Forces new resource, String) The public key material.
+* `key_name` - (Optional, Forces new resource, String) The name for the key pair.
+    * _Constraints:_ If neither `key_name` nor `key_name_prefix` is provided, Terraform will create a unique key name using the prefix `terraform-`
+* `key_name_prefix` - (Optional, Forces new resource, String) Creates a unique name beginning with the specified prefix.
+    * _Constraints:_ Conflicts with `key_name`
+    * _Constraints:_ If neither `key_name` nor `key_name_prefix` is provided, Terraform will create a unique key name using the prefix `terraform-`
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - The Amazon Resource Name (ARN) of the key pair.
-* `id` - The ID of the key pair.
-* `key_name` - The name of the key pair.
-* `key_pair_id` - The ID of the key pair.
-* `fingerprint` - The MD5 public key fingerprint as specified in section 4 of RFC 4716.
-* `tags_all` - Map of tags assigned to the key pair, including those inherited from the provider [`default_tags` configuration block][default-tags].
+* `arn` - (String) The Amazon Resource Name (ARN) of the key pair.
+* `id` - (String) The ID of the key pair.
+* `key_name` - (String) The name of the key pair.
+* `key_pair_id` - (String) The ID of the key pair.
+* `fingerprint` - (String) The MD5 public key fingerprint as specified in section 4 of RFC 4716.
+* `tags_all` - (Map of strings) Key-value pairs assigned to the resource, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
+
+## Timeouts
+
+Timeouts usage for key pair is not currently supported.
 
 ## Import
 
-Key pairs can be imported using `key_name`, e.g.,
+Key pairs can be imported using `key_name`, for example:
 
 ```
 $ terraform import aws_key_pair.deployer deployer-key

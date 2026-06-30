@@ -13,7 +13,7 @@ description: |-
 
 Manages a traffic mirror filter. For details about traffic mirroring, see the [user documentation][traffic-mirroring].
 
-## Example Usage
+## Example usage
 
 To create a basic traffic mirror filter, use:
 
@@ -23,20 +23,34 @@ resource "aws_ec2_traffic_mirror_filter" "foo" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `description` - (Optional, Forces new resource) Description of the filter.
-* `tags` - (Optional, Editable) Map of tags to assign to the traffic mirror filter. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+* `description` - (Optional, Forces new resource, String) The description of the filter.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror filter. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
-## Attribute Reference
+## Attribute reference
+
+### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - The Amazon Resource Name (ARN) of the traffic mirror filter.
-* `id` - The ID of the traffic mirror filter.
-* `tags_all` - Map of tags assigned to the traffic mirror filter, including those inherited from the provider [`default_tags` configuration block][default-tags].
+* `arn` - (String) The Amazon Resource Name (ARN) of the traffic mirror filter.
+* `id` - (String) The ID of the traffic mirror filter.
+* `tags_all` - (Map of strings) Key-value pairs assigned to the traffic mirror filter, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
+
+### Unsupported attributes
+
+~> **Note** This attribute may be present in the `terraform.tfstate` file, but it has a preset value and cannot be specified in configuration files.
+
+The following attribute is not currently supported:
+
+`network_services`.
+
+## Timeouts
+
+Timeouts usage for traffic mirror filter is not currently supported.
 
 ## Import
 
@@ -52,5 +66,5 @@ import {
 In older Terraform versions, the traffic mirror filter can be imported by its `id` using `terraform import`, e.g.:
 
 ```console
-% terraform import aws_ec2_traffic_mirror_filter.foo tmf-12345678
+terraform import aws_ec2_traffic_mirror_filter.foo tmf-12345678
 ```

@@ -12,7 +12,9 @@ description: |-
 
 Provides a list of image IDs.
 
-## Example Usage
+## Example usage
+
+### Basic example
 
 ```terraform
 data "aws_ami_ids" "example" {
@@ -20,21 +22,30 @@ data "aws_ami_ids" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-* `owners` - (Required) List of image owners to limit search. At least one value must be specified.
+The following arguments are supported:
+
+* `owners` - (Required, List of strings) List of image owners to limit search. At least one value must be specified.
     * _Valid values:_ `project@customer` or `self`
-* `executable_users` - (Optional) Limit search to project with *explicit* launch permission on the image.
-    * _Valid values:_ `project@customer`, `all` or `self`
-* `filter` - (Optional) One or more name/value pairs to use as filters.
+* `executable_users` - (Optional, List of strings) Limit search to project with *explicit* launch permission on the image.
+    * _Valid values:_ `all`, `project@customer` or `self`
+* `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-images]
-* `name_regex` - (Optional) A regex string to apply to the image list returned by the EC2 API.
+* `name_regex` - (Optional, String) A regex string to apply to the image list returned by the EC2 API.
   It is recommended to combine this with other options to narrow down the list the EC2 API returns.
-* `sort_ascending` - (Optional) Used to sort images by creation time.
+* `sort_ascending` - (Optional, Boolean) Indicates whether to sort images by creation time.
     * _Default value:_ `false`
 
-## Attribute Reference
+### filter
+
+* `name` - (Required, String) The name of the filter.
+    * _Constraints:_ Filter names are case-sensitive
+* `values` - (Required, List of strings) One or more filter values.
+    * _Constraints:_ Filter values are case-sensitive
+
+## Attribute reference
 
 In addition to all arguments above, the following attribute is exported:
 
-* `ids` - List of image IDs, sorted by creation time according to `sort_ascending`.
+* `ids` - (List of strings) The list of image IDs, sorted by creation time according to `sort_ascending`.
