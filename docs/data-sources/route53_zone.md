@@ -12,7 +12,7 @@ Provides information about a Route 53 hosted zone.
 
 This data source allows to find a hosted zone ID given hosted zone name and certain search criteria.
 
-## Example Usage
+## Example usage
 
 The following example shows how to get a hosted zone from its name and from this data how to create a record set.
 
@@ -32,33 +32,35 @@ resource "aws_route53_record" "www" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The arguments of this data source act as filters for querying the available
-hosted zone. You have to use `zone_id` or `name`, not both of them. The given filter must match exactly one
-hosted zone. If you use `name` field for private hosted zone, you need to add `private_zone` field to `true`
+The arguments of this data source act as filters for querying the available hosted zones.
+The given filter must match exactly one hosted zone.
 
-* `name` - (Optional) The name of the desired hosted zone.
-* `private_zone` - (Optional) Used with `name` field to get a private hosted zone.
-* `tags` - (Optional) Used with `name` field. Map of tags, each pair of which must exactly match a pair on the desired hosted zone.
-* `vpc_id` - (Optional) Used with `name` field to get a private hosted zone associated with the vpc_id (in this case, private_zone is not mandatory).
-* `zone_id` - (Optional) The ID of the desired hosted zone.
+* `name` - (Optional, String) The name of the desired hosted zone.
+* `private_zone` - (Optional, Boolean) Indicates whether the hosted zone is private. Used with `name` field to get a private hosted zone.
+    * _Default value:_ `false`
+* `vpc_id` - (Optional, String) Used with `name` field to get a private hosted zone associated with the `vpc_id` (in this case, `private_zone` is not required).
+* `zone_id` - (Optional, String) The ID of the desired hosted zone.
+* `resource_record_set_count` - (Optional, Integer) Used with `name` field. The number of record sets in the hosted zone.
 
-## Attribute Reference
+~> **Note** You have to specify either `zone_id` or `name`, but not both of them.
+If you use the `name` field to search for a private hosted zone, you need to set the argument `private_zone` value to `true`.
+
+## Attribute reference
 
 ### Supported attributes
 
-This data source will complete the data by populating
-any fields that are not included in the configuration with the data for
-the selected hosted zone.
+This data source will complete the data by populating any fields that are not included in the configuration with the data for the selected hosted zone.
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - The Amazon Resource Name (ARN) of the hosted zone.
-* `caller_reference` - Caller Reference of the hosted zone.
-* `comment` - The comment field of the hosted zone.
-* `name_servers` - The list of DNS name servers for the hosted zone.
-* `resource_record_set_count` - The number of record sets in the hosted zone.
+* `arn` - (String) The Amazon Resource Name (ARN) of the hosted zone.
+* `caller_reference` - (String) Caller Reference of the hosted zone.
+* `comment` - (String) The comment field of the hosted zone.
+* `name_servers` - (List of strings) The list of DNS name servers for the hosted zone.
+* `resource_record_set_count` - (Integer) The number of record sets in the hosted zone.
+* `tags` - (Map of strings) Key-value pairs assigned to the hosted zone.
 
 ### Unsupported attributes
 

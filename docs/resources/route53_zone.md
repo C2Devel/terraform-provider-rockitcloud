@@ -6,13 +6,13 @@ description: |-
   Manages a Route53 hosted zone.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 
 # Resource: aws_route53_zone
 
 Manages a Route53 hosted zone.
 
-## Example Usage
+## Example usage
 
 ### Public Zone
 
@@ -24,9 +24,7 @@ resource "aws_route53_zone" "primary" {
 
 ### Public Subdomain Zone
 
-For use in subdomains, note that you need to create a
-`aws_route53_record` of type `NS` as well as the subdomain
-zone.
+For use in subdomains, note that you need to create a `aws_route53_record` of type `NS` as well as the subdomain zone.
 
 ```terraform
 resource "aws_route53_zone" "main" {
@@ -64,22 +62,28 @@ resource "aws_route53_zone" "private" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `name` - (Required) This is the name of the hosted zone.
-* `comment` - (Optional) A comment for the hosted zone.
-    * _Default value:_ 'Managed by Terraform'
-* `force_destroy` - (Optional) Whether to destroy all records (possibly managed outside of Terraform) in the zone when destroying the zone.
-* `tags` - (Optional) Map of tags to assign to the zone. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
-* `vpc` - (Optional) Configuration block(s) specifying VPC to associate with a private hosted zone.
+* `name` - (Required, Forces new resource, String) This is the name of the hosted zone.
+* `comment` - (Optional, Editable, String) A comment for the hosted zone.
+    * _Default value:_ `Managed by Terraform`
+* `force_destroy` - (Optional, Editable, Boolean) Indicates whether to destroy all records (possibly managed outside of Terraform) in the zone when destroying it.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the hosted zone. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `vpc` - (Optional, Editable, [Block](#vpc)) Configuration block(s) specifying VPC to associate with a private hosted zone.
 
-### vpc Argument Reference
+### vpc
 
-* `vpc_id` - (Required) ID of the VPC to associate.
+The following arguments are required:
 
-## Attribute Reference
+* `vpc_id` - (Required, Editable, String) The ID of the VPC to associate.
+
+The following arguments are optional:
+
+* `vpc_region` - (Optional, Editable, String) The region of the VPC to associate.
+
+## Attribute reference
 
 ### Supported attributes
 
@@ -89,7 +93,7 @@ In addition to all arguments above, the following attributes are exported:
 * `zone_id` - The hosted zone ID. This can be referenced by zone records.
 * `name_servers` - A list of name servers in associated (or default) delegation set.
   Find more about delegation sets in [AWS docs](https://docs.aws.amazon.com/Route53/latest/APIReference/actions-on-reusable-delegation-sets.html).
-* `tags_all` - Map of tags assigned to the hosted zone, including those inherited from the provider [`default_tags` configuration block][default-tags].
+* `tags_all` - (Map of strings) Key-value pairs assigned to the hosted zone, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
 
 ### Unsupported attributes
 
@@ -99,9 +103,13 @@ The following attributes are not currently supported:
 
 `delegation_set_id`, `vpc.vpc_region`.
 
+## Timeouts
+
+Timeouts usage for hosted zones is not currently supported.
+
 ## Import
 
-Route53 zones can be imported using the `zone id`, e.g.,
+Route53 hosted zones can be imported using `id`, for example:
 
 ```
 $ terraform import aws_route53_zone.myzone z-xxxxxxxx
