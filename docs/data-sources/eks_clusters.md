@@ -3,14 +3,14 @@ subcategory: "EKS (Elastic Kubernetes)"
 layout: "aws"
 page_title: "aws_eks_clusters"
 description: |-
-  Provides a list of EKS clusters names.
+  Provides a list of EKS cluster names.
 ---
 
 # Data Source: aws_eks_clusters
 
-Provides a list of EKS clusters names.
+Provides a list of EKS cluster names.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "aws_eks_clusters" "example" {}
@@ -21,9 +21,13 @@ data "aws_eks_cluster" "example" {
 }
 ```
 
-## Attribute Reference
+## Argument reference
+
+This data source has no arguments.
+
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The region.
-* `names` - Set of EKS clusters names.
+* `id` - (String) The region configured in the provider.
+* `names` - (Set of strings) Set of EKS cluster names.

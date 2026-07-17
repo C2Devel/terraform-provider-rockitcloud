@@ -10,7 +10,7 @@ description: |-
 
 Provides information about an EKS cluster.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "aws_eks_cluster" "example" {
@@ -18,31 +18,36 @@ data "aws_eks_cluster" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-* `name` - (Required) The name of the cluster.
+The following arguments are supported:
 
-## Attribute Reference
+* `name` - (Required, String) The name of the cluster.
+
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - Cluster ID.
-* `certificate_authority` - Nested attribute containing `certificate-authority-data` for your cluster.
-    * `data` - The base64 encoded certificate data required to communicate with your cluster. Add this to the `certificate-authority-data` section of the `kubeconfig` file for your cluster.
-* `created_at` - The Unix epoch time stamp in seconds for when the cluster was created.
-* `id` - The name of the cluster.
-* `kubernetes_network_config` - The Kubernetes network configuration.
-  The structure of this block is [described below](#kubernetes_network_config).
-* `legacy_cluster_params` - The parameters for fine-tuning the Kubernetes cluster.
-  The structure of this block is [described below](#legacy_cluster_params).
-* `platform_version` - The platform version for the cluster.
-* `status` - The status of the EKS cluster. One of `CLAIMED`, `CREATING`, `DELETED`, `DELETING`, `ERROR`, `MODIFYING`, `PENDING`, `PROVISIONING`, `READY`, `REPAIRING`.
-* `version` - The Kubernetes server version for the cluster.
-* `vpc_config` - The VPC configuration for the cluster.
-  The structure of this block is [described below](#vpc_config).
-* `tags` - Map of tags assigned to the cluster.
+* `arn` - (String) The ARN of the cluster.
+* `certificate_authority` - ([Block](#certificate_authority)) Nested attribute containing `certificate-authority-data` for your cluster.
+* `created_at` - (String) The Unix epoch time stamp in seconds for when the cluster was created.
+* `id` - (String) The name of the cluster.
+* `kubernetes_network_config` - ([Block](#kubernetes_network_config)) The Kubernetes network configuration.
+* `legacy_cluster_params` - ([Block](#legacy_cluster_params)) The parameters for fine-tuning the Kubernetes cluster.
+* `platform_version` - (String) The platform version for the cluster.
+* `status` - (String) The status of the EKS cluster.
+    * _Valid values:_ `CLAIMED`, `CREATING`, `DELETED`, `DELETING`, `ERROR`, `MODIFYING`, `PENDING`, `PROVISIONING`, `READY`, `REPAIRING`
+* `version` - (String) The Kubernetes server version for the cluster.
+* `vpc_config` - ([Block](#vpc_config)) The VPC configuration for the cluster.
+* `tags` - (Map of strings) Key-value pairs assigned to the cluster.
+
+#### certificate_authority
+
+The `certificate_authority` block has the following structure:
+
+* `data` - (String) The base64 encoded certificate data required to communicate with your cluster. Add this to the `certificate-authority-data` section of the `kubeconfig` file for your cluster.
 
 #### kubernetes_network_config
 
@@ -55,20 +60,13 @@ The `kubernetes_network_config` block has the following structure:
 
 The `legacy_cluster_params` block has the following structure:
 
-* `docker_registry_config` – The configuration of the Docker Registry.
-  The structure of this block is [described below](#docker_registry_config).
-* `ebs_provider_config` – The configuration of the EBS Provider.
-  The structure of this block is [described below](#ebs_provider_config).
-* `ingress_config` – The configuration of the Ingress controller.
-  The structure of this block is [described below](#ingress_config).
-* `master_config` – The configuration of the master node of the cluster.
-  The structure of this block is [described below](#master_config).
-* `user_data_config` - The configuration of the cluster user data.
-  The structure of this block is [described below](#user_data_config).
-* `nlb_provider_config` – The configuration of the NLB Provider.
-  The structure of this block is [described below](#nlb_provider_config).
-* `placement_config` - The placement of the cluster.
-  The structure of this block is [described below](#placement_config).
+* `docker_registry_config` - ([Block](#docker_registry_config)) The configuration of the Docker Registry.
+* `ebs_provider_config` - ([Block](#ebs_provider_config)) The configuration of the EBS Provider.
+* `ingress_config` - ([Block](#ingress_config)) The configuration of the Ingress controller.
+* `master_config` - ([Block](#master_config)) The configuration of the master node of the cluster.
+* `user_data_config` - ([Block](#user_data_config)) The configuration of the cluster user data.
+* `nlb_provider_config` - ([Block](#nlb_provider_config)) The configuration of the NLB Provider.
+* `placement_config` - ([Block](#placement_config)) The placement of the cluster.
 
 ##### docker_registry_config
 
@@ -130,7 +128,7 @@ The `user_data_config` block has the following structure:
 
 * `user_data` - User data.
 * `user_data_content_type` - The type of `user_data`.
-    * _Valid values:_ `cloud-config`,  `x-shellscript`
+    * _Valid values:_ `cloud-config`, `x-shellscript`
 
 #### vpc_config
 
@@ -147,4 +145,4 @@ The `vpc_config` block has the following structure:
 
 The following attributes are not currently supported:
 
-`enabled_cluster_log_types`, `encryption_config`, `endpoint`, `identity`, `role_arn`, `vpc_config.endpoint_private_access`, `vpc_config.endpoint_public_access`, `vpc_config.public_access_cidrs`.
+`enabled_cluster_log_types`, `endpoint`, `identity`, `role_arn`, `vpc_config.endpoint_private_access`, `vpc_config.endpoint_public_access`, `vpc_config.public_access_cidrs`.
