@@ -9,6 +9,7 @@ description: |-
 [attribute-as-blocks]: https://www.terraform.io/docs/configuration/attr-as-blocks.html
 [default-security-groups]: https://docs.k2.cloud/en/services/security/securitygroups.html#id3
 [default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[iana-protocol-numbers]: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 
 # Resource: aws_default_security_group
 
@@ -103,7 +104,7 @@ The following arguments are required:
 * `protocol` - (Required, Editable, String) The protocol to match.
     * _Constraints:_
         * If using the `-1` value (semantically equivalent to `all`, which is not a valid value here), you must specify the `from_port` and `to_port` arguments values equal to `0`
-        * If the `protocol` value is not `icmp`, `tcp`, `udp`, or `-1`, then refer to the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml) for detailed information
+        * If the `protocol` value is not `icmp`, `tcp`, `udp`, or `-1`, then refer to the [protocol number][iana-protocol-numbers] for detailed information
 * `to_port` - (Required, Editable, Integer) The end of the port range (or ICMP message code if the `protocol` value is `icmp`).
 
 The following arguments are optional:

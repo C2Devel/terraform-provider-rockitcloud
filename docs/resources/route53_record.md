@@ -1,5 +1,3 @@
-[fqdn]: https://en.wikipedia.org/wiki/Fully_qualified_domain_name
-
 ---
 subcategory: "Route 53"
 layout: "aws"
@@ -7,6 +5,8 @@ page_title: "aws_route53_record"
 description: |-
   Manages a Route53 record.
 ---
+
+[fqdn]: https://en.wikipedia.org/wiki/Fully_qualified_domain_name
 
 # Resource: aws_route53_record
 
@@ -26,9 +26,10 @@ resource "aws_route53_record" "www" {
 }
 ```
 
-### NS Record Management
+### NS record management
 
-When creating Route 53 zones, the `NS` records for the zone are automatically created. Enabling the `allow_overwrite` argument will allow managing these records in a single Terraform run without the requirement for `terraform import`.
+When creating Route 53 zones, the `NS` records for the zone are automatically created.
+Enabling the `allow_overwrite` argument will allow managing these records in a single Terraform run without the requirement for `terraform import`.
 
 ```terraform
 resource "aws_route53_zone" "example" {
@@ -51,16 +52,20 @@ resource "aws_route53_record" "example" {
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
 * `name` - (Required, Forces new resource, String) The name of the record.
 * `type` - (Required, Editable, String) The type of the record.
-    * _Valid values:_ `A`, `AAAA`, `CNAME`, `MX`, `NS`, `PTR`, `SRV` and `TXT`
-* `ttl` - (Optional, Editable, Integer) The TTL of the record.
-* `records` - (Optional, Editable, Set of strings) A string list of records. To specify a single record value longer than 255 characters such as a TXT record for DKIM, add `\" \"` inside the Terraform configuration string to split characters into multiple text strings (for example, `"first255characters\" \"next255characters"`).
+    * _Valid values:_ `A`, `AAAA`, `CNAME`, `MX`, `NS`, `PTR`, `SRV` or `TXT`
 * `zone_id` - (Required, Forces new resource, String) The ID of the hosted zone to contain this record.
+
+The following arguments are optional:
+
 * `allow_overwrite` - (Optional, Editable, Boolean) Indicates whether to allow creation of this record in Terraform to overwrite an existing record, if any.
     * _Default value:_ `false`
+* `records` - (Optional, Editable, Set of strings) A list of DNS records.
+  To specify a single record value longer than 255 characters such as a TXT record for DKIM, add `\" \"` inside the Terraform configuration string to split characters into multiple text strings (for example, `"first255characters\" \"next255characters"`).
+* `ttl` - (Optional, Editable, Integer) The TTL of the record.
 
     ~> **Note** This does not affect the ability to update the record in Terraform and does not prevent other resources within Terraform or manual Route 53 changes outside Terraform from overwriting this record.
 
@@ -73,7 +78,6 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `fqdn` - (String) [FQDN][fqdn] built using the zone domain and `name`.
-* `name` - (String) The name of the record.
 
 ### Unsupported attributes
 

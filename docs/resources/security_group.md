@@ -11,6 +11,7 @@ description: |-
 [protocol-number]: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 [security-groups]: https://docs.k2.cloud/en/services/security/securitygroups.html
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
+[create-before-destroy]: https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#create_before_destroy
 
 # Resource: aws_security_group
 
@@ -76,7 +77,7 @@ resource "aws_security_group" "example" {
 
 Security group's name cannot be edited after the resource is created. In fact, the `name` and `name-prefix` arguments force the creation of a new security group resource when they change value. In that case, Terraform first deletes the existing security group resource and then it creates a new one. If the existing security group is associated to a network interface resource, the deletion cannot complete. The reason is that network interface resources cannot be left with no security group attached and the new one is not yet available at that point.
 
-It is required to invert the default behavior of Terraform. That is, first the new security group resource must be created, then associated to possible network interface resources and finally the old security group can be detached and deleted. To force this behavior, you must set the [create_before_destroy](https://www.terraform.io/language/meta-arguments/lifecycle#create_before_destroy) property:
+It is required to invert the default behavior of Terraform. That is, first the new security group resource must be created, then associated to possible network interface resources and finally the old security group can be detached and deleted. To force this behavior, you must set the [create_before_destroy][create-before-destroy] property:
 
 ```terraform
 resource "aws_security_group" "sg_with_changeable_name" {
