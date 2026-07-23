@@ -34,7 +34,8 @@ The arguments of this data source act as filters for querying the available inte
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-igws]
 * `internet_gateway_id` - (Optional, String) The ID of the internet gateway.
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resource.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resource.
 
 ### filter
 

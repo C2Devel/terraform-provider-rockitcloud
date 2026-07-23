@@ -39,15 +39,16 @@ In addition to all arguments above, the following attributes are exported:
 * `platform_version` - (String) The platform version for the cluster.
 * `status` - (String) The status of the EKS cluster.
     * _Valid values:_ `CLAIMED`, `CREATING`, `DELETED`, `DELETING`, `ERROR`, `MODIFYING`, `PENDING`, `PROVISIONING`, `READY`, `REPAIRING`
+* `tags` - (Map of strings) Key-value pairs assigned to the cluster.
 * `version` - (String) The Kubernetes server version for the cluster.
 * `vpc_config` - ([Block](#vpc_config)) The VPC configuration for the cluster.
-* `tags` - (Map of strings) Key-value pairs assigned to the cluster.
 
 #### certificate_authority
 
 The `certificate_authority` block has the following structure:
 
-* `data` - (String) The base64 encoded certificate data required to communicate with your cluster. Add this to the `certificate-authority-data` section of the `kubeconfig` file for your cluster.
+* `data` - (String) The base64 encoded certificate data required to communicate with your cluster.
+    Add this to the `certificate-authority-data` section of the `kubeconfig` file for your cluster.
 
 #### kubernetes_network_config
 
@@ -64,9 +65,9 @@ The `legacy_cluster_params` block has the following structure:
 * `ebs_provider_config` - ([Block](#ebs_provider_config)) The configuration of the EBS Provider.
 * `ingress_config` - ([Block](#ingress_config)) The configuration of the Ingress controller.
 * `master_config` - ([Block](#master_config)) The configuration of the master node of the cluster.
-* `user_data_config` - ([Block](#user_data_config)) The configuration of the cluster user data.
 * `nlb_provider_config` - ([Block](#nlb_provider_config)) The configuration of the NLB Provider.
 * `placement_config` - ([Block](#placement_config)) The placement of the cluster.
+* `user_data_config` - ([Block](#user_data_config)) The configuration of the cluster user data.
 
 ##### docker_registry_config
 

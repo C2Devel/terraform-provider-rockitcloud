@@ -13,7 +13,8 @@ description: |-
 Manages the main routing table of a VPC.
 
 ~> **Note** **Do not** use both `aws_default_route_table` to manage a default route table **and** `aws_main_route_table_association` with the same VPC due to possible route conflicts. See [aws_default_route_table](default_route_table.md) documentation for more details.
-For more information, see the documentation on [route tables][route-tables]. For information about managing normal route tables in Terraform, see [`aws_route_table`](route_table.md).
+For more information, see the documentation on [route tables][route-tables].
+For information about managing normal route tables in Terraform, see [`aws_route_table`](route_table.md).
 
 ## Example usage
 
@@ -38,8 +39,8 @@ resource "aws_main_route_table_association" "example" {
 
 The following arguments are supported:
 
-* `vpc_id` - (Required, Editable, String) The ID of the VPC the main route table should be associated with.
 * `route_table_id` - (Required, Editable, String) The ID of the route table to set as the new main route table for the target VPC.
+* `vpc_id` - (Required, Editable, String) The ID of the VPC the main route table should be associated with.
 
 ## Attribute reference
 

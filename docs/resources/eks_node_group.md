@@ -94,26 +94,32 @@ The following arguments are required:
 
 The following arguments are optional:
 
+* `ami_type` - (Optional, Forces new resource, String) The type of Amazon Machine Image (AMI) associated with the EKS node group.
 * `capacity_type` - (Optional, Forces new resource, String) The type of capacity associated with the EKS node group.
     * _Valid values:_ `ON_DEMAND`
-* `disk_size` - (Optional, Forces new resource, Integer) The disk size in GiB for worker nodes. Terraform will only perform drift detection if a configuration value is provided.
+* `disk_size` - (Optional, Forces new resource, Integer) The disk size in GiB for worker nodes.
+    Terraform will only perform drift detection if a configuration value is provided.
     * _Default value:_ `20`
-* `labels` - (Optional, Editable, Map of strings) Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS node group will not be managed.
-* `node_group_name` - (Optional, Forces new resource, String) The name of the EKS node group. If omitted, Terraform will assign a random, unique name.
+* `force_update_version` - (Optional, Editable, Boolean) Indicates whether to force a version update of the EKS node group.
+* `labels` - (Optional, Editable, Map of strings) Key-value map of Kubernetes labels.
+    Only labels that are applied with the EKS API are managed by this argument.
+    Other Kubernetes labels applied to the EKS node group will not be managed.
+* `launch_template` - (Optional, Editable, [Block](#launch_template)) The configuration block with launch template settings.
+* `node_group_name` - (Optional, Forces new resource, String) The name of the EKS node group.
+    If omitted, Terraform will assign a random, unique name.
     * _Constraints:_ Conflicts with `node_group_name_prefix`.
 * `node_group_name_prefix` - (Optional, Forces new resource, String) The prefix to use for generating a unique name.
     * _Constraints:_ Conflicts with `node_group_name`.
-* `remote_access` - (Optional, Forces new resource, [Block](#remote_access)) The configuration block with remote access settings.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the EKS node group. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
-* `taint` - (Optional, Editable, [Block](#taint)) The Kubernetes taints to apply to the nodes in the node group.
-    * _Constraints:_ Maximum of 50 taints per node group.
-* `update_config` - (Optional, Editable, [Block](#update_config)) A block of mutually exclusive arguments that control how many or what percent of nodes can be unavailable during a node group update. Use it to limit disruption while rolling out changes.
-* `version` - (Optional, Editable, String) The Kubernetes version for the EKS node group.
-* `ami_type` - (Optional, Forces new resource, String) The type of Amazon Machine Image (AMI) associated with the EKS node group.
-* `force_update_version` - (Optional, Editable, Boolean) Indicates whether to force a version update of the EKS node group.
-* `launch_template` - (Optional, Editable, [Block](#launch_template)) The configuration block with launch template settings.
 * `node_role_arn` - (Optional, Forces new resource, String) The Amazon Resource Name (ARN) of the IAM role that provides permissions for the EKS node group.
 * `release_version` - (Optional, Editable, String) The AMI version of the EKS node group.
+* `remote_access` - (Optional, Forces new resource, [Block](#remote_access)) The configuration block with remote access settings.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the EKS node group.
+    If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `taint` - (Optional, Editable, [Block](#taint)) The Kubernetes taints to apply to the nodes in the node group.
+    * _Constraints:_ Maximum of 50 taints per node group.
+* `update_config` - (Optional, Editable, [Block](#update_config)) A block of mutually exclusive arguments that control how many or what percent of nodes can be unavailable during a node group update.
+    Use it to limit disruption while rolling out changes.
+* `version` - (Optional, Editable, String) The Kubernetes version for the EKS node group.
 
 ### launch_template
 

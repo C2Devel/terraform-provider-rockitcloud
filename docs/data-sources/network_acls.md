@@ -64,9 +64,12 @@ data "aws_network_acls" "example" {
 
 ## Argument reference
 
+The following arguments are supported:
+
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-network-acls]
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resources.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resources.
 * `vpc_id` - (Optional, String) The ID of the VPC that you want to filter from.
 
 ### filter

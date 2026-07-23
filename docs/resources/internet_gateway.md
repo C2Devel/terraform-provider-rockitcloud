@@ -41,11 +41,13 @@ resource "aws_internet_gateway" "example" {
 
 The following arguments are supported:
 
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 * `vpc_id` - (Optional, Editable, String) The ID of the VPC to which the internet gateway will be attached.
   See the [aws_internet_gateway_attachment](internet_gateway_attachment.md) resource for another way to attach an internet gateway to a VPC.
 
--> **Note** It's recommended to explicitly specify an internet gateway as a dependency for the resources that require Internet access. For example:
+-> **Note** It's recommended to explicitly specify an internet gateway as a dependency for the resources that require Internet access.
+For example:
 
 ```terraform
 resource "aws_internet_gateway" "example" {

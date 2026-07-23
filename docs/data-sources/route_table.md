@@ -41,12 +41,13 @@ The arguments of this data source act as filters for querying route tables in th
 
 ~> **Note** The given filters must exactly match the resource whose data will be exported as attributes.
 
-The following arguments are optional:
+The following arguments are supported:
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-route-tables]
 * `subnet_id` - (Optional, String) The ID of the subnet which is associated with the route table (not exported if not passed as a parameter).
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resource.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resource.
 * `vpc_id` - (Optional, String) The ID of the VPC that owns the desired route table.
 
 ### filter

@@ -14,7 +14,8 @@ description: |-
 
 # Resource: aws_eks_cluster
 
-Manages an EKS cluster. For details about EKS clusters, see the [user documentation][eks-clusters].
+Manages an EKS cluster.
+For details about EKS clusters, see the [user documentation][eks-clusters].
 
 ## Example usage
 
@@ -171,22 +172,12 @@ The following arguments are optional:
 * `enabled_cluster_log_types` - (Optional, Editable, Set of strings) The list of the desired control plane logging to enable.
     * _Valid values:_ `api`, `audit`, `authenticator`, `controllerManager`, `scheduler`
 * `encryption_config` - (Optional, Editable, [Block](#encryption_config)) The configuration block for encryption for the cluster.
-* `kubernetes_network_config` - (Optional, Editable, [Block](#kubernetes_network_config)) Configuration block with Kubernetes network configuration for the cluster. If removed, Terraform will only perform drift detection if a configuration value is provided.
+* `kubernetes_network_config` - (Optional, Editable, [Block](#kubernetes_network_config)) Configuration block with Kubernetes network configuration for the cluster.
+    If removed, Terraform will only perform drift detection if a configuration value is provided.
 * `legacy_cluster_params` - (Optional, Editable, [Block](#legacy_cluster_params)) The parameters for fine-tuning the Kubernetes cluster.
 * `role_arn` - (Optional, Forces new resource, String) The ARN of the IAM role that provides permissions for the Kubernetes cluster.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the cluster. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
-
-### kubernetes_network_config
-
-The following arguments are optional:
-
-* `ip_family` - (Optional, Forces new resource, String) The IP family used to assign Kubernetes pod and service addresses.
-    * _Valid values:_ `ipv4`
-* `service_ipv4_cidr` - (Optional, Forces new resource, String) The CIDR block to assign Kubernetes service IP addresses from. If you don't specify a block, Kubernetes assigns addresses from the 10.96.0.0/12 CIDR block.
-    * _Constraints:_
-        * Must be within one of the following private IP address blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16.
-        * Must not overlap with any CIDR block assigned to the selected VPC.
-        * Must have a prefix length between /12 and /24 (inclusive).
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the cluster.
+    If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ### encryption_config
 
@@ -200,6 +191,19 @@ The following arguments are required:
 The following arguments are required:
 
 * `key_arn` - (Required, Editable, String) The ARN of the KMS key.
+
+### kubernetes_network_config
+
+The following arguments are optional:
+
+* `ip_family` - (Optional, Forces new resource, String) The IP family used to assign Kubernetes pod and service addresses.
+    * _Valid values:_ `ipv4`
+* `service_ipv4_cidr` - (Optional, Forces new resource, String) The CIDR block to assign Kubernetes service IP addresses from.
+    If you don't specify a block, Kubernetes assigns addresses from the 10.96.0.0/12 CIDR block.
+    * _Constraints:_
+        * Must be within one of the following private IP address blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16.
+        * Must not overlap with any CIDR block assigned to the selected VPC.
+        * Must have a prefix length between /12 and /24 (inclusive).
 
 ### legacy_cluster_params
 
@@ -243,7 +247,8 @@ The following arguments are optional:
 
 * `public_ip` - (Optional, Forces new resource, String) The public IP address at which the Ingress controller can be accessed.
 * `volume_iops` - (Optional, Forces new resource, Integer) The number of read/write operations per second for the Ingress controller volume.
-    ** _Constraints:_ Required only when `volume_type` is `io2`
+    * _Constraints:_ Required only when `volume_type` is `io2`
+
 #### master_config
 
 The following arguments are required:
@@ -257,7 +262,9 @@ The following arguments are optional:
 
 * `public_ip` - (Optional, Forces new resource, String) The public IP address at which the master node can be accessed.
 * `volume_iops` - (Optional, Forces new resource, Integer) The number of read/write operations per second for the master node volume.
-    * * _Constraints:_ Required only when `volume_type` is `io2`#### nlb_provider_config
+    * _Constraints:_ Required only when `volume_type` is `io2`
+
+#### nlb_provider_config
 
 The following arguments are required:
 
@@ -330,7 +337,7 @@ The `timeouts` block allows you to specify [timeouts] for certain actions:
 
 * `create` - (Default `30 minutes`) How long to wait for the EKS cluster to be created.
 * `update` - (Default `60 minutes`) How long to wait for the EKS cluster to be updated.
-Note that the `update` timeout is used separately for both `version` and `vpc_config` update timeouts.
+    Note that the `update` timeout is used separately for both `version` and `vpc_config` update timeouts.
 * `delete` - (Default `15 minutes`) How long to wait for the EKS cluster to be deleted.
 
 ## Import

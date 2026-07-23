@@ -13,13 +13,23 @@ description: |-
 
 # Resource: aws_default_route_table
 
-Manages the default route table of a VPC. This resource can manage the default route table of the default or a non-default VPC.
+Manages the default route table of a VPC.
+This resource can manage the default route table of the default or a non-default VPC.
 
-~> **Note** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `aws_default_route_table` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management. **Do not** use both `aws_default_route_table` to manage a default route table **and** `aws_main_route_table_association` with the same VPC due to possible route conflicts. See [aws_main_route_table_association](main_route_table_association.md) documentation for more details.
+~> **Note** This is an advanced resource with special caveats.
+Please read this document in its entirety before using this resource.
+The `aws_default_route_table` resource behaves differently from normal resources.
+Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
+**Do not** use both `aws_default_route_table` to manage a default route table **and** `aws_main_route_table_association` with the same VPC due to possible route conflicts.
+See [aws_main_route_table_association](main_route_table_association.md) documentation for more details.
 
-Every VPC has a default route table that can be managed but not destroyed. When Terraform first adopts a default route table, it **immediately removes all defined routes**. It then proceeds to create any routes specified in the configuration. This step is required so that only the routes specified in the configuration exist in the default route table.
+Every VPC has a default route table that can be managed but not destroyed.
+When Terraform first adopts a default route table, it **immediately removes all defined routes**.
+It then proceeds to create any routes specified in the configuration.
+This step is required so that only the routes specified in the configuration exist in the default route table.
 
-For more information, see the documentation on [route tables][route-tables]. For information about managing normal route tables in Terraform, see [`aws_route_table`](route_table.md).
+For more information, see the documentation on [route tables][route-tables].
+For information about managing normal route tables in Terraform, see [`aws_route_table`](route_table.md).
 
 ## Example usage
 
@@ -77,9 +87,13 @@ The following arguments are required:
 The following arguments are optional:
 
 * `propagating_vgws` - (Optional, Editable, List of strings) The list of virtual gateways for propagation.
-* `route` - (Optional, Editable, [Block](#route)) One or more route objects. This argument is processed in [attribute-as-blocks mode][attribute-as-blocks].
-It means that omitting this argument is interpreted as ignoring any existing routes. To remove all managed routes an empty list should be specified. See the [example above](#specific-example-removing-all-managed-routes-subsequently).
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `route` - (Optional, Editable, [Block](#route)) One or more route objects.
+    This argument is processed in [attribute-as-blocks mode][attribute-as-blocks].
+    It means that omitting this argument is interpreted as ignoring any existing routes.
+    To remove all managed routes an empty list should be specified.
+    See the [example above](#specific-example-removing-all-managed-routes-subsequently).
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ### route
 

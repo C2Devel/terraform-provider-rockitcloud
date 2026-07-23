@@ -34,7 +34,9 @@ In addition to all arguments above, the following attributes are exported:
 * `disk_size` - (Integer) The volume size in GiB for worker nodes.
 * `id` - (String) The EKS cluster name and EKS node group name separated by a colon (`:`).
 * `instance_types` - (List of strings) The set of instance types associated with the EKS node group.
-* `labels` - (Map of strings) Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS node group will not be managed.
+* `labels` - (Map of strings) Key-value map of Kubernetes labels.
+    Only labels that are applied with the EKS API are managed by this argument.
+    Other Kubernetes labels applied to the EKS node group will not be managed.
 * `remote_access` - (List of objects) A configuration block with remote access settings.
     * `ec2_ssh_key` - (String) The name of the key pair that provides access for SSH communication with the worker nodes in the EKS node group.
 * `resources` - (List of objects) A list of objects containing information about underlying resources.

@@ -12,7 +12,9 @@ description: |-
 
 Manages the default VPC.
 
-~> **Note** **This is an advanced resource** and has special caveats to be aware of when using it. Please read this document in its entirety before using this resource. The `aws_default_vpc` resource behaves differently from normal resources in that if a default VPC exists, Terraform does not _create_ this resource, but instead "adopts" it into management.
+~> **Note** **This is an advanced resource** and has special caveats to be aware of when using it.
+Please read this document in its entirety before using this resource.
+The `aws_default_vpc` resource behaves differently from normal resources in that if a default VPC exists, Terraform does not _create_ this resource, but instead "adopts" it into management.
 
 If no default VPC exists, Terraform creates a new default VPC, which leads to the implicit creation of other resources.
 By default, `terraform destroy` does not delete the default VPC but does remove the resource from Terraform state.
@@ -32,11 +34,14 @@ resource "aws_default_vpc" "default" {
 
 ## Argument reference
 
+The following arguments are supported:
+
 * `enable_dns_support` - (Optional, Editable, Boolean) A flag to enable or disable the DNS support in the VPC.
     * _Default value:_ `true`
 * `force_destroy` - (Optional, Editable, Boolean) Indicates whether the default VPC should be deleted during `terraform destroy`.
     * _Default value:_ `false`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 

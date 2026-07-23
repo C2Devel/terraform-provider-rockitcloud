@@ -24,7 +24,7 @@ resource "aws_network_interface_attachment" "test" {
 
 ## Argument reference
 
-The following arguments are required:
+The following arguments are supported:
 
 * `instance_id` - (Required, Forces new resource, String) The ID of the instance to attach.
 * `network_interface_id` - (Required, Forces new resource, String) The ID of the network interface to attach.

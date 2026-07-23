@@ -73,7 +73,8 @@ The following arguments are optional:
 * `egress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more egress rules (for outgoing traffic).
 * `ingress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more ingress rules (for incoming traffic).
 * `subnet_ids` - (Optional, Editable, List of strings) The list of subnet IDs to apply the ACL to.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ### egress and ingress
 
@@ -84,8 +85,11 @@ Both `egress` and `ingress` support the following keys:
 * `action` - (Required, Editable, String) The action to take.
     * _Valid values:_ `allow`, `deny`
 * `from_port` - (Required, Editable, Integer) The start of the port range.
-* `protocol` - (Required, Editable, String) The protocol to match. If using the `-1` (`all`) value, then you must specify a start and end numbers of `0`.
-* `rule_no` - (Required, Editable, Integer) The rule number. Used for ordering. Rules are processed in ascending order.
+* `protocol` - (Required, Editable, String) The protocol to match.
+    If using the `-1` (`all`) value, then you must specify a start and end numbers of `0`.
+* `rule_no` - (Required, Editable, Integer) The rule number.
+    Used for ordering.
+    Rules are processed in ascending order.
     * _Valid values:_ From 1 to 32766
 * `to_port` - (Required, Editable, Integer) The end of the port range.
 * `cidr_block` - (Optional, Editable, String) The CIDR block to match. This must be a valid network mask.

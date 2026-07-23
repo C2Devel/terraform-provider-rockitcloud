@@ -40,6 +40,8 @@ The arguments of this data source act as filters for querying available VPCs in 
 
 ~> **Note** The given filters must exactly match the resource whose data will be exported as attributes.
 
+The following arguments are supported:
+
 * `cidr_block` - (Optional, String) The CIDR block of the desired VPC.
 * `dhcp_options_id` - (Optional, String) The ID of the DHCP options set for the desired VPC.
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
@@ -47,7 +49,8 @@ The arguments of this data source act as filters for querying available VPCs in 
 * `id` - (Optional, String) The ID of the specific VPC to retrieve.
 * `state` - (Optional, String) The current state of the desired VPC.
     * _Valid values:_ `available`, `pending`
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resource.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resource.
 
 ### filter
 

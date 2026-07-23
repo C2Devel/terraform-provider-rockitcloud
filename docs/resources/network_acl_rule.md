@@ -53,7 +53,9 @@ The following arguments are required:
 * `protocol` - (Required, Forces new resource, String) The protocol. A value of `-1` means all protocols.
 * `rule_action` - (Required, Forces new resource, String) Indicates whether to allow or deny the traffic that matches the rule.
     * _Valid values:_ `allow`, `deny`
-* `rule_number` - (Required, Forces new resource, Integer) The rule number. Used for ordering. ACL rules are processed in ascending order.
+* `rule_number` - (Required, Forces new resource, Integer) The rule number.
+    Used for ordering.
+    ACL rules are processed in ascending order.
     * _Valid values:_ From 0 to 32766
 
 The following arguments are optional:
