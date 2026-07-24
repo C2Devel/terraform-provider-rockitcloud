@@ -14,7 +14,7 @@ This data source allows you to find a hosted zone ID given hosted zone name and 
 
 ## Example usage
 
-The following example shows how to get a hosted zone from its name and from this data how to create a record set.
+The following example shows how to get a hosted zone from its name and how to create a record set from this data.
 
 
 ```terraform
