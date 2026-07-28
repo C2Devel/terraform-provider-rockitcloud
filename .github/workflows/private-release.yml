@@ -5,6 +5,7 @@ on:
     
 jobs:
   private-release:
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
