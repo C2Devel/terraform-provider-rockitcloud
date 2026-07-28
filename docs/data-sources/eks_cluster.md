@@ -136,6 +136,9 @@ The `user_data_config` block has the following structure:
 The `vpc_config` block has the following structure:
 
 * `cluster_security_group_id` - The cluster security group that was created by the cloud for the cluster.
+* `endpoint_private_access` - (Boolean) Indicates whether the endpoint private access is enabled.
+* `endpoint_public_access` - (Boolean) Indicates whether the endpoint public access is enabled.
+* `public_access_cidrs` - (Set of strings) The list of CIDR blocks which can access the cluster endpoint.
 * `security_group_ids` - List of security group IDs.
 * `subnet_ids` - List of subnet IDs.
 * `vpc_id` - The VPC associated with your cluster.
@@ -146,4 +149,4 @@ The `vpc_config` block has the following structure:
 
 The following attributes are not currently supported:
 
-`enabled_cluster_log_types`, `endpoint`, `identity`, `role_arn`, `vpc_config.endpoint_private_access`, `vpc_config.endpoint_public_access`, `vpc_config.public_access_cidrs`.
+`enabled_cluster_log_types`, `encryption_config`, `endpoint`, `identity`, `role_arn`.

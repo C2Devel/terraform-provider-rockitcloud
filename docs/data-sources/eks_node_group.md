@@ -41,7 +41,7 @@ In addition to all arguments above, the following attributes are exported:
     * `ec2_ssh_key` - (String) The name of the key pair that provides access for SSH communication with the worker nodes in the EKS node group.
 * `resources` - (List of objects) A list of objects containing information about underlying resources.
     * `autoscaling_groups` - (List of objects) The list of objects containing information about autoscaling groups.
-        * `name` - (String) The name of the autoscaling group.
+        * `name` - (String) The name of the autoscaling group
 * `scaling_config` - ([Block](#scaling_config)) A configuration block with scaling settings.
 * `status` - (String) The status of the EKS node group.
     * _Valid values:_ `ACTIVE`, `CREATE_FAILED`, `CREATING`, `DEGRADED`, `DELETE_FAILED`, `DELETING`, `PENDING`, `UPDATING`

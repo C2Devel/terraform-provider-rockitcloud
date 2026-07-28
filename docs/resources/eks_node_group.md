@@ -37,7 +37,7 @@ resource "aws_eks_node_group" "example" {
 }
 ```
 
-### Specific example: Using ignore_changes to preserve external scaling
+### Specific example: using ignore_changes to preserve external scaling
 
 You can utilize the generic Terraform resource [lifecycle configuration block][lifecycle] with `ignore_changes` to create an EKS node group with an initial size of running instances, then ignore any changes to that count caused externally.
 
@@ -85,22 +85,23 @@ The following arguments are required:
 
 * `cluster_name` - (Required, Forces new resource, String) The name of the EKS cluster.
     * _Constraints:_
-        * From 1 to 100 characters.
-        * The value can contain only Latin letters, numbers, hyphens (`-`), and underscores (`_`).
-        * The value must start with a Latin letter or a number.
+        * From 1 to 100 characters
+        * The value can contain only Latin letters, numbers, hyphens (`-`), and underscores (`_`)
+        * The value must start with a Latin letter or a number
 * `instance_types` - (Required) List of instance types associated with the EKS node group.
 * `scaling_config` - (Required, [Block](#scaling_config)) The configuration block with scaling settings.
 * `subnet_ids` - (Required, Forces new resource, Set of strings) The IDs of EC2 subnets to associate with the EKS node group.
 
 The following arguments are optional:
 
-* `ami_type` - (Optional, Forces new resource, String) The type of Amazon Machine Image (AMI) associated with the EKS node group.
 * `capacity_type` - (Optional, Forces new resource, String) The type of capacity associated with the EKS node group.
     * _Valid values:_ `ON_DEMAND`
 * `disk_size` - (Optional, Forces new resource, Integer) The disk size in GiB for worker nodes.
     Terraform will only perform drift detection if a configuration value is provided.
     * _Default value:_ `20`
+    * _Constraints:_ Must be a multiple of `8`.
 * `force_update_version` - (Optional, Editable, Boolean) Indicates whether to force a version update of the EKS node group.
+    This argument is only used during updates and has no effect during resource creation.
 * `labels` - (Optional, Editable, Map of strings) Key-value map of Kubernetes labels.
     Only labels that are applied with the EKS API are managed by this argument.
     Other Kubernetes labels applied to the EKS node group will not be managed.
@@ -111,7 +112,6 @@ The following arguments are optional:
 * `node_group_name_prefix` - (Optional, Forces new resource, String) The prefix to use for generating a unique name.
     * _Constraints:_ Conflicts with `node_group_name`.
 * `node_role_arn` - (Optional, Forces new resource, String) The Amazon Resource Name (ARN) of the IAM role that provides permissions for the EKS node group.
-* `release_version` - (Optional, Editable, String) The AMI version of the EKS node group.
 * `remote_access` - (Optional, Forces new resource, [Block](#remote_access)) The configuration block with remote access settings.
 * `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the EKS node group.
     If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
@@ -123,10 +123,15 @@ The following arguments are optional:
 
 ### launch_template
 
+The following arguments are optional:
+
 * `id` - (Optional, Forces new resource, String) The ID of the launch template.
     * _Constraints:_ Conflicts with `name`.
 * `name` - (Optional, Forces new resource, String) The name of the launch template.
     * _Constraints:_ Conflicts with `id`.
+
+The following arguments are required:
+
 * `version` - (Required, String) The version number of the launch template.
     * _Constraints:_ From 1 to 255 characters.
 
@@ -143,10 +148,15 @@ The following arguments are optional:
 
 ### taint
 
+The following arguments are required:
+
 * `effect` - (Required, String) The effect of the taint.
     * _Valid values:_ `NO_EXECUTE`, `NO_SCHEDULE`, `PREFER_NO_SCHEDULE`
 * `key` - (Required, String) The key of the taint.
     * _Constraints:_ From 1 to 63 characters.
+
+The following arguments are optional:
+
 * `value` - (Optional, String) The value of the taint.
     * _Constraints:_ From 1 to 63 characters.
 
@@ -173,12 +183,20 @@ In addition to all arguments above, the following attributes are exported:
     * `version` - (String) The version number of the launch template.
 * `resources` - (List of objects) Information about underlying resources.
     * `autoscaling_groups` - (List of objects) Information about autoscaling groups.
-        * `name` - (String) The name of the autoscaling group.
+        * `name` - (String) The name of the autoscaling group
     * `remote_access_security_group_id` - (String) The ID of the security group for remote access.
 * `status` - (String) The status of the EKS node group.
     * _Valid values:_ `ACTIVE`, `CREATE_FAILED`, `CREATING`, `DEGRADED`, `DELETE_FAILED`, `DELETING`, `PENDING`, `UPDATING`.
 * `tags_all` - (Map of strings) Key-value pairs assigned to the EKS node group, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
 * `version` - (String) The Kubernetes version.
+
+### Unsupported attributes
+
+~> **Note** These attributes may be present in the `terraform.tfstate` file, but they have preset values and cannot be specified in configuration files.
+
+The following attributes are not currently supported:
+
+`ami_type`, `release_version`, `remote_access.source_security_group_ids`, `resources.remote_access_security_group_id`.
 
 ## Timeouts
 

@@ -19,7 +19,7 @@ For details about EKS clusters, see the [user documentation][eks-clusters].
 
 ## Example usage
 
-### EKS High-Availability Cluster
+### EKS high-availability cluster
 
 ~> **Note** By default, Terraform creates [high availability clusters][ha-clusters].
 
@@ -52,7 +52,7 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
-### EKS Cluster with High-Availability Disabled
+### EKS cluster with high-availability disabled
 
 ~> **Note** This example uses the same VPC and subnet as in the [EKS high-availability cluster example](#eks-high-availability-cluster).
 
@@ -76,9 +76,9 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
-### EKS Cluster with extra services
+### EKS cluster with extra services
 
-~> **Note** This example uses the same VPC and subnet as in the [EKS High-Availability Cluster example](#eks-high-availability-cluster).
+~> **Note** This example uses the same VPC and subnet as in the [EKS high-availability cluster example](#eks-high-availability-cluster).
 
 ```terraform
 resource "aws_eks_cluster" "example" {
@@ -161,17 +161,14 @@ The following arguments are required:
 
 * `name` - (Required, Forces new resource, String) The name of the cluster.
     * _Constraints:_
-        * From 1 to 100 characters.
-        * The value can contain only Latin letters, numbers, hyphens (`-`), and underscores (`_`).
-        * The value must start with a Latin letter or a number.
+        * From 1 to 100 characters
+        * The value can contain only Latin letters, numbers, hyphens (`-`), and underscores (`_`)
+        * The value must start with a Latin letter or a number
 * `version` - (Required, Forces new resource, String) The Kubernetes server version for the cluster.
 * `vpc_config` - (Required, Forces new resource, [Block](#vpc_config)) Configuration block for the VPC associated with your cluster.
 
 The following arguments are optional:
 
-* `enabled_cluster_log_types` - (Optional, Editable, Set of strings) The list of the desired control plane logging to enable.
-    * _Valid values:_ `api`, `audit`, `authenticator`, `controllerManager`, `scheduler`
-* `encryption_config` - (Optional, Editable, [Block](#encryption_config)) The configuration block for encryption for the cluster.
 * `kubernetes_network_config` - (Optional, Editable, [Block](#kubernetes_network_config)) Configuration block with Kubernetes network configuration for the cluster.
     If removed, Terraform will only perform drift detection if a configuration value is provided.
 * `legacy_cluster_params` - (Optional, Editable, [Block](#legacy_cluster_params)) The parameters for fine-tuning the Kubernetes cluster.
@@ -179,37 +176,23 @@ The following arguments are optional:
 * `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the cluster.
     If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
-### encryption_config
-
-The following arguments are required:
-
-* `provider` - (Required, Editable, [Block](#provider)) The configuration block for the encryption provider.
-* `resources` - (Required, Editable, Set of strings) The resources to encrypt.
-
-#### provider
-
-The following arguments are required:
-
-* `key_arn` - (Required, Editable, String) The ARN of the KMS key.
-
 ### kubernetes_network_config
-
-The following arguments are optional:
 
 * `ip_family` - (Optional, Forces new resource, String) The IP family used to assign Kubernetes pod and service addresses.
     * _Valid values:_ `ipv4`
 * `service_ipv4_cidr` - (Optional, Forces new resource, String) The CIDR block to assign Kubernetes service IP addresses from.
     If you don't specify a block, Kubernetes assigns addresses from the 10.96.0.0/12 CIDR block.
     * _Constraints:_
-        * Must be within one of the following private IP address blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16.
-        * Must not overlap with any CIDR block assigned to the selected VPC.
-        * Must have a prefix length between /12 and /24 (inclusive).
+        * Must be within one of the following private IP address blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16
+        * Must not overlap with any CIDR block assigned to the selected VPC
+        * Must have a prefix length between /12 and /24 (inclusive)
 
 ### legacy_cluster_params
 
 The `legacy_cluster_params` block has the following structure:
 
 * `docker_registry_config` – (Optional, Editable, [Block](#docker_registry_config)) The configuration of the Docker Registry.
+    * _Constraints:_ Cannot be used when `master_config.high_availability` is `true`.
 * `ebs_provider_config` – (Optional, Editable, [Block](#ebs_provider_config)) The configuration of the EBS Provider.
 * `ingress_config` – (Optional, Editable, [Block](#ingress_config)) The configuration of the Ingress controller.
 * `master_config` - (Optional, Editable, [Block](#master_config)) The configuration of the master node of the cluster.
@@ -230,8 +213,6 @@ The following arguments are optional:
     * _Constraints:_ Required only when `volume_type` is `io2`
 
 #### ebs_provider_config
-
-The following arguments are required:
 
 * `ebs_user` - (Required, Forces new resource, String) The EBS Provider user name.
 
@@ -266,13 +247,9 @@ The following arguments are optional:
 
 #### nlb_provider_config
 
-The following arguments are required:
-
 * `nlb_user` - (Required, Forces new resource, String) The NLB Provider user name.
 
 #### placement_config
-
-The following arguments are optional:
 
 * `affinity` - (Optional, Forces new resource, String) The affinity setting for an instance on a dedicated host.
     * _Default value:_ `default`
@@ -284,8 +261,6 @@ The following arguments are optional:
     * _Valid values:_ `default`, `host`
 
 #### user_data_config
-
-The following arguments are required:
 
 * `user_data` - (Required, Forces new resource, String) User data.
 * `user_data_content_type` - (Required, Forces new resource, String) The type of `user_data`.
@@ -299,9 +274,6 @@ The following arguments are required:
 
 The following arguments are optional:
 
-* `endpoint_private_access` - (Optional, Editable, Boolean) Indicates whether the endpoint private access is enabled.
-* `endpoint_public_access` - (Optional, Editable, Boolean) Indicates whether the endpoint public access is enabled.
-* `public_access_cidrs` - (Optional, Editable, Set of strings) The list of CIDR blocks which can access the cluster endpoint.
 * `security_group_ids` - (Optional, Forces new resource, Set of strings) The list of security group IDs.
 
 ## Attribute reference
@@ -329,7 +301,7 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`endpoint`, `identity`.
+`enabled_cluster_log_types`, `encryption_config`, `endpoint`, `identity`, `vpc_config.endpoint_private_access`, `vpc_config.endpoint_public_access`, `vpc_config.public_access_cidrs`.
 
 ## Timeouts
 
