@@ -51,7 +51,7 @@ resource "aws_route53_record" "dev-ns" {
 
 ### Private zone
 
-~> **Note** Private zones require one VPC association at all times.
+~> **Note** Each private zone must be associated with a single VPC.
 
 ```terraform
 resource "aws_route53_zone" "private" {
@@ -73,10 +73,10 @@ The following arguments are optional:
 
 * `comment` - (Optional, Editable, String) A comment for the hosted zone.
     * _Default value:_ `Managed by Terraform`
-* `force_destroy` - (Optional, Editable, Boolean) Indicates whether to destroy all records (possibly managed outside of Terraform) in the zone when destroying it.
+* `force_destroy` - (Optional, Editable, Boolean) Indicates whether to destroy all records (possibly managed outside of Terraform) in the zone when the zone is destroyed.
 * `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the hosted zone.
   If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
-* `vpc` - (Optional, Editable, [Block](#vpc)) Configuration block(s) specifying VPC to associate with a private hosted zone.
+* `vpc` - (Optional, Editable, [Block](#vpc)) Configuration block(s) specifying a VPC to associate with a private hosted zone.
 
 ### vpc
 
@@ -98,7 +98,7 @@ In addition to all arguments above, the following attributes are exported:
 * `name_servers` - (List of strings) A list of name servers in associated (or default) delegation set.
   Find more about delegation sets in [AWS docs][aws-delegation-sets].
 * `tags_all` - (Map of strings) Key-value pairs assigned to the hosted zone, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
-* `zone_id` - (String) The hosted zone ID.
+* `zone_id` - (String) The ID of the hosted zone.
   This can be referenced by zone records.
 
 ### Unsupported attributes

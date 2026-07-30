@@ -42,12 +42,12 @@ If you use the `name` field to search for a private hosted zone, you need to set
 
 * `name` - (Optional, String) The name of the desired hosted zone.
 * `private_zone` - (Optional, Boolean) Indicates whether the hosted zone is private.
-  Used with the `name` field to get a private hosted zone.
     * _Default value:_ `false`
+    * _Constraints:_ Used with the `name` field to get a private hosted zone.
 * `resource_record_set_count` - (Optional, Integer) The number of record sets in the hosted zone.
-  Used with `name` field.
-* `vpc_id` - (Optional, String) Used with `name` field to get a private hosted zone associated with the `vpc_id`.
-  In this case, `private_zone` is not required.
+    * _Constraints:_ Used with the `name` field.
+* `vpc_id` - (Optional, String) Used with the `name` field to get a private hosted zone associated with the `vpc_id`.
+    * _Constraints:_ If `vpc_id` is specified, `private_zone` is not required.
 * `zone_id` - (Optional, String) The ID of the desired hosted zone.
 
 ## Attribute reference
@@ -59,7 +59,7 @@ This data source will complete the data by populating any fields that are not in
 In addition to all arguments above, the following attributes are exported:
 
 * `arn` - (String) The Amazon Resource Name (ARN) of the hosted zone.
-* `caller_reference` - (String) Caller Reference of the hosted zone.
+* `caller_reference` - (String) The caller reference of the hosted zone.
 * `comment` - (String) The comment field of the hosted zone.
 * `name_servers` - (List of strings) The list of DNS name servers for the hosted zone.
 * `tags` - (Map of strings) Key-value pairs assigned to the hosted zone.

@@ -86,7 +86,8 @@ The following arguments are optional:
 
 * `egress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more egress rules (for outgoing traffic).
 * `ingress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more ingress rules (for incoming traffic).
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+   If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 * `vpc_id` - (Optional, Forces new resource, String) The ID of the VPC.
 
 ~> **Note** Changing the `vpc_id` argument value will _not_ restore any default security group rules that were modified, added, or removed.

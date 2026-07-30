@@ -71,6 +71,49 @@ The following arguments are optional:
 
     !> **Warning** This configuration is not recommended for most environments.
 
+* `failover_routing_policy` - (Optional, Editable, [Block](#failover_routing_policy)) A failover routing policy block.
+    * _Constraints:_ Conflicts with `geolocation_routing_policy`, `latency_routing_policy`, `weighted_routing_policy` and `multivalue_answer_routing_policy` arguments.
+* `geolocation_routing_policy` - (Optional, Editable, [Block](#geolocation_routing_policy)) A geolocation routing policy block.
+    * _Constraints:_ Conflicts with `failover_routing_policy`, `latency_routing_policy`, `weighted_routing_policy` and `multivalue_answer_routing_policy` arguments.
+* `latency_routing_policy` - (Optional, Editable, [Block](#latency_routing_policy)) A latency routing policy block.
+    * _Constraints:_ Conflicts with `failover_routing_policy`, `geolocation_routing_policy`, `weighted_routing_policy` and `multivalue_answer_routing_policy` arguments.
+* `multivalue_answer_routing_policy` - (Optional, Editable, Boolean) Indicates whether to route traffic to all the records in the group, allowing multiple responses to a DNS query.
+    * _Default value:_ `false`
+    * _Constraints:_ Conflicts with `failover_routing_policy`, `geolocation_routing_policy`, `latency_routing_policy` and `weighted_routing_policy` arguments.
+* `set_identifier` - (Optional, Editable, String) Unique identifier to differentiate records with the same `name` and `type`.
+* `weighted_routing_policy` - (Optional, Editable, [Block](#weighted_routing_policy)) A weighted routing policy block.
+    * _Constraints:_ Conflicts with `failover_routing_policy`, `geolocation_routing_policy`, `latency_routing_policy` and `multivalue_answer_routing_policy` arguments.
+
+### failover_routing_policy
+
+The following arguments are required:
+
+* `type` - (Required, Editable, String) The failover type.
+    * _Valid values:_ `PRIMARY` or `SECONDARY`.
+
+### geolocation_routing_policy
+
+The following arguments are optional:
+
+* `continent` - (Optional, Editable, String) A two-letter continent code.
+    * _Example:_ `EU`, `NA`, `AS`
+* `country` - (Optional, Editable, String) A two-letter country code.
+    * _Example:_ `US`, `DE`, `RU`
+* `subdivision` - (Optional, Editable, String) A subdivision code.
+    * _Example:_ `US-CA`, `US-NY`
+
+### latency_routing_policy
+
+The following arguments are required:
+
+* `region` - (Required, Editable, String) The AWS region for the latency-based routing.
+
+### weighted_routing_policy
+
+The following arguments are required:
+
+* `weight` - (Required, Editable, Integer) The weight for the weighted routing policy.
+
 ## Attribute reference
 
 ### Supported attributes
@@ -85,7 +128,7 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`alias`, `failover_routing_policy`, `geolocation_routing_policy`, `health_check_id`, `latency_routing_policy`, `multivalue_answer_routing_policy`, `set_identifier`, `weighted_routing_policy`.
+`alias`, `health_check_id`.
 
 ## Timeouts
 
