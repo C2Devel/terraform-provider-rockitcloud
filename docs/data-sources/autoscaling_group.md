@@ -32,18 +32,21 @@ In addition to all arguments above, the following attributes are exported:
 * `availability_zones` - (Set of strings) One or more availability zones for the group.
 * `default_cooldown` - (Integer) The amount of time in seconds after a scaling activity completes before another scaling activity can start.
 * `desired_capacity` - (Integer) The desired size of the group.
-* `health_check_grace_period` - (Integer) The amount of time in seconds, after which Auto Scaling group can perform a health check on its instances.
+* `health_check_grace_period` - (Integer) The amount of time in seconds, after which the Auto Scaling group can perform a health check on its instances.
 * `id` - (String) The name of the Auto Scaling group.
 * `max_size` - (Integer) The maximum size of the group.
 * `min_size` - (Integer) The minimum size of the group.
 * `name` - (String) The name of the Auto Scaling group.
-* `new_instances_protected_from_scale_in` - (Boolean) Indicates whether new instances are protected from deletion when Auto Scaling group is scaled in.
+* `new_instances_protected_from_scale_in` - (Boolean) Indicates whether new instances are protected from deletion when the Auto Scaling group is scaled in.
 * `status` - (String) The status of the Auto Scaling group when it is deleted.
 * `vpc_zone_identifier` - (String) The IDs of the subnets in which instances will be created.
-* `launch_template` - (List of objects) The launch template for the group.
-    * `id` - (String) The ID of the launch template.
-    * `name` - (String) The name of the launch template.
-    * `version` - (String) The version of the launch template.
+* `launch_template` - (List of [Block](#launch_template)) The launch template for the group.
+
+### launch_template
+
+* `id` - (String) The ID of the launch template.
+* `name` - (String) The name of the launch template.
+* `version` - (String) The version of the launch template.
 
 ### Unsupported attributes
 

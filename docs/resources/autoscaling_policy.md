@@ -10,8 +10,8 @@ description: |-
 
 Manages an Auto Scaling policy.
 
-~> **Note** You may want to omit `desired_capacity` attribute from attached `aws_autoscaling_group`
-when using Auto Scaling policies. It's good practice to pick either manual or dynamic (policy-based) scaling.
+~> **Note** You may want to omit the `desired_capacity` attribute from the attached `aws_autoscaling_group` when using Auto Scaling policies.
+It's good practice to pick either manual or dynamic (policy-based) scaling.
 
 ## Example usage
 
@@ -38,7 +38,7 @@ The following arguments are optional:
     * _Valid values:_ `ChangeInCapacity`, `ExactCapacity`, `PercentChangeInCapacity`
 * `cooldown` - (Optional, Editable, Integer) The amount of time in seconds, after a scaling activity completes and before the next scaling activity can start.
 * `min_adjustment_magnitude` - (Optional, Editable, Integer) The minimum value to scale by when `adjustment_type` is set to `PercentChangeInCapacity`.
-    * _Constraints:_ At least 1.
+    * _Constraints:_ At least 1
 * `policy_type` - (Optional, Editable, String) The policy type.
     * _Default value:_ `SimpleScaling`
     * _Valid values:_ `SimpleScaling`
@@ -71,7 +71,7 @@ Timeouts usage for Auto Scaling policies is not currently supported.
 
 ## Import
 
-Auto Scaling policy can be imported using the `autoscaling_group_name` and `name` separated by `/`.
+The Auto Scaling policy can be imported using the `autoscaling_group_name` and `name` separated by `/`.
 
 ```
 $ terraform import aws_autoscaling_policy.test-policy asg-name/policy-name
