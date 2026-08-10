@@ -12,7 +12,7 @@ description: |-
 
 Provides a list of Elastic IPs.
 
-## Example Usage
+## Example usage
 
 The following shows all Elastic IPs with the specific tag value.
 
@@ -32,16 +32,25 @@ output "public_ips" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-* `filter` - (Optional) One or more name/value pairs to use as filters.
+The arguments of this data source act as filters for querying the available Elastic IPs.
+
+* `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-addresses]
-* `tags` - (Optional) Map of tags, each pair of which must exactly match a pair on the desired Elastic IPs.
+* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired Elastic IPs.
 
-## Attribute Reference
+### filter
+
+* `name` - (Required, String) The name of the filter.
+    * _Constraints:_ Filter names are case-sensitive
+* `values` - (Required, List of strings) One or more filter values.
+    * _Constraints:_ Filter values are case-sensitive
+
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `allocation_ids` - List of all allocation IDs.
-* `id` - The region.
-* `public_ips` - List of all Elastic IP addresses.
+* `allocation_ids` - (List of strings) List of all allocation IDs.
+* `id` - (String) The region.
+* `public_ips` - (List of strings) List of all Elastic IP addresses.

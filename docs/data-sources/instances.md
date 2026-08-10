@@ -7,9 +7,9 @@ description: |-
 ---
 
 [describe-instances]: https://docs.k2.cloud/en/api/ec2/actions/instances/DescribeInstances.html
-[outputs]: https://www.terraform.io/docs/configuration/outputs.html
-[remote state]: https://www.terraform.io/docs/state/remote.html
-[terraform_remote_state]: https://www.terraform.io/docs/providers/terraform/d/remote_state.html
+[outputs]: https://developer.hashicorp.com/terraform/language/values/outputs
+[remote state]: https://developer.hashicorp.com/terraform/language/state/remote
+[terraform_remote_state]: https://developer.hashicorp.com/terraform/language/state/remote-state-data
 
 # Data Source: aws_instances
 
@@ -22,7 +22,7 @@ and **use [`terraform_remote_state`][terraform_remote_state] data source instead
 instances (e.g., managed via autoscaling group), as the output may change at any time
 and you would need to re-run `apply` every time as an instance comes up or dies.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "aws_instances" "selected" {
@@ -44,19 +44,26 @@ resource "aws_eip" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-* `filter` - (Optional) One or more name/value pairs to use as filters.
+* `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-instances]
-* `instance_state_names` - (Optional) List of instance states that should be applicable to the desired instances.
+* `instance_state_names` - (Optional, Set of strings) List of instance states that should be applicable to the desired instances.
     * _Valid values:_ `pending`, `running`, `shutting-down`, `stopped`, `stopping`, `terminated`
-* `instance_tags` - (Optional) Map of tags, each pair of which must exactly match a pair on desired instances.
+* `instance_tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired resources.
 
-## Attribute Reference
+### filter
+
+* `name` - (Required, String) The name of the filter.
+    * _Constraints:_ Filter names are case-sensitive
+* `values` - (Required, List of strings) One or more filter values.
+    * _Constraints:_ Filter values are case-sensitive
+
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The region.
-* `ids` - IDs of instances found through the filter.
-* `private_ips` - Private IP addresses of instances found through the filter.
-* `public_ips` - Public IP addresses of instances found through the filter.
+* `id` - (String) The region.
+* `ids` - (List of strings) IDs of instances found through the filter.
+* `private_ips` - (List of strings) Private IP addresses of instances found through the filter.
+* `public_ips` - (List of strings) Public IP addresses of instances found through the filter.

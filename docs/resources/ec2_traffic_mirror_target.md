@@ -13,7 +13,7 @@ description: |-
 
 Manages a traffic mirror target. For details about traffic mirroring, see the [user documentation][traffic-mirroring].
 
-## Example Usage
+## Example usage
 
 To create a basic traffic mirror target, use:
 
@@ -47,22 +47,32 @@ resource "aws_ec2_traffic_mirror_target" "eni" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `network_interface_id` - (Required, Forces new resource) The network interface ID that is associated with the target.
-* `description` - (Optional, Forces new resource) Description of the traffic mirror target.
-* `tags` - (Optional, Editable) Map of tags to assign to the traffic mirror target. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+* `network_interface_id` - (Required, Forces new resource, String) The ID of the network interface that is associated with the target.
+* `description` - (Optional, Forces new resource, String) The description of the traffic mirror target.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror target. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
-## Attribute Reference
+## Attribute reference
+
+### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - The Amazon Resource Name (ARN) of the traffic mirror target.
-* `id` - The ID of the traffic mirror target.
-* `owner_id` - The ID of the project that owns the traffic mirror target.
-* `tags_all` - Map of tags assigned to the traffic mirror target, including those inherited from the provider [`default_tags` configuration block][default-tags].
+* `arn` - (String) The Amazon Resource Name (ARN) of the traffic mirror target.
+* `id` - (String) The ID of the traffic mirror target.
+* `owner_id` - (String) The ID of the project that owns the traffic mirror target.
+* `tags_all` - (Map of strings) Key-value pairs assigned to the traffic mirror target, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
+
+### Unsupported attributes
+
+~> **Note** This attribute may be present in the `terraform.tfstate` file, but it has a preset value and cannot be specified in configuration files.
+
+The following attribute is not currently supported:
+
+`network_load_balancer_arn`.
 
 ## Import
 

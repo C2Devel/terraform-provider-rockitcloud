@@ -12,7 +12,7 @@ description: |-
 
 Provides information about a dedicated host.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "aws_ec2_host" "selected" {
@@ -36,25 +36,35 @@ data "aws_ec2_host" "selected" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `filter` - (Optional) One or more name/value pairs to use as filters.
+* `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-hosts]
-* `host_id` - (Optional) The ID of the dedicated host.
+* `host_id` - (Optional, String) The ID of the dedicated host.
+* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired resource.
 
-## Attribute Reference
+### filter
+
+* `name` - (Required, String) The name of the filter.
+    * _Constraints:_ Filter names are case-sensitive
+* `values` - (Required, List of strings) One or more filter values.
+    * _Constraints:_ Filter values are case-sensitive
+
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - The Amazon Resource Name (ARN) of the dedicated host.
-* `auto_placement` - Indicates whether automated placement is on or off.
-* `availability_zone` - Availability zone of the dedicated host.
-* `cores` - Number of cores on the dedicated host.
-* `host_recovery` - Indicates whether host recovery is enabled or disabled for the dedicated host.
-* `id` - The ID of the dedicated host.
-* `instance_family` - Instance family supported by the dedicated host.
-* `owner_id` - The ID of the project that owns the dedicated host.
-* `sockets` - Number of sockets on the dedicated host.
-* `total_vcpus` - Total number of vCPUs on the dedicated host.
+* `arn` - (String) The Amazon Resource Name (ARN) of the dedicated host.
+* `auto_placement` - (String) Indicates whether automated placement is on or off.
+* `availability_zone` - (String) The availability zone of the dedicated host.
+* `cores` - (Integer) The number of cores on the dedicated host.
+* `host_recovery` - (String) Indicates whether host recovery is enabled or disabled for the dedicated host.
+* `id` - (String) The ID of the dedicated host.
+* `instance_family` - (List of strings) The instance family supported by the dedicated host.
+* `instance_type` - (String) The instance type supported by the dedicated host.
+* `owner_id` - (String) The ID of the project that owns the dedicated host.
+* `sockets` - (Integer) The number of sockets on the dedicated host.
+* `tags` - (Map of strings) Key-value pairs assigned to the resource.
+* `total_vcpus` - (Integer) The total number of vCPUs on the dedicated host.

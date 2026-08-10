@@ -66,8 +66,8 @@ nav:
     - Data Sources:
       - aws_ami: data-sources/ami.md
       - aws_ami_ids: data-sources/ami_ids.md
-      - aws_availability_zones: data-sources/availability_zones.md
       - aws_availability_zone: data-sources/availability_zone.md
+      - aws_availability_zones: data-sources/availability_zones.md
       - aws_ec2_host: data-sources/ec2_host.md
       - aws_eip: data-sources/eip.md
       - aws_eips: data-sources/eips.md

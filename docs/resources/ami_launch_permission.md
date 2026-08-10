@@ -10,9 +10,9 @@ description: |-
 
 Adds a launch permission to an Amazon Machine Image (AMI).
 
-## Example Usage
+## Example usage
 
-### AWS Account ID
+### AWS account ID
 
 ```terraform
 resource "aws_ami_launch_permission" "example" {
@@ -21,7 +21,7 @@ resource "aws_ami_launch_permission" "example" {
 }
 ```
 
-### Public Access
+### Public access
 
 ```terraform
 # The cloud currently restricts adding public access permissions to images.
@@ -32,22 +32,23 @@ resource "aws_ami_launch_permission" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `image_id` - (Required) The ID of the image.
-* `account_id` - (Optional) The ID of the project (`project@customer`) for the launch permission.
-* `group` - (Optional) The name of the group for the launch permission.
+* `image_id` - (Required, Forces new resource, String) The ID of the image.
+* `account_id` - (Optional, Forces new resource, String) The ID of the project for the launch permission.
+    * _Example:_ `project@customer`
+* `group` - (Optional, Forces new resource, String) The name of the group for the launch permission.
     * _Valid values:_ `all`
 
-## Attribute Reference
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The ID of the launch permission.
+* `id` - (String) The ID of the launch permission.
 
 ### Unsupported attributes
 
@@ -59,8 +60,14 @@ The following attributes are not currently supported:
 
 ## Timeouts
 
-Timeouts usage for launch permissions is not currently supported.
+Timeouts usage for launch permission is not currently supported.
 
 ## Import
 
-Import of the image launch permissions is not currently supported.
+Launch permissions can be imported using the permission ID and image ID separated by a slash (`/`), for example:
+
+```
+$ terraform import aws_ami_launch_permission.example 123456789012/cmi-12345678
+```
+
+~> **Note** The import format is `[ACCOUNT-ID|GROUP-NAME|ORGANIZATION-ARN|ORGANIZATIONAL-UNIT-ARN]/IMAGE-ID`.

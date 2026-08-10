@@ -13,9 +13,9 @@ description: |-
 Provides a list of availability zone names matching the specified criteria.
 To get information about a specific availability zone, use the [`aws_availability_zone`](availability_zone.md) (singular) data source.
 
-## Example Usage
+## Example usage
 
-### By State
+### By state
 
 ```terraform
 data "aws_availability_zones" "available" {
@@ -24,24 +24,36 @@ data "aws_availability_zones" "available" {
 ```
 
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
-* `filter` - (Optional) One or more name/value pairs to use as filters.
+* `all_availability_zones` - (Optional, Boolean) Indicates whether to include availability zones that are not currently available.
+* `exclude_names` - (Optional, Set of strings) List of availability zone names to exclude from the results.
+* `exclude_zone_ids` - (Optional, Set of strings) List of availability zone IDs to exclude from the results.
+* `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-azs]
-* `state` - (Optional) Filters the list of availability zones based on their
+* `state` - (Optional, String) Filters the list of availability zones based on their
 current state.
-    * _Valid values:_ `available`, `information`, `impaired`, `unavailable`
+    * _Valid values:_ `available`, `impaired`, `information`, `unavailable`
 
-## Attribute Reference
+### filter
+
+* `name` - (Required, String) The name of the filter.
+    * _Constraints:_ Filter names are case-sensitive
+* `values` - (Required, List of strings) One or more filter values.
+    * _Constraints:_ Filter values are case-sensitive
+
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The region of the availability zones.
-* `names` - List of the availability zone names available to the account.
+* `id` - (String) The region of the availability zones.
+* `group_names` - (Set of strings) The list of group names of the availability zones.
+* `names` - (List of strings) The list of availability zone names available to the account.
+* `zone_ids` - (List of strings) The list of availability zone IDs available to the account.
 
 ### Unsupported attributes
 
@@ -49,4 +61,4 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`all_availability_zones`, `exclude_names`, `exclude_zone_ids`, `group_names`, `zone_ids`.
+_(None)_
