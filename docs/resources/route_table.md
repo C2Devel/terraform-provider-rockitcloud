@@ -88,9 +88,13 @@ The following arguments are required:
 The following arguments are optional:
 
 * `propagating_vgws` - (Optional, List of strings) The list of virtual gateways for propagation.
-* `route` - (Optional, [Block](#route)) One or more route objects. This argument is processed in [attribute-as-blocks mode][attribute-as-blocks].
-It means that omitting this argument is interpreted as ignoring any existing routes. To remove all managed routes an empty list should be specified. See the [example above](#specific-example-removing-all-managed-routes-subsequently).
-* `tags` - (Optional, Map of strings) Key-value pairs to assign to the resource. If a provider [default_tags configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+* `route` - (Optional, [Block](#route)) One or more route objects.
+    This argument is processed in [attribute-as-blocks mode][attribute-as-blocks].
+    It means that omitting this argument is interpreted as ignoring any existing routes.
+    To remove all managed routes an empty list should be specified.
+    See the [example above](#specific-example-removing-all-managed-routes-subsequently).
+* `tags` - (Optional, Map of strings) Key-value pairs to assign to the resource.
+    If a provider [default_tags configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
 
 ### route
 

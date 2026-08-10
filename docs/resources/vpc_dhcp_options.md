@@ -46,16 +46,19 @@ resource "aws_vpc_dhcp_options" "foo" {
 
 The following arguments are supported:
 
-* `domain_name` - (Optional, Forces new resource, String) The suffix domain name to use by default when resolving non-fully qualified domain names. In other words, this is what ends up being the `search` value in the `/etc/resolv.conf` file.
-* `domain_name_servers` - (Optional, Forces new resource, List of strings) The list of IP addresses of domain name servers or `AmazonProvidedDNS`. We recommend using only one of the two parameters.
-    * _List size:_ From 0 to 4 elements
-* `ntp_servers` - (Optional, Forces new resource, List of strings) The list of NTP servers to configure.
+* `domain_name` - (Optional, Forces new resource, String) The suffix domain name to use by default when resolving non-fully qualified domain names.
+    In other words, this is what ends up being the `search` value in the `/etc/resolv.conf` file.
+* `domain_name_servers` - (Optional, Forces new resource, List of strings) The list of IP addresses of domain name servers or `AmazonProvidedDNS`.
+    We recommend using only one of the two parameters.
     * _List size:_ From 0 to 4 elements
 * `netbios_name_servers` - (Optional, Forces new resource, List of strings) The list of NetBIOS name servers.
     * _List size:_ From 0 to 4 elements
 * `netbios_node_type` - (Optional, Forces new resource, String) The NetBIOS node type. For more information about these node types, see [RFC 2132][rfc-2132].
     * _Valid values:_ `1`, `2`, `4`, `8`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `ntp_servers` - (Optional, Forces new resource, List of strings) The list of NTP servers to configure.
+    * _List size:_ From 0 to 4 elements
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Notes
 

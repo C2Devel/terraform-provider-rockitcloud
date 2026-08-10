@@ -10,7 +10,7 @@ description: |-
 
 Provides information about an authentication token to communicate with an EKS cluster.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "aws_eks_cluster_auth" "example" {
@@ -18,11 +18,11 @@ data "aws_eks_cluster_auth" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-* `name` - (Required) The name of the cluster.
+* `name` - (Required, String) The name of the cluster.
 
-## Attribute Reference
+## Attribute reference
 
-* `id` - The name of the cluster.
-* `token` - The token to use to authenticate with the cluster.
+* `id` - (String) The name of the cluster.
+* `token` - (String) The authentication token for the EKS cluster.

@@ -3,18 +3,18 @@ subcategory: "EKS (Elastic Kubernetes)"
 layout: "aws"
 page_title: "aws_eks_cluster_kubeconfig"
 description: |-
-  Provides the kubeconfig for an EKS cluster.
+  Returns the kubeconfig for EKS cluster.
 ---
 
 # Data Source: aws_eks_cluster_kubeconfig
 
-Returns the kubeconfig string for an existing EKS cluster. The kubeconfig can
-be used to configure `kubectl` or other Kubernetes tooling.
+Returns the kubeconfig string for an existing EKS cluster.
+The kubeconfig can be used to configure `kubectl` or other Kubernetes tooling.
 
-~> **NOTE:** The `kubeconfig` attribute is marked as sensitive because it
+!> **Warning** The `kubeconfig` attribute is marked as sensitive because it
 contains credentials for the cluster.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "aws_eks_cluster_kubeconfig" "example" {
@@ -22,11 +22,11 @@ data "aws_eks_cluster_kubeconfig" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-* `name` - (Required) The name of the cluster.
+* `name` - (Required, String) The name of the cluster.
 
-## Attribute Reference
+## Attribute reference
 
-* `id` - The name of the cluster.
-* `kubeconfig` - The kubeconfig for the cluster. This attribute is sensitive.
+* `id` - (String) The name of the cluster.
+* `kubeconfig` - (String) The kubeconfig for the cluster.

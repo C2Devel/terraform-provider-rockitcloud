@@ -56,7 +56,7 @@ The arguments of this data source act as filters for querying the available subn
 
 ~> **Note** The given filters must exactly match the resource whose data will be exported as attributes.
 
-The following arguments are optional:
+The following arguments are supported:
 
 * `availability_zone` - (Optional, String) The availability zone where the subnet must reside.
 * `default_for_az` - (Optional, Boolean) Indicates whether the desired subnet must be the default subnet for its associated availability zone.
@@ -66,7 +66,8 @@ The following arguments are optional:
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-subnets]
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resource.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resource.
 * `vpc_id` - (Optional, String) The ID of the VPC that owns the desired subnet.
 
 ### filter
@@ -84,7 +85,8 @@ In addition to all arguments above, the following attribute is exported:
 
 * `available_ip_address_count` - (Integer) The number of remaining available IPv4 addresses in the subnet.
 * `cidr_block` - (String) The IPv4 CIDR block for the subnet.
-* `map_public_ip_on_launch` - (Boolean) Indicates whether public IP addresses will be associated with instances created in this subnet. Addresses are associated only if there are available allocated Elastic IP addresses.
+* `map_public_ip_on_launch` - (Boolean) Indicates whether public IP addresses will be associated with instances created in this subnet.
+    Addresses are associated only if there are available allocated Elastic IP addresses.
 * `state` - (String) The state that the desired subnet must have.
 
 ### Unsupported attributes

@@ -15,7 +15,9 @@ Manages the default DHCP options set.
 
 Each cloud region comes with a default set of DHCP options.
 
-~> **Note** **This is an advanced resource**, and has special caveats to be aware of when using it. Please read this document in its entirety before using this resource. The `aws_default_vpc_dhcp_options` behaves differently from normal resources, in that Terraform does not _create_ this resource, but instead "adopts" it into management.
+~> **Note** **This is an advanced resource**, and has special caveats to be aware of when using it.
+Please read this document in its entirety before using this resource.
+The `aws_default_vpc_dhcp_options` behaves differently from normal resources, in that Terraform does not _create_ this resource, but instead "adopts" it into management.
 
 ## Example usage
 
@@ -39,7 +41,8 @@ The following optional arguments are supported:
 * `netbios_name_servers` - (Optional, Forces new resource, List of strings) The list of NetBIOS name servers.
 * `netbios_node_type` - (Optional, Forces new resource, List of strings) The NetBIOS node type. For more information about these node types, see [RFC 2132][rfc-2132].
     * _Valid values:_ `1`, `2`, `4`, `8`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Removing `aws_default_vpc_dhcp_options` from your configuration
 

@@ -43,6 +43,8 @@ data "aws_vpc_dhcp_options" "example" {
 
 ## Argument reference
 
+The following arguments are supported:
+
 * `dhcp_options_id` - (Optional, String) The ID of the DHCP options set.
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-dhcp-options]
@@ -65,7 +67,8 @@ In addition to all arguments above, the following attributes are exported:
 * `domain_name_servers` - (List of strings) The list of name servers set.
 * `id` - (String) The ID of the DHCP options set.
 * `netbios_name_servers` - (List of strings) The List of NetBIOS name servers.
-* `netbios_node_type` - (String) The NetBIOS node type (1, 2, 4, or 8). For more information about these node types, see [RFC 2132][rfc-2132].
+* `netbios_node_type` - (String) The NetBIOS node type (1, 2, 4, or 8).
+    For more information about these node types, see [RFC 2132][rfc-2132].
 * `ntp_servers` - (List of strings) The list of NTP servers.
 * `tags` - (Map of strings) Key-value pairs assigned to the resource.
 

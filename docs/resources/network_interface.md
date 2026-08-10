@@ -48,7 +48,8 @@ The following arguments are optional:
 * `security_groups` - (Optional, Editable, List of strings) The list of security group IDs to assign to the ENI.
 * `source_dest_check` - (Optional, Editable, Boolean) Indicates whether the network interface must perform source/destination checking.
     * _Default value:_ `true`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ~> **Note** The `private_ip_list` and `private_ips` cannot be used together in one resource. Choose the preferred one before using.
 

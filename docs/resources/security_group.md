@@ -9,6 +9,7 @@ description: |-
 [attribute-as-blocks]: https://www.terraform.io/docs/configuration/attr-as-blocks.html
 [default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
 [protocol-number]: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+[create_before_destroy]: https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#create_before_destroy
 [security-groups]: https://docs.k2.cloud/en/services/security/securitygroups.html
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
 
@@ -57,7 +58,10 @@ resource "aws_security_group" "allow_tls" {
 }
 ```
 
-~> **Note on egress rules** By default, the cloud creates an `ALLOW ALL` egress rule when creating a new security group inside a VPC. When creating a new security group inside a VPC, **Terraform will remove this default rule**, and require you specifically re-create it if you desire that rule. We feel this leads to fewer surprises in terms of controlling your egress rules. If you desire this rule to be in place, you can use this `egress` block:
+~> **Note on egress rules** By default, the cloud creates an `ALLOW ALL` egress rule when creating a new security group inside a VPC.
+When creating a new security group inside a VPC, **Terraform will remove this default rule**, and require you specifically re-create it if you desire that rule.
+We feel this leads to fewer surprises in terms of controlling your egress rules.
+If you desire this rule to be in place, you can use this `egress` block:
 
 ```terraform
 resource "aws_security_group" "example" {
@@ -74,9 +78,15 @@ resource "aws_security_group" "example" {
 
 ### Change of name or name-prefix value
 
-Security group's name cannot be edited after the resource is created. In fact, the `name` and `name-prefix` arguments force the creation of a new security group resource when they change value. In that case, Terraform first deletes the existing security group resource and then it creates a new one. If the existing security group is associated to a network interface resource, the deletion cannot complete. The reason is that network interface resources cannot be left with no security group attached and the new one is not yet available at that point.
+Security group's name cannot be edited after the resource is created.
+In fact, the `name` and `name-prefix` arguments force the creation of a new security group resource when they change value.
+In that case, Terraform first deletes the existing security group resource and then it creates a new one.
+If the existing security group is associated to a network interface resource, the deletion cannot complete.
+The reason is that network interface resources cannot be left with no security group attached and the new one is not yet available at that point.
 
-It is required to invert the default behavior of Terraform. That is, first the new security group resource must be created, then associated to possible network interface resources and finally the old security group can be detached and deleted. To force this behavior, you must set the [create_before_destroy](https://www.terraform.io/language/meta-arguments/lifecycle#create_before_destroy) property:
+It is required to invert the default behavior of Terraform.
+That is, first the new security group resource must be created, then associated to possible network interface resources and finally the old security group can be detached and deleted.
+To force this behavior, you must set the [create_before_destroy] property:
 
 ```terraform
 resource "aws_security_group" "sg_with_changeable_name" {
@@ -104,7 +114,8 @@ The following arguments are supported:
     * _Constraints:_ Conflicts with `name`.
 * `revoke_rules_on_delete` - (Optional, Editable, Boolean) The argument that instructs Terraform to revoke all the security groups attached ingress and egress rules before deleting the rule itself.
     * _Default value:_ `false`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 * `vpc_id` - (Optional, Forces new resource, String) The ID of the VPC.
 
 ~> **Note** The `name` and `name_prefix` arguments cannot be specified within one configuration due to incompatibility.

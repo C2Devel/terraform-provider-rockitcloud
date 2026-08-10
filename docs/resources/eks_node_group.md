@@ -6,9 +6,9 @@ description: |-
   Manages an EKS node group.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [eks-node-groups]: https://docs.k2.cloud/en/services/kubernetes/eks_cluster.html#id7
-[lifecycle]: https://www.terraform.io/docs/configuration/meta-arguments/lifecycle.html
+[lifecycle]: https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
 
 # Resource: aws_eks_node_group
@@ -16,7 +16,7 @@ description: |-
 Manages an EKS node group, which can provision and optionally update an autoscaling group of Kubernetes worker nodes compatible with EKS.
 For details about EKS node groups, see the [user documentation][eks-node-groups].
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "aws_eks_node_group" "example" {
@@ -37,7 +37,7 @@ resource "aws_eks_node_group" "example" {
 }
 ```
 
-### Ignoring Changes to Desired Size
+### Specific example: using ignore_changes to preserve external scaling
 
 You can utilize the generic Terraform resource [lifecycle configuration block][lifecycle] with `ignore_changes` to create an EKS node group with an initial size of running instances, then ignore any changes to that count caused externally.
 
@@ -59,7 +59,7 @@ resource "aws_eks_node_group" "example" {
 }
 ```
 
-### Example Subnets for EKS Node Group
+### Specific example: creating subnets for a node group
 
 ```terraform
 data "aws_availability_zones" "available" {
@@ -79,77 +79,116 @@ resource "aws_subnet" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are required:
 
-* `cluster_name` - (Required) Name of the EKS cluster.
-    * _Value length:_ From 1 to 100 symbols
+* `cluster_name` - (Required, Forces new resource, String) The name of the EKS cluster.
     * _Constraints:_
+        * From 1 to 100 characters
         * The value can contain only Latin letters, numbers, hyphens (`-`), and underscores (`_`)
         * The value must start with a Latin letter or a number
 * `instance_types` - (Required) List of instance types associated with the EKS node group.
-* `scaling_config` - (Required) Configuration block with scaling settings. Detailed below.
-* `subnet_ids` - (Required) IDs of EC2 subnets to associate with the EKS node group.
+* `scaling_config` - (Required, [Block](#scaling_config)) The configuration block with scaling settings.
+* `subnet_ids` - (Required, Forces new resource, Set of strings) The IDs of EC2 subnets to associate with the EKS node group.
 
 The following arguments are optional:
 
-* `capacity_type` - (Optional) Type of capacity associated with the EKS node group.  Terraform will only perform drift detection if a configuration value is provided.
+* `capacity_type` - (Optional, Forces new resource, String) The type of capacity associated with the EKS node group.
     * _Valid values:_ `ON_DEMAND`
-* `disk_size` - (Optional) Disk size in GiB for worker nodes. Terraform will only perform drift detection if a configuration value is provided.
+* `disk_size` - (Optional, Forces new resource, Integer) The disk size in GiB for worker nodes.
+    Terraform will only perform drift detection if a configuration value is provided.
     * _Default value:_ `20`
-* `labels` - (Optional) Key-value map of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS node group will not be managed.
-* `node_group_name` - (Optional) Name of the EKS node group. If omitted, Terraform will assign a random, unique name. Conflicts with `node_group_name_prefix`.
-* `node_group_name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `node_group_name`.
-* `remote_access` - (Optional) Configuration block with remote access settings. Detailed below.
-* `tags` - (Optional) Map of tags to assign to the node group. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
-* `taint` - (Optional) The Kubernetes taints to be applied to the nodes in the node group. Maximum of 50 taints per node group. Detailed below.
-* `update_config` - (Optional) A block of mutually exclusive arguments that control how many or what percent of nodes can be unavailable during a node group update. Use it to limit disruption while rolling out changes.
+    * _Constraints:_ Must be a multiple of `8`.
+* `force_update_version` - (Optional, Editable, Boolean) Indicates whether to force a version update of the EKS node group.
+    This argument is only used during updates and has no effect during resource creation.
+* `labels` - (Optional, Editable, Map of strings) Key-value map of Kubernetes labels.
+    Only labels that are applied with the EKS API are managed by this argument.
+    Other Kubernetes labels applied to the EKS node group will not be managed.
+* `launch_template` - (Optional, Editable, [Block](#launch_template)) The configuration block with launch template settings.
+* `node_group_name` - (Optional, Forces new resource, String) The name of the EKS node group.
+    If omitted, Terraform will assign a random, unique name.
+    * _Constraints:_ Conflicts with `node_group_name_prefix`.
+* `node_group_name_prefix` - (Optional, Forces new resource, String) The prefix to use for generating a unique name.
+    * _Constraints:_ Conflicts with `node_group_name`.
+* `node_role_arn` - (Optional, Forces new resource, String) The Amazon Resource Name (ARN) of the IAM role that provides permissions for the EKS node group.
+* `remote_access` - (Optional, Forces new resource, [Block](#remote_access)) The configuration block with remote access settings.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the EKS node group.
+    If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `taint` - (Optional, Editable, [Block](#taint)) The Kubernetes taints to apply to the nodes in the node group.
+    * _Constraints:_ Maximum of 50 taints per node group.
+* `update_config` - (Optional, Editable, [Block](#update_config)) A block of mutually exclusive arguments that control how many or what percent of nodes can be unavailable during a node group update.
+    Use it to limit disruption while rolling out changes.
+* `version` - (Optional, Editable, String) The Kubernetes version for the EKS node group.
+
+### launch_template
+
+The following arguments are optional:
+
+* `id` - (Optional, Forces new resource, String) The ID of the launch template.
+    * _Constraints:_ Conflicts with `name`.
+* `name` - (Optional, Forces new resource, String) The name of the launch template.
+    * _Constraints:_ Conflicts with `id`.
+
+The following arguments are required:
+
+* `version` - (Required, String) The version number of the launch template.
+    * _Constraints:_ From 1 to 255 characters.
 
 ### remote_access
 
-* `ec2_ssh_key` - (Optional) EC2 key pair name that provides access for SSH communication with the worker nodes in the EKS node group.
+* `ec2_ssh_key` - (Optional, Forces new resource, String) The EC2 key pair name that provides access for SSH communication with the worker nodes in the EKS node group.
+* `source_security_group_ids` - (Optional, Forces new resource, Set of strings) The IDs of the security groups to allow SSH access from the worker nodes.
 
 ### scaling_config
 
-* `desired_size` - (Required) Desired number of worker nodes.
-* `max_size` - (Required) Maximum number of worker nodes.
-* `min_size` - (Required) Minimum number of worker nodes.
+* `desired_size` - (Required, Integer) The desired number of worker nodes.
+* `max_size` - (Required, Integer) The maximum number of worker nodes.
+* `min_size` - (Required, Integer) The minimum number of worker nodes.
 
 ### taint
 
-* `effect` - (Required) The effect of the taint.
-    * _Valid values:_ `NO_SCHEDULE`, `NO_EXECUTE`, `PREFER_NO_SCHEDULE`
-* `key` - (Required) The key of the taint.
-    * _Value length:_ From 1 to 63 symbols
-* `value` - (Optional) The value of the taint.
-    * _Value length:_ From 1 to 63 symbols
+The following arguments are required:
+
+* `effect` - (Required, String) The effect of the taint.
+    * _Valid values:_ `NO_EXECUTE`, `NO_SCHEDULE`, `PREFER_NO_SCHEDULE`
+* `key` - (Required, String) The key of the taint.
+    * _Constraints:_ From 1 to 63 characters.
+
+The following arguments are optional:
+
+* `value` - (Optional, String) The value of the taint.
+    * _Constraints:_ From 1 to 63 characters.
 
 ### update_config
 
 The following arguments are mutually exclusive.
 
-* `max_unavailable` - (Optional) Desired max number of unavailable worker nodes during node group update.
-* `max_unavailable_percentage` - (Optional) Desired max percentage of unavailable worker nodes during node group update.
+* `max_unavailable` - (Optional, Integer) The desired maximum number of unavailable worker nodes during node group update.
+    * _Constraints:_ From 1 to 100.
+* `max_unavailable_percentage` - (Optional, Integer) The desired maximum percentage of unavailable worker nodes during node group update.
+    * _Constraints:_ From 1 to 100.
 
-## Attribute Reference
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - EKS node group ID.
-* `id` - EKS cluster name and EKS node group name separated by a colon (`:`).
-* `launch_template` - Configuration block with launch template settings.
-    * `id` - EC2 launch template ID.
-    * `name` - Name of the EC2 launch template.
-    * `version` - EC2 launch template version number.
-* `resources` - List of objects containing information about underlying resources.
-    * `autoscaling_groups` - List of objects containing information about autoscaling groups.
-        * `name` - Name of the autoscaling group.
-* `tags_all` - Map of tags assigned to the node group, including those inherited from the provider [`default_tags` configuration block][default-tags].
-* `status` - Status of the EKS node group. One of `CREATING`, `ACTIVE`, `PENDING`, `UPDATING`, `DELETING`, `CREATE_FAILED`, `DELETE_FAILED`, `DEGRADED`.
-* `version` - Kubernetes version.
+* `arn` - (String) The Amazon Resource Name (ARN) of the EKS node group.
+* `id` - (String) The EKS cluster name and EKS node group name separated by a colon (`:`).
+* `launch_template` - (List of objects) The launch template configuration.
+    * `id` - (String) The ID of the launch template.
+    * `name` - (String) The name of the launch template.
+    * `version` - (String) The version number of the launch template.
+* `resources` - (List of objects) Information about underlying resources.
+    * `autoscaling_groups` - (List of objects) Information about autoscaling groups.
+        * `name` - (String) The name of the autoscaling group
+    * `remote_access_security_group_id` - (String) The ID of the security group for remote access.
+* `status` - (String) The status of the EKS node group.
+    * _Valid values:_ `ACTIVE`, `CREATE_FAILED`, `CREATING`, `DEGRADED`, `DELETE_FAILED`, `DELETING`, `PENDING`, `UPDATING`.
+* `tags_all` - (Map of strings) Key-value pairs assigned to the EKS node group, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
+* `version` - (String) The Kubernetes version.
 
 ### Unsupported attributes
 
@@ -157,7 +196,7 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`ami_type`, `force_update_version`, `node_role_arn`, `release_version`, `remote_access.source_security_group_ids`, `resources.remote_access_security_group_id`.
+`ami_type`, `release_version`, `remote_access.source_security_group_ids`, `resources.remote_access_security_group_id`.
 
 ## Timeouts
 
@@ -171,7 +210,7 @@ The `timeouts` block allows you to specify [timeouts] for certain actions:
 
 ## Import
 
-EKS node groups can be imported using the `cluster_name` and `node_group_name` separated by a colon (`:`), e.g.,
+EKS node groups can be imported using the `cluster_name` and `node_group_name` separated by a colon (`:`), for example:
 
 ```
 $ terraform import aws_eks_node_group.my_node_group my_cluster:my_node_group

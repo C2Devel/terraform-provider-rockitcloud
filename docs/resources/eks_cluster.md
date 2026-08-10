@@ -6,7 +6,7 @@ description: |-
   Manages an EKS cluster.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://developer.hashicorp.com/terraform/plugin/framework/resources/default-tags
 [eks-clusters]: https://docs.k2.cloud/en/services/kubernetes/eks_cluster.html
 [ha-clusters]: https://docs.k2.cloud/en/services/kubernetes/overview.html#ha-control-plane
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
@@ -14,14 +14,14 @@ description: |-
 
 # Resource: aws_eks_cluster
 
-Manages an EKS cluster. For details about EKS clusters, see the [user documentation][eks-clusters].
+Manages an EKS cluster.
+For details about EKS clusters, see the [user documentation][eks-clusters].
 
-## Example Usage
+## Example usage
 
-### EKS High-Availability Cluster
+### EKS high-availability cluster
 
-->  **Note**
-By default, Terraform creates [high availability clusters][ha-clusters].
+~> **Note** By default, Terraform creates [high availability clusters][ha-clusters].
 
 ```terraform
 resource "aws_vpc" "example" {
@@ -52,10 +52,9 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
-### EKS Cluster with High-Availability Disabled
+### EKS cluster with high-availability disabled
 
-~> **Note**
-This example uses the same VPC and subnet as in the [EKS high-availability cluster example](#eks-high-availability-cluster).
+~> **Note** This example uses the same VPC and subnet as in the [EKS high-availability cluster example](#eks-high-availability-cluster).
 
 ```terraform
 resource "aws_eks_cluster" "example" {
@@ -77,10 +76,9 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
-### EKS Cluster with extra services
+### EKS cluster with extra services
 
-~> **Note**
-This example uses the same VPC and subnet as in the [EKS High-Availability Cluster example](#eks-high-availability-cluster).
+~> **Note** This example uses the same VPC and subnet as in the [EKS high-availability cluster example](#eks-high-availability-cluster).
 
 ```terraform
 resource "aws_eks_cluster" "example" {
@@ -157,145 +155,145 @@ terraform output -raw kubeconfig > ~/.kube/config
 kubectl get nodes
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are required:
 
-* `name` - (Required) The name of the cluster.
-    * _Value length:_ From 1 to 100 symbols
+* `name` - (Required, Forces new resource, String) The name of the cluster.
     * _Constraints:_
+        * From 1 to 100 characters
         * The value can contain only Latin letters, numbers, hyphens (`-`), and underscores (`_`)
         * The value must start with a Latin letter or a number
-* `version` - (Required) The Kubernetes server version for the cluster.
-* `vpc_config` - (Required) Configuration block for the VPC associated with your cluster.
-  The structure of this block is [described below](#vpc_config).
+* `version` - (Required, Forces new resource, String) The Kubernetes server version for the cluster.
+* `vpc_config` - (Required, Forces new resource, [Block](#vpc_config)) Configuration block for the VPC associated with your cluster.
 
 The following arguments are optional:
 
-* `kubernetes_network_config` - (Optional) Configuration block with kubernetes network configuration for the cluster. Detailed below. If removed, Terraform will only perform drift detection if a configuration value is provided.
-* `legacy_cluster_params` - (Optional) The parameters for fine-tuning the Kubernetes cluster.
-  The structure of this block is [described below](#legacy_cluster_params).
-* `tags` - (Optional) Map of tags to assign to the cluster. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+* `kubernetes_network_config` - (Optional, Editable, [Block](#kubernetes_network_config)) Configuration block with Kubernetes network configuration for the cluster.
+    If removed, Terraform will only perform drift detection if a configuration value is provided.
+* `legacy_cluster_params` - (Optional, Editable, [Block](#legacy_cluster_params)) The parameters for fine-tuning the Kubernetes cluster.
+* `role_arn` - (Optional, Forces new resource, String) The ARN of the IAM role that provides permissions for the Kubernetes cluster.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the cluster.
+    If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ### kubernetes_network_config
 
-The following arguments are supported in the `kubernetes_network_config` configuration block:
-
-* `ip_family` - (Optional) The IP family used to assign Kubernetes pod and service addresses.
+* `ip_family` - (Optional, Forces new resource, String) The IP family used to assign Kubernetes pod and service addresses.
     * _Valid values:_ `ipv4`
-* `service_ipv4_cidr` - (Optional) The CIDR block to assign Kubernetes service IP addresses from. If you don't specify a block, Kubernetes assigns addresses from 10.96.0.0/12 CIDR block.
-The block must meet the following requirements:
-    * Within one of the following private IP address blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16.
-    * Doesn't overlap with any CIDR block assigned to the VPC that you selected for VPC.
-    * Between /24 and /12.
+* `service_ipv4_cidr` - (Optional, Forces new resource, String) The CIDR block to assign Kubernetes service IP addresses from.
+    If you don't specify a block, Kubernetes assigns addresses from the 10.96.0.0/12 CIDR block.
+    * _Constraints:_
+        * Must be within one of the following private IP address blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16
+        * Must not overlap with any CIDR block assigned to the selected VPC
+        * Must have a prefix length between /12 and /24 (inclusive)
 
 ### legacy_cluster_params
 
 The `legacy_cluster_params` block has the following structure:
 
-* `docker_registry_config` – (Optional) The configuration of the Docker Registry.
-  The structure of this block is [described below](#docker_registry_config).
-* `ebs_provider_config` – (Optional) The configuration of the EBS Provider.
-  The structure of this block is [described below](#ebs_provider_config).
-* `ingress_config` – (Optional) The configuration of the Ingress controller.
-  The structure of this block is [described below](#ingress_config).
-* `master_config` - (Optional) The configuration of the master node of the cluster.
-  The structure of this block is [described below](#master_config).
-* `nlb_provider_config` – (Optional) The configuration of the NLB Provider.
-  The structure of this block is [described below](#nlb_provider_config).
-* `placement_config` - (Optional) The placement of the cluster.
-  The structure of this block is [described below](#placement_config).
-* `user_data_config` - (Optional) The configuration of the cluster user data.
-  The structure of this block is [described below](#user_data_config).
-
+* `docker_registry_config` – (Optional, Editable, [Block](#docker_registry_config)) The configuration of the Docker Registry.
+    * _Constraints:_ Cannot be used when `master_config.high_availability` is `true`.
+* `ebs_provider_config` – (Optional, Editable, [Block](#ebs_provider_config)) The configuration of the EBS Provider.
+* `ingress_config` – (Optional, Editable, [Block](#ingress_config)) The configuration of the Ingress controller.
+* `master_config` - (Optional, Editable, [Block](#master_config)) The configuration of the master node of the cluster.
+* `nlb_provider_config` – (Optional, Editable, [Block](#nlb_provider_config)) The configuration of the NLB Provider.
+* `placement_config` - (Optional, Editable, [Block](#placement_config)) The placement of the cluster.
+* `user_data_config` - (Optional, Editable, [Block](#user_data_config)) The configuration of the cluster user data.
 
 #### docker_registry_config
 
-The `docker_registry_config` block has the following structure:
+The following arguments are required:
 
-* `volume_size` - (Required) The size of the Docker Registry volume in GiB.
-* `volume_type` - (Required) The type of the Docker Registry volume.
-* `volume_iops` - (Optional) The number of read/write operations per second for the Docker Registry volume.
-    * _Constraints_: Required only when `volume_type` is `io2`
+* `volume_size` - (Required, Forces new resource, Integer) The size of the Docker Registry volume in GiB.
+* `volume_type` - (Required, Forces new resource, String) The type of the Docker Registry volume.
+
+The following arguments are optional:
+
+* `volume_iops` - (Optional, Forces new resource, Integer) The number of read/write operations per second for the Docker Registry volume.
+    * _Constraints:_ Required only when `volume_type` is `io2`
 
 #### ebs_provider_config
 
-The `ebs_provider_config` block has the following structure:
-
-* `ebs_user` - (Required) The EBS Provider user name.
+* `ebs_user` - (Required, Forces new resource, String) The EBS Provider user name.
 
 #### ingress_config
 
-The `ingress_config` block has the following structure:
+The following arguments are required:
 
-* `instance_type` - (Required) The instance type of the Ingress controller.
-* `volume_size` - (Required) The size of the Ingress controller volume in GiB.
-* `volume_type` - (Required) The type of the Ingress controller volume.
-* `public_ip` - (Optional) The public IP address at which the Ingress controller can be accessed.
-* `volume_iops` - (Optional) The number of read/write operations per second for the Ingress controller volume.
-    * _Constraints_: Required only when `volume_type` is `io2`
+* `instance_type` - (Required, Forces new resource, String) The instance type of the Ingress controller.
+* `volume_size` - (Required, Forces new resource, Integer) The size of the Ingress controller volume in GiB.
+* `volume_type` - (Required, Forces new resource, String) The type of the Ingress controller volume.
+
+The following arguments are optional:
+
+* `public_ip` - (Optional, Forces new resource, String) The public IP address at which the Ingress controller can be accessed.
+* `volume_iops` - (Optional, Forces new resource, Integer) The number of read/write operations per second for the Ingress controller volume.
+    * _Constraints:_ Required only when `volume_type` is `io2`
 
 #### master_config
 
-The `master_config` block has the following structure:
+The following arguments are required:
 
-* `high_availability` - (Required) Indicates whether to deploy a high-availability cluster.
-* `instance_type` - (Required) The instance type of the master node.
-* `volume_size` - (Required) The size of the master node volume in GiB.
-* `volume_type` - (Required) The type of the master node volume.
-* `public_ip` - (Optional) The public IP address at which the master node can be accessed.
-* `volume_iops` - (Optional) The number of read/write operations per second for the master node volume.
-    * _Constraints_: Required only when `volume_type` is `io2`
+* `high_availability` - (Required, Forces new resource, Boolean) Indicates whether to deploy a high-availability cluster.
+* `instance_type` - (Required, Forces new resource, String) The instance type of the master node.
+* `volume_size` - (Required, Forces new resource, Integer) The size of the master node volume in GiB.
+* `volume_type` - (Required, Forces new resource, String) The type of the master node volume.
+
+The following arguments are optional:
+
+* `public_ip` - (Optional, Forces new resource, String) The public IP address at which the master node can be accessed.
+* `volume_iops` - (Optional, Forces new resource, Integer) The number of read/write operations per second for the master node volume.
+    * _Constraints:_ Required only when `volume_type` is `io2`
 
 #### nlb_provider_config
 
-The `nlb_provider_config` block has the following structure:
-
-* `nlb_user` - (Required) The NLB Provider user name.
-
-### vpc_config
-
-* `subnet_ids` - (Required) List of subnet IDs.
-* `security_group_ids` - (Optional) List of security group IDs.
+* `nlb_user` - (Required, Forces new resource, String) The NLB Provider user name.
 
 #### placement_config
 
-The `placement_config` block has the following structure:
-
-* `affinity` - (Optional) The affinity setting for an instance on a dedicated host.
+* `affinity` - (Optional, Forces new resource, String) The affinity setting for an instance on a dedicated host.
+    * _Default value:_ `default`
+    * _Valid values:_ `default`, `host`
     * _Constraints:_ The parameter could be set to `host` only if `tenancy` is `host`
-    * _Valid values:_ `default`, `host`
+* `host_id` - (Optional, Editable, String) The ID of the dedicated host for the instance.
+* `tenancy` - (Optional, Forces new resource, String) The tenancy of the instance (if the instance is running in a VPC).
     * _Default value:_ `default`
-* `host_id` - (Optional) The ID of the dedicated host for the instance.
-* `tenancy` - (Optional) The tenancy of the instance (if the instance is running in a VPC).
     * _Valid values:_ `default`, `host`
-    * _Default value:_ `default`
 
 #### user_data_config
 
-The `user_data_config` block has the following structure:
+* `user_data` - (Required, Forces new resource, String) User data.
+* `user_data_content_type` - (Required, Forces new resource, String) The type of `user_data`.
+    * _Valid values:_ `cloud-config`, `x-shellscript`
 
-* `user_data` - (Required) User data.
-* `user_data_content_type` - (Required) The type of `user_data`.
-    * _Valid values:_ `cloud-config`,  `x-shellscript`
+### vpc_config
 
-## Attribute Reference
+The following arguments are required:
+
+* `subnet_ids` - (Required, Forces new resource, Set of strings) The list of subnet IDs.
+
+The following arguments are optional:
+
+* `security_group_ids` - (Optional, Forces new resource, Set of strings) The list of security group IDs.
+
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `arn` - Cluster ID.
-* `certificate_authority` - Nested attribute containing `certificate-authority-data` for your cluster.
-    * `data` - The base64 encoded certificate data required to communicate with your cluster. Add this to the `certificate-authority-data` section of the `kubeconfig` file for your cluster.
-* `created_at` - The Unix epoch time stamp in seconds for when the cluster was created.
-* `id` - The name of the cluster.
-* `platform_version` - The platform version for the cluster.
-* `status` - The status of the EKS cluster. One of `CLAIMED`, `CREATING`, `DELETED`, `DELETING`, `ERROR`, `MODIFYING`, `PENDING`, `PROVISIONING`, `READY`, `REPAIRING`.
-* `tags_all` - Map of tags assigned to the cluster, including those inherited from the provider [`default_tags` configuration block][default-tags].
-* `vpc_config` -  Nested list containing VPC configuration for the cluster.
-    * `cluster_security_group_id` - The cluster security group that was created by the cloud for the cluster.
-    * `vpc_id` - The VPC associated with your cluster.
+* `arn` - (String) The ARN of the cluster.
+* `certificate_authority` - (List) Nested attribute containing `certificate-authority-data` for your cluster.
+    * `data` - (String) The base64 encoded certificate data required to communicate with your cluster.
+* `created_at` - (String) The Unix epoch time stamp in seconds for when the cluster was created.
+* `id` - (String) The name of the cluster.
+* `platform_version` - (String) The platform version for the cluster.
+* `status` - (String) The status of the EKS cluster.
+    * _Valid values:_ `CLAIMED`, `CREATING`, `DELETED`, `DELETING`, `ERROR`, `MODIFYING`, `PENDING`, `PROVISIONING`, `READY`, `REPAIRING`
+* `tags_all` - (Map of strings) Key-value pairs assigned to the cluster, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
+* `vpc_config` - (List) Nested list containing VPC configuration for the cluster.
+    * `cluster_security_group_id` - (String) The cluster security group that was created for the cluster.
+    * `vpc_id` - (String) The VPC associated with your cluster.
 
 ### Unsupported attributes
 
@@ -303,7 +301,7 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`enabled_cluster_log_types`, `encryption_config`, `endpoint`, `identity`, `role_arn`, `vpc_config.endpoint_private_access`, `vpc_config.endpoint_public_access`, `vpc_config.public_access_cidrs`.
+`enabled_cluster_log_types`, `encryption_config`, `endpoint`, `identity`, `vpc_config.endpoint_private_access`, `vpc_config.endpoint_public_access`, `vpc_config.public_access_cidrs`.
 
 ## Timeouts
 
@@ -311,12 +309,12 @@ The `timeouts` block allows you to specify [timeouts] for certain actions:
 
 * `create` - (Default `30 minutes`) How long to wait for the EKS cluster to be created.
 * `update` - (Default `60 minutes`) How long to wait for the EKS cluster to be updated.
-Note that the `update` timeout is used separately for both `version` and `vpc_config` update timeouts.
+    Note that the `update` timeout is used separately for both `version` and `vpc_config` update timeouts.
 * `delete` - (Default `15 minutes`) How long to wait for the EKS cluster to be deleted.
 
 ## Import
 
-EKS clusters can be imported using the `name`, e.g.,
+EKS clusters can be imported using the `name`, for example:
 
 ```
 $ terraform import aws_eks_cluster.my_cluster my_cluster

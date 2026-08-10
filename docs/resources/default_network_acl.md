@@ -13,9 +13,13 @@ description: |-
 
 # Resource: aws_default_network_acl
 
-Manages the default network ACL of a VPC. This resource can manage the default network ACL of the default or a non-default VPC.
+Manages the default network ACL of a VPC.
+This resource can manage the default network ACL of the default or a non-default VPC.
 
-~> **Note** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `aws_default_network_acl` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
+~> **Note** This is an advanced resource with special caveats.
+Please read this document in its entirety before using this resource.
+The `aws_default_network_acl` resource behaves differently from normal resources.
+Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
 
 Every VPC has a default network ACL that can be managed but not destroyed.
 When Terraform first adopts the default network ACL, it **immediately removes all rules in the ACL**.
@@ -87,7 +91,8 @@ resource "aws_default_network_acl" "default" {
 
 ### Specific example: deny all traffic to any subnet in the default network ACL
 
-This configuration denies all traffic in the default network ACL. This can be useful if you want to lock down the VPC to force all resources to assign a non-default ACL.
+This configuration denies all traffic in the default network ACL.
+This can be useful if you want to lock down the VPC to force all resources to assign a non-default ACL.
 
 ```terraform
 resource "aws_vpc" "mainvpc" {
@@ -146,7 +151,8 @@ The following arguments are optional:
 * `egress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more egress rules (for outgoing traffic).
 * `ingress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more ingress rules (for incoming traffic).
 * `subnet_ids` - (Optional, Editable, List of strings) The list of subnet IDs to apply the ACL to.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ### egress and ingress
 

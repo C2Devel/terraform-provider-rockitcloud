@@ -32,9 +32,12 @@ output "foo" {
 
 ## Argument reference
 
+The following arguments are supported:
+
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-vpcs]
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resources.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resources.
 
 ### filter
 

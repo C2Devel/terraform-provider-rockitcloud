@@ -46,7 +46,8 @@ The arguments of this data source act as filters for querying the available secu
 
     -> **Info** The default security group for a VPC has the name `default`.
 
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resource.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resource.
 * `vpc_id` - (Optional, String) The ID of the VPC that owns the desired security group.
 
 ### filter

@@ -45,9 +45,12 @@ data "aws_security_groups" "test" {
 
 ## Argument reference
 
+The following arguments are supported:
+
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-security-groups]
-* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resources.
+* `tags` - (Optional, Map of strings) Key-value pairs.
+    Must exactly match pairs on the required resources.
 
 ### filter
 
@@ -64,4 +67,5 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - (String) The region.
     * _Example:_ `ru-spb`
 * `ids` - (List of strings) The IDs of the matched security groups.
-* `vpc_ids` - (String) The VPC IDs of the matched security groups. The data source's tag or filter *will span VPCs* unless the `vpc-id` filter is also used.
+* `vpc_ids` - (String) The VPC IDs of the matched security groups.
+    The data source's tag or filter *will span VPCs* unless the `vpc-id` filter is also used.

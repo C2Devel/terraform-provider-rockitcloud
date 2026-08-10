@@ -37,14 +37,19 @@ resource "aws_subnet" "example" {
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
-* `vpc_id` - (Required, Forces new resource, String) The ID of the VPC.
-* `availability_zone` - (Optional, Forces new resource, String) The availability zone for the subnet.
 * `cidr_block` - (Required, Forces new resource, String) The IPv4 CIDR block for the subnet.
-* `map_public_ip_on_launch` - (Optional, Editable, Boolean) Indicates whether public IP addresses will be associated with instances created in this subnet. Addresses are associated only if there are available allocated Elastic IP addresses.
+* `vpc_id` - (Required, Forces new resource, String) The ID of the VPC.
+
+The following arguments are optional:
+
+* `availability_zone` - (Optional, Forces new resource, String) The availability zone for the subnet.
+* `map_public_ip_on_launch` - (Optional, Editable, Boolean) Indicates whether public IP addresses will be associated with instances created in this subnet.
+    Addresses are associated only if there are available allocated Elastic IP addresses.
     * _Default value:_ `false`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 

@@ -43,7 +43,8 @@ The following arguments are supported:
 * `cidr_block` - (Optional, Forces new resource, String) The IPv4 CIDR block for the VPC.
 * `enable_dns_support` - (Optional, Editable, Boolean) The flag to enable or disable the DNS support in the VPC.
     * _Default value:_ `true`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+    If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 

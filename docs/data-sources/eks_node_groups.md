@@ -3,14 +3,14 @@ subcategory: "EKS (Elastic Kubernetes)"
 layout: "aws"
 page_title: "aws_eks_node_groups"
 description: |-
-  Provides a list of EKS node groups names associated with an EKS cluster.
+  Returns a list of EKS node group names associated with an EKS cluster.
 ---
 
 # Data Source: aws_eks_node_groups
 
-Provides a list of EKS node groups names associated with an EKS cluster.
+Returns a list of EKS node group names associated with an EKS cluster.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "aws_eks_node_groups" "example" {
@@ -25,13 +25,13 @@ data "aws_eks_node_group" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 * `cluster_name` - (Required) The name of the cluster.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - Cluster name.
-* `names` - A set of all node group names in an EKS cluster.
+* `id` - (String) The cluster name.
+* `names` - (Set of strings) The set of all node group names in an EKS cluster.
