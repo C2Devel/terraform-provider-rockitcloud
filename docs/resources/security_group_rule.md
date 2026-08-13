@@ -6,6 +6,8 @@ description: |-
   Manages a security group rule.
 ---
 
+[iana-protocol-numbers]: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+
 # Resource: aws_security_group_rule
 
 Manages a security group rule.
@@ -49,7 +51,7 @@ The following arguments are required:
 
 * `from_port` - (Required, Forces new resource, Integer) The start of the port range (or ICMP message type number if the `protocol` value is `icmp`).
 * `protocol` - (Required, Forces new resource, String) The protocol to match.
-    * _Constraints:_ If the value is not `icmp`, `tcp`, `udp`, or `all`, then use the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
+    * _Constraints:_ If the value is not `icmp`, `tcp`, `udp`, or `all`, then use the [protocol number][iana-protocol-numbers]
 * `security_group_id` - (Required, Forces new resource, String) The ID of the security group to apply this rule to.
 * `to_port` - (Required, Forces new resource, Integer) The end of the port range (or ICMP message code if the `protocol` value is `icmp`).
 * `type` - (Required, Forces new resource, String) The type of the rule being created.

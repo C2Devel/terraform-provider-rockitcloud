@@ -8,7 +8,7 @@ description: |-
 
 [attribute-as-blocks]: https://www.terraform.io/docs/configuration/attr-as-blocks.html
 [default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
-[icmp-parameters]:  https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
+[icmp-parameters]: https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
 [network-acl]: https://docs.k2.cloud/en/services/security/networkacl.html
 
 # Resource: aws_network_acl

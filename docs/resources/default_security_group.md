@@ -9,6 +9,7 @@ description: |-
 [attribute-as-blocks]: https://www.terraform.io/docs/configuration/attr-as-blocks.html
 [default-security-groups]: https://docs.k2.cloud/en/services/security/securitygroups.html#id3
 [default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[iana-protocol-numbers]: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 
 # Resource: aws_default_security_group
 
@@ -85,7 +86,8 @@ The following arguments are optional:
 
 * `egress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more egress rules (for outgoing traffic).
 * `ingress` - (Optional, Editable, [Block](#egress-and-ingress)) One or more ingress rules (for incoming traffic).
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+   If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 * `vpc_id` - (Optional, Forces new resource, String) The ID of the VPC.
 
 ~> **Note** Changing the `vpc_id` argument value will _not_ restore any default security group rules that were modified, added, or removed.
@@ -103,7 +105,7 @@ The following arguments are required:
 * `protocol` - (Required, Editable, String) The protocol to match.
     * _Constraints:_
         * If using the `-1` value (semantically equivalent to `all`, which is not a valid value here), you must specify the `from_port` and `to_port` arguments values equal to `0`
-        * If the `protocol` value is not `icmp`, `tcp`, `udp`, or `-1`, then refer to the [protocol number](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml) for detailed information
+        * If the `protocol` value is not `icmp`, `tcp`, `udp`, or `-1`, then refer to the [protocol number][iana-protocol-numbers] for detailed information
 * `to_port` - (Required, Editable, Integer) The end of the port range (or ICMP message code if the `protocol` value is `icmp`).
 
 The following arguments are optional:
