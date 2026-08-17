@@ -2,14 +2,19 @@ name: Publishing of the internal documentation
 
 on:
   workflow_dispatch:
-    
+  workflow_call:
+    secrets:
+      s3_config:
+        description: 'S3 configuration for internal documentation'
+        required: true
+
 jobs:
   publish-internal-doc:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v5 
+    - uses: actions/setup-python@v5
       with:
         python-version: 'pypy3.10'
 

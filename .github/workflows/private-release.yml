@@ -2,14 +2,19 @@ name: Release of the provider to private registry
 
 on:
   workflow_dispatch:
-    
+  workflow_call:
+    secrets:
+      s3_config:
+        description: 'S3 configuration for the private registry'
+        required: true
+
 jobs:
   private-release:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v5 
+    - uses: actions/setup-python@v5
       with:
         python-version: 'pypy3.10'
 
