@@ -296,6 +296,16 @@ func waitNodegroupDeleted(ctx context.Context, conn *eks.EKS, clusterName, nodeG
 }
 
 func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName, id string, timeout time.Duration) (*eks.Update, error) {
+	if id == "" {
+		if _, err := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, timeout); err != nil {
+			return nil, err
+		}
+
+		return &eks.Update{
+			Status: aws.String(eks.UpdateStatusSuccessful),
+		}, nil
+	}
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{eks.UpdateStatusInProgress},
 		Target:  []string{eks.UpdateStatusSuccessful},
@@ -304,10 +314,46 @@ func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterNa
 	}
 
 	outputRaw, err := stateConf.WaitForStateContext(ctx)
+	if tfawserr.ErrCodeEquals(err, "PathNotFoundError") {
+		if _, fallbackErr := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, timeout); fallbackErr != nil {
+			return nil, fallbackErr
+		}
+
+		return &eks.Update{
+			Id:     aws.String(id),
+			Status: aws.String(eks.UpdateStatusSuccessful),
+		}, nil
+	}
 
 	if output, ok := outputRaw.(*eks.Update); ok {
 		if status := aws.StringValue(output.Status); status == eks.UpdateStatusCancelled || status == eks.UpdateStatusFailed {
 			tfresource.SetLastError(err, ErrorDetailsError(output.Errors))
+		}
+
+		return output, err
+	}
+
+	return nil, err
+}
+
+func waitNodegroupActiveAfterUpdate(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName string, timeout time.Duration) (*eks.Nodegroup, error) {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{
+			eks.NodegroupStatusClaimed,
+			eks.NodegroupStatusPending,
+			eks.NodegroupStatusProvisioning,
+			eks.NodegroupStatusUpdating,
+		},
+		Target:  []string{eks.NodegroupStatusActive},
+		Refresh: statusNodegroup(conn, clusterName, nodeGroupName),
+		Timeout: timeout,
+	}
+
+	outputRaw, err := stateConf.WaitForStateContext(ctx)
+
+	if output, ok := outputRaw.(*eks.Nodegroup); ok {
+		if status, health := aws.StringValue(output.Status), output.Health; (status == eks.NodegroupStatusCreateFailed || status == eks.NodegroupStatusDegraded || status == eks.NodegroupStatusDeleteFailed) && health != nil {
+			tfresource.SetLastError(err, IssuesError(health.Issues))
 		}
 
 		return output, err

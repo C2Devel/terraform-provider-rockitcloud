@@ -1,6 +1,7 @@
 package eks
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -290,6 +291,45 @@ func TestClusterUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
 	}
 
 	update, err = waitClusterUpdateSuccessful(conn, "test", "", 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected empty update ID fallback error: %s", err)
+	}
+	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
+		t.Fatalf("unexpected empty ID fallback update status: %q", got)
+	}
+}
+
+func TestNodegroupUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/clusters/test/updates/update-1":
+			w.Header().Set("X-Amzn-Errortype", "PathNotFoundError")
+			http.Error(w, `{"message":"Specified path does not exist."}`, http.StatusBadRequest)
+		case "/clusters/test/node-groups/general":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"nodegroup":{"clusterName":"test","nodegroupName":"general","status":"ACTIVE"}}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	ctx := context.Background()
+	update, err := waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "update-1", 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected fallback waiter error: %s", err)
+	}
+	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
+		t.Fatalf("unexpected fallback update status: %q", got)
+	}
+
+	update, err = waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "", 5*time.Second)
 	if err != nil {
 		t.Fatalf("unexpected empty update ID fallback error: %s", err)
 	}
