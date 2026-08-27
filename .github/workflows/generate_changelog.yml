@@ -33,5 +33,5 @@ jobs:
             git config --local user.name github-actions[bot]
             git add CHANGELOG.md
             git commit -m "$MSG"
-            git push
+            git push origin HEAD:develop
           fi
