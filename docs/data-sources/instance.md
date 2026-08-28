@@ -98,6 +98,7 @@ The `ebs_block_device` block has the following structure:
 
 * `delete_on_termination` - If the EBS volume will be deleted on termination.
 * `device_name` - The physical name of the device.
+* `encrypted` - Indicates whether the EBS volume is encrypted.
 * `iops` - `0` if the EBS volume is not a provisioned IOPS image, otherwise the supported IOPS count.
 * `snapshot_id` - The ID of the snapshot.
 * `volume_size` - The size of the volume in GiB.
@@ -117,6 +118,7 @@ The `root_block_device` block has the following structure:
 
 * `device_name` - The physical name of the device.
 * `delete_on_termination` - Indicates whether the root block device will be deleted on termination.
+* `encrypted` - Indicates whether the EBS volume is encrypted.
 * `iops` - `0` if the volume is not a provisioned IOPS image, otherwise the supported IOPS count.
 * `volume_size` - The size of the volume in GiB.
 * `volume_type` - The type of the volume.
@@ -127,4 +129,4 @@ The `root_block_device` block has the following structure:
 
 The following attributes are not currently supported:
 
-`credit_specification`, `ebs_block_device.encrypted`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `get_password_data`, `iam_instance_profile`, `ipv6_addresses`, `maintenance_options`, `metadata_options`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.encrypted`, `root_block_device.kms_key_id`, `root_block_device.throughput`.
+`credit_specification`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `get_password_data`, `iam_instance_profile`, `ipv6_addresses`, `maintenance_options`, `metadata_options`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.kms_key_id`, `root_block_device.throughput`.

@@ -50,6 +50,7 @@ The following arguments are optional:
 In addition to all arguments above, the following attributes are exported:
 
 * `arn` - (String) The Amazon Resource Name (ARN) of the volume.
+* `encrypted` - (Boolean) Indicates whether the EBS volume is encrypted.
 * `id` - (String) The ID of the volume.
     * _Example:_ `vol-12345678`
 * `tags_all` - (Map of strings) Key-value pairs assigned to the volume, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
@@ -61,7 +62,7 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`encrypted`, `kms_key_id`, `multi_attach_enabled`, `outpost_arn`.
+`kms_key_id`, `multi_attach_enabled`, `outpost_arn`.
 
 ## Timeouts
 
