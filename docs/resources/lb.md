@@ -15,6 +15,9 @@ description: |-
 Manages a load balancer.
 For details about load balancers, see the [user documentation][elb].
 
+~> **Important** An internet-facing load balancer requires the VPC to have an attached internet gateway and a default route (`0.0.0.0/0`) to it.
+It's recommended to specify the route as an explicit dependency via `depends_on`.
+
 ## Example Usage
 
 ### Internal Application Load Balancer
@@ -62,6 +65,12 @@ resource "aws_internet_gateway" "example" {
   }
 }
 
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.example.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.example.id
+}
+
 resource "aws_eip" "example" {
   tags = {
     Name = "tf-eip"
@@ -69,7 +78,7 @@ resource "aws_eip" "example" {
 }
 
 resource "aws_lb" "nlb" {
-  depends_on = [aws_internet_gateway.example]
+  depends_on = [aws_route.default_route]
 
   name               = "tf-nlb"
   internal           = false
