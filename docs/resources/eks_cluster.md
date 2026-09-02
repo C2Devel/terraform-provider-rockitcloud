@@ -16,9 +16,12 @@ description: |-
 
 Manages an EKS cluster. For details about EKS clusters, see the [user documentation][eks-clusters].
 
-## Example Usage
+~> **Important** A cluster can only be deployed in subnets with internet access, so the VPC must have an internet gateway, a NAT gateway and a default route (`0.0.0.0/0`) to the NAT gateway.
+It's recommended to specify the route as an explicit dependency via `depends_on`.
 
-### EKS High-Availability Cluster
+## Example usage
+
+### EKS high-availability cluster
 
 ->  **Note**
 By default, Terraform creates [high availability clusters][ha-clusters].
@@ -42,7 +45,33 @@ resource "aws_subnet" "example" {
   }
 }
 
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-igw"
+  }
+}
+
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-nat-gw"
+  }
+}
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.example.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
+}
+
 resource "aws_eks_cluster" "example" {
+  depends_on = [aws_route.default_route]
+
   name    = "tf-cluster-ha"
   version = "1.30.2"
 
@@ -52,13 +81,15 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
-### EKS Cluster with High-Availability Disabled
+### EKS cluster with high-availability disabled
 
 ~> **Note**
-This example uses the same VPC and subnet as in the [EKS high-availability cluster example](#eks-high-availability-cluster).
+This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [EKS high-availability cluster example](#eks-high-availability-cluster).
 
 ```terraform
 resource "aws_eks_cluster" "example" {
+  depends_on = [aws_route.default_route]
+
   name    = "tf-cluster-disabled-ha"
   version = "1.30.2"
 
@@ -77,13 +108,15 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
-### EKS Cluster with extra services
+### EKS cluster with extra services
 
 ~> **Note**
-This example uses the same VPC and subnet as in the [EKS High-Availability Cluster example](#eks-high-availability-cluster).
+This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [EKS high-availability cluster example](#eks-high-availability-cluster).
 
 ```terraform
 resource "aws_eks_cluster" "example" {
+  depends_on = [aws_route.default_route]
+
   name    = "tf-cluster-extra-services"
   version = "1.30.2"
 
@@ -131,11 +164,16 @@ resource "aws_eks_cluster" "example" {
 
 ### Get kubeconfig for the cluster
 
+~> **Note**
+This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [EKS high-availability cluster example](#eks-high-availability-cluster).
+
 Use the [aws_eks_cluster_kubeconfig data source][eks-kubeconfig-ds] to generate a kubeconfig
 for the created cluster and export it for `kubectl`:
 
 ```terraform
 resource "aws_eks_cluster" "example" {
+  depends_on = [aws_route.default_route]
+
   name    = "tf-cluster-ha"
   version = "1.30.2"
 
@@ -161,7 +199,7 @@ terraform output -raw kubeconfig > ~/.kube/config
 kubectl get nodes
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are required:
 
@@ -297,7 +335,7 @@ Changes to `user_data_config` are applied in place through
 live verification, so validate this operation in the target environment before
 depending on it in production.
 
-## Attribute Reference
+## Attribute reference
 
 ### Supported attributes
 

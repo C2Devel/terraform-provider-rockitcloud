@@ -17,7 +17,6 @@ description: |-
 
 [elk-version]: https://docs.k2.cloud/en/api/paas/parameters/elk.html#version
 [elasticsearch-version]: https://docs.k2.cloud/en/api/paas/parameters/elasticsearch.html#version
-[internet gateway]: https://docs.k2.cloud/en/services/networking/igw.html
 [mongodb-version]: https://docs.k2.cloud/en/api/paas/parameters/mongodb.html#version
 [mysql-version]: https://docs.k2.cloud/en/api/paas/parameters/mysql.html#version
 [paas]: https://docs.k2.cloud/en/services/paas/index.html
@@ -43,13 +42,18 @@ description: |-
 
 Manages a PaaS service. For details about PaaS, see the [user documentation][paas].
 
-~> **Note** A PaaS service requires the VPC to have an [internet gateway] with a default route to it (`0.0.0.0/0`); otherwise creating the service fails with `InvalidNetworkConfigurations`. The minimal examples below do not create these resources.
+~> **Important** A PaaS service requires the VPC to have an internet gateway, a NAT gateway and a default route (`0.0.0.0/0`) to the NAT gateway; otherwise creating the service fails.
+It's recommended to specify the route as an explicit dependency via `depends_on`.
 
-## Example Usage
+## Example usage
 
-### Elasticsearch Service
+### Elasticsearch service
 
 ```terraform
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
 resource "aws_vpc" "example" {
   cidr_block = "172.16.0.0/16"
 
@@ -61,14 +65,40 @@ resource "aws_vpc" "example" {
 resource "aws_subnet" "example" {
   vpc_id            = aws_vpc.example.id
   cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 1)
-  availability_zone = "ru-msk-vol52"
+  availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
     Name = "tf-subnet"
   }
 }
 
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-igw"
+  }
+}
+
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-nat-gw"
+  }
+}
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.example.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
+}
+
 resource "aws_paas_service" "elasticsearch" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -95,13 +125,15 @@ resource "aws_paas_service" "elasticsearch" {
 }
 ```
 
-### ELK Service
+### ELK service
 
-~> **Note** An ELK service must be deployed in a subnet with Internet access.
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "elk" {
-  name          = "tf-elk-service"
+  depends_on = [aws_route.default_route]
+
+  name          = "tf-service"
   instance_type = "m5.large"
 
   root_volume {
@@ -115,24 +147,27 @@ resource "aws_paas_service" "elk" {
   }
 
   delete_interfaces_on_destroy = true
-  security_group_ids           = var.elk_security_group_ids
-  subnet_ids                   = var.elk_subnet_ids
-  ssh_key_name                 = var.elk_ssh_key_name
+  security_group_ids           = [aws_vpc.example.default_security_group_id]
+  subnet_ids                   = [aws_subnet.example.id]
+
+  ssh_key_name = "<name>"
 
   elk {
     version         = "8.17"
-    password        = var.elk_password
+    password        = "********"
     allow_anonymous = false
   }
 }
 ```
 
-### Memcached Service with Enabled Monitoring
+### Memcached service with enabled monitoring
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "memcached" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -164,12 +199,14 @@ resource "aws_paas_service" "memcached" {
 }
 ```
 
-### MongoDB Service
+### MongoDB service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "mongodb" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -217,12 +254,14 @@ resource "aws_paas_service" "mongodb" {
 }
 ```
 
-### MySQL Service
+### MySQL service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "mysql" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -276,9 +315,13 @@ resource "aws_paas_service" "mysql" {
 }
 ```
 
-### PostgreSQL Service with Arbitrator
+### PostgreSQL service with arbitrator
 
 ```terraform
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
 resource "aws_vpc" "example" {
   cidr_block = "172.33.0.0/16"
 
@@ -287,34 +330,41 @@ resource "aws_vpc" "example" {
   }
 }
 
-resource "aws_subnet" "subnet_vol52" {
+resource "aws_subnet" "example" {
+  # A service is deployed in either one or three availability zones
+  count = length(data.aws_availability_zones.available.names) >= 3 ? 3 : 1
+
   vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 15)
-  availability_zone = "ru-msk-vol52"
+  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, count.index)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
     Name = "tf-subnet"
   }
 }
 
-resource "aws_subnet" "subnet_vol51" {
-  vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 14)
-  availability_zone = "ru-msk-vol51"
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
 
   tags = {
-    Name = "tf-subnet"
+    Name = "tf-igw"
   }
 }
 
-resource "aws_subnet" "subnet_comp1p" {
-  vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 13)
-  availability_zone = "ru-msk-comp1p"
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
 
   tags = {
-    Name = "tf-subnet"
+    Name = "tf-nat-gw"
   }
+}
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.example.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
 }
 
 resource "aws_s3_bucket" "example" {
@@ -322,6 +372,8 @@ resource "aws_s3_bucket" "example" {
 }
 
 resource "aws_paas_service" "pgsql" {
+  depends_on = [aws_route.default_route]
+
   name = "tf-service"
 
   arbitrator_required = true
@@ -341,7 +393,7 @@ resource "aws_paas_service" "pgsql" {
 
   delete_interfaces_on_destroy = true
   security_group_ids           = [aws_vpc.example.default_security_group_id]
-  subnet_ids                   = [aws_subnet.subnet_vol52.id, aws_subnet.subnet_vol51.id, aws_subnet.subnet_comp1p.id]
+  subnet_ids                   = aws_subnet.example[*].id
 
   ssh_key_name = "<name>"
 
@@ -389,14 +441,16 @@ resource "aws_paas_service" "pgsql" {
 }
 ```
 
-### Kafka Service
+### Kafka service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ~> **Note** Kafka always requires a coordinator role. For HA clusters, use either a dedicated `coordinator` block (shown below) or `additional_roles = ["coordinator"]` for combined broker+coordinator nodes.
 
 ```terraform
 resource "aws_paas_service" "kafka" {
+  depends_on = [aws_route.default_route]
+
   name              = "tf-service"
   high_availability = true
   instance_type     = "c5.large"
@@ -433,15 +487,17 @@ resource "aws_paas_service" "kafka" {
 
 To create topics in this service, use the [aws_paas_kafka_topic](paas_kafka_topic.md) resource.
 
-### Prometheus Service
+### Prometheus service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ~> **Note** K2 Cloud supports Prometheus only as a single-node service, so `high_availability` must be `false`.
 
 ```terraform
 resource "aws_paas_service" "prometheus" {
-  name              = "tf-prometheus"
+  depends_on = [aws_route.default_route]
+
+  name              = "tf-service"
   high_availability = false
   instance_type     = "c5.large"
 
@@ -459,7 +515,7 @@ resource "aws_paas_service" "prometheus" {
   security_group_ids           = [aws_vpc.example.default_security_group_id]
   subnet_ids                   = [aws_subnet.example.id]
 
-  ssh_key_name = "tf-key"
+  ssh_key_name = "<name>"
 
   prometheus {
     class                 = "monitoring"
@@ -478,12 +534,14 @@ To configure alert delivery and metric collection, use the
 A complete runnable configuration is available in the
 [Prometheus PaaS example](https://github.com/C2Devel/terraform-provider-rockitcloud/tree/develop/examples/paas/prometheus).
 
-### RabbitMQ Service
+### RabbitMQ service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "rabbitmq" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -510,12 +568,14 @@ resource "aws_paas_service" "rabbitmq" {
 }
 ```
 
-### Redis Service with Logging Enabled
+### Redis service with logging enabled
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "redis" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -557,7 +617,7 @@ resource "aws_paas_service" "redis" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 ~> **Note** Arguments are not editable (changes lead to a new resource) except for the blocks with service parameters and `backup_settings`.
 
@@ -671,7 +731,7 @@ The `root_volume` block has the following structure:
 * `type` - (Optional) The type of the root volume.
     * _Default value:_ `st2`
 
-## Elasticsearch Argument Reference
+## Elasticsearch argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `elasticsearch` block can contain the following arguments as described below.
@@ -703,7 +763,7 @@ If you need to use such a parameter, contact [technical support].
 * `password` - (Optional) The Elasticsearch user password.
   The value must not contain `-`, `!`, `:`, `;`, `%`, `'`, `"`, `` ` `` and `\`.
 
-## ELK Argument Reference
+## ELK argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `elk` block can contain the following arguments:
@@ -736,7 +796,7 @@ place. The live API can omit `password` and `options` from DescribeService.
 Terraform preserves them in an existing resource state, but a fresh import
 cannot recover values that the API does not return.
 
-## Memcached Argument Reference
+## Memcached argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `memcached` block can contain the following arguments:
@@ -747,7 +807,7 @@ the `memcached` block can contain the following arguments:
 * `logging` - (Optional, Editable) The logging settings for the service. The structure of this block is [described below](#logging).
 * `monitoring` - (Optional, Editable) The monitoring settings for the service. The structure of this block is [described below](#monitoring).
 
-## MongoDB Argument Reference
+## MongoDB argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `mongodb` block can contain arguments as described below.
@@ -812,7 +872,7 @@ The `database` block has the following structure:
 * `password` - (Required) The MongoDB user password. The value must not contain `'`, `"`, `` ` `` and `\`.
 
 
-## MySQL Argument Reference
+## MySQL argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `mysql` block can contain arguments as described below.
@@ -984,7 +1044,7 @@ The following arguments are optional:
 
 * `host` - (Optional) The hostname or IP address. The value must be 1 to 60 characters long.
 
-## PostgreSQL Argument Reference
+## PostgreSQL argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `pgsql` block can contain arguments described below.
@@ -1111,7 +1171,7 @@ The `user` block has the following structure:
 * `name` - (Required) The PostgreSQL user name.
 * `password` - (Required) The PostgreSQL user password. The value must not contain `'`, `"`, `` ` `` and `\`.
 
-## Kafka Argument Reference
+## Kafka argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `kafka` block can contain the following arguments:
@@ -1144,7 +1204,7 @@ kafka {
 }
 ```
 
-## Prometheus Argument Reference
+## Prometheus argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `prometheus` block can contain the following arguments:
@@ -1158,7 +1218,7 @@ the `prometheus` block can contain the following arguments:
 
 ~> **Note** Prometheus supports only a single-node configuration. Set the common `high_availability` argument to `false`.
 
-## RabbitMQ Argument Reference
+## RabbitMQ argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `rabbitmq` block can contain the following arguments:
@@ -1177,7 +1237,7 @@ the `rabbitmq` block can contain the following arguments:
 ~> **Note** If a parameter name includes a dot, it cannot be passed in the `options`.
 If you need to use such a parameter, contact [technical support].
 
-## Redis Argument Reference
+## Redis argument reference
 
 In addition to the common arguments for all services [described above](#argument-reference),
 the `redis` block can contain arguments as described below.
@@ -1218,7 +1278,7 @@ If you need to use such a parameter, contact [technical support].
 * `tcp_keepalive` - (Optional, Editable) The time in seconds during which the service sends ACKs to detect dead peers (unreachable clients).
   The value must be non-negative.
 
-## Common Service Argument Reference
+## Common service argument reference
 
 ### logging
 
@@ -1250,7 +1310,7 @@ The following arguments are optional:
 * `monitoring_labels` - (Optional) Map containing labels that are assigned to the metrics of the service.
   Keys must be 1 to 64 characters long.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

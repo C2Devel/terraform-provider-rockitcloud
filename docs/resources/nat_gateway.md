@@ -40,6 +40,12 @@ resource "aws_nat_gateway" "example" {
 
   depends_on = [aws_internet_gateway.igw]
 }
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.vpc.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
+}
 ```
 
 ### Specific example: manually specified Elastic IP addresses
@@ -64,6 +70,12 @@ resource "aws_nat_gateway" "example" {
   }
 
   depends_on = [aws_internet_gateway.igw]
+}
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.vpc.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
 }
 ```
 
