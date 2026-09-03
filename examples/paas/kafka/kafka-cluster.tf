@@ -16,7 +16,7 @@ resource "aws_key_pair" "example" {
 # The two options are mutually exclusive. See the K2 Cloud documentation for
 # details: https://docs.k2.cloud/en/api/paas/actions/CreateService.html
 resource "aws_paas_service" "example" {
-  depends_on = [aws_internet_gateway.example]
+  depends_on = [aws_route.default_route]
 
   name              = var.service_name
   high_availability = true

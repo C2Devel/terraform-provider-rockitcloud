@@ -16,8 +16,6 @@ resource "aws_subnet" "example" {
   }
 }
 
-# PaaS services require an Internet Gateway in the VPC to reach the platform
-# control plane. The platform itself does not expose the brokers publicly.
 resource "aws_internet_gateway" "example" {
   vpc_id = aws_vpc.example.id
 
@@ -26,8 +24,18 @@ resource "aws_internet_gateway" "example" {
   }
 }
 
-resource "aws_route" "example_default" {
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "terraform-paas-kafka-example"
+  }
+}
+
+resource "aws_route" "default_route" {
   route_table_id         = aws_vpc.example.main_route_table_id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.example.id
+  nat_gateway_id         = aws_nat_gateway.example.id
 }

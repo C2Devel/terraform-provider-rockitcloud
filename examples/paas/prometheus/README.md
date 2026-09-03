@@ -7,21 +7,12 @@ Terraform-managed configuration:
 - one webhook notification channel;
 - two alerting routes.
 
-The VPC has an Internet gateway and a default route because K2 Cloud requires
-Internet access in the Prometheus subnet.
+The VPC has an internet gateway, a NAT gateway and a default route (`0.0.0.0/0`) to the NAT gateway (required by PaaS).
 
 ## Run
 
-Export K2 Cloud credentials and endpoints without writing secrets to Terraform
-files:
-
-```bash
-export AWS_DEFAULT_REGION="ru-msk"
-export EC2_URL="https://ec2.ru-msk.k2.cloud"
-export PAAS_URL="https://paas.ru-msk.k2.cloud"
-test -n "${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID is not set}"
-test -n "${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY is not set}"
-```
+The example takes credentials from a `c2rc.sh` file.
+Get the file for your project and place it in this directory before running the example.
 
 Generate a disposable SSH key and a unique service name:
 

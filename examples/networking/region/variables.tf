@@ -3,13 +3,19 @@ variable "region" {
   type        = string
 }
 
-variable "base_cidr_block" {
-  type = string
+variable "vpc_cidr" {
+  description = "The CIDR block of the VPC."
+  type        = string
 }
 
-provider "aws" {
-  # For K2 Cloud, specify one of the supported regions.
-  # For other cloud platforms, enter a non-empty string,
-  # for example, "region-1", and API endpoints.
-  region = var.region
+variable "access_key" {
+  description = "The access key taken from c2rc.sh."
+  type        = string
+  sensitive   = true
+}
+
+variable "secret_key" {
+  description = "The secret key taken from c2rc.sh."
+  type        = string
+  sensitive   = true
 }

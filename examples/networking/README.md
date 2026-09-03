@@ -1,29 +1,30 @@
 # Networking Example
 
-This example creates various network resources:
+This example creates a network in each of the two regions:
 
-* VPCs in each of the two regions;
-* one or two subnets in each VPC, depending on the number of availability zones in region;
-* security groups for different networks.
+* VPC;
+* one or two subnets, depending on the number of availability zones in region;
+* route table associated with every subnet;
+* security group that allows all traffic within VPC, ICMP, SSH and HTTP(S) from the internet and all outbound traffic.
 
-This example also demonstrates the use of modules to create several copies of the same resource set with different arguments.
-The child modules in this directory are:
+The network resources are described in the `region` child module.
+The example instantiates the module once per region, which demonstrates how to create several copies
+of the same resource set with different arguments.
 
-* `region`: a module for all the network resources within a region. This module is instantiated once per region;
-* `subnet`: a module for all the subnet resources within the given availability zone.
-  This module is instantiated once or twice per region, depending on the number of availability zones.
+The example takes credentials from a `c2rc.sh` file.
+Get the file for your project and place it in this directory before running the example.
+
+Instead of using `-var`, you can copy `terraform.tfvars.example` to `terraform.tfvars` and use it to specify variable values.
 
 Running the example:
 
-```
-$ export AWS_ACCESS_KEY_ID="your-access-key"
-$ export AWS_SECRET_ACCESS_KEY="your-secret-key"
+```shell
 $ terraform init
 $ terraform apply
 ```
 
 Destroying the example:
 
-```
+```shell
 $ terraform destroy
 ```

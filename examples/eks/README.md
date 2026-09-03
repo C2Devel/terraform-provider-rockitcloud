@@ -4,24 +4,25 @@
 
 The EKS (Elastic Kubernetes Service) example launches an EKS cluster and EKS node group with necessary network resources in all availability zones in the region.
 
+The example takes credentials from a `c2rc.sh` file.
+Get the file for your project and place it in this directory before running the example.
+
 Running the example:
 
-```
-$ export AWS_ACCESS_KEY_ID="your-access-key"
-$ export AWS_SECRET_ACCESS_KEY="your-secret-key"
+```shell
 $ terraform init
 $ terraform apply
 ```
 
 Get kubeconfig for the created cluster:
 
-```
+```shell
 $ terraform output -raw kubeconfig > ~/.kube/config
 ```
 
 Destroying the example:
 
-```
+```shell
 $ terraform destroy
 ```
 
