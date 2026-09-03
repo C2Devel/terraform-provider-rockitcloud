@@ -30,7 +30,6 @@ var routeTableValidTargets = []string{
 	"core_network_arn",
 	"egress_only_gateway_id",
 	"gateway_id",
-	"instance_id",
 	"local_gateway_id",
 	"nat_gateway_id",
 	"network_interface_id",
@@ -118,10 +117,11 @@ func ResourceRouteTable() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						// Read-only: the API reports it for a route to an attached ENI,
+						// and a configured value would never match the route set read back.
 						"instance_id": {
-							Type:       schema.TypeString,
-							Optional:   true,
-							Deprecated: "Use network_interface_id instead",
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 						"local_gateway_id": {
 							Type:     schema.TypeString,
@@ -448,12 +448,6 @@ func resourceRouteTableHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
 	}
 
-	instanceSet := false
-	if v, ok := m["instance_id"]; ok {
-		instanceSet = v.(string) != ""
-		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
-	}
-
 	if v, ok := m["transit_gateway_id"]; ok {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
 	}
@@ -470,7 +464,7 @@ func resourceRouteTableHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
 	}
 
-	if v, ok := m["network_interface_id"]; ok && !(instanceSet || natGatewaySet) {
+	if v, ok := m["network_interface_id"]; ok && !natGatewaySet {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
 	}
 
@@ -702,10 +696,6 @@ func expandEc2CreateRouteInput(tfMap map[string]interface{}) *ec2.CreateRouteInp
 		apiObject.GatewayId = aws.String(v)
 	}
 
-	if v, ok := tfMap["instance_id"].(string); ok && v != "" {
-		apiObject.InstanceId = aws.String(v)
-	}
-
 	if v, ok := tfMap["local_gateway_id"].(string); ok && v != "" {
 		apiObject.LocalGatewayId = aws.String(v)
 	}
@@ -766,10 +756,6 @@ func expandEc2ReplaceRouteInput(tfMap map[string]interface{}) *ec2.ReplaceRouteI
 
 	if v, ok := tfMap["gateway_id"].(string); ok && v != "" {
 		apiObject.GatewayId = aws.String(v)
-	}
-
-	if v, ok := tfMap["instance_id"].(string); ok && v != "" {
-		apiObject.InstanceId = aws.String(v)
 	}
 
 	if v, ok := tfMap["local_gateway_id"].(string); ok && v != "" {
