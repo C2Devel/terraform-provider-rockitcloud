@@ -1,24 +1,17 @@
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
 resource "aws_vpc" "example" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Name = "terraform-eks-example"
+    Name = "terraform-elb-example"
   }
 }
 
 resource "aws_subnet" "example" {
-  count = length(data.aws_availability_zones.available.names)
-
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  cidr_block        = "10.0.${count.index}.0/24"
-  vpc_id            = aws_vpc.example.id
+  cidr_block = "10.0.0.0/24"
+  vpc_id     = aws_vpc.example.id
 
   tags = {
-    Name = "terraform-eks-example"
+    Name = "terraform-elb-example"
   }
 }
 
@@ -26,7 +19,7 @@ resource "aws_internet_gateway" "example" {
   vpc_id = aws_vpc.example.id
 
   tags = {
-    Name = "terraform-eks-example"
+    Name = "terraform-elb-example"
   }
 }
 
@@ -36,7 +29,7 @@ resource "aws_nat_gateway" "example" {
   vpc_id = aws_vpc.example.id
 
   tags = {
-    Name = "terraform-eks-example"
+    Name = "terraform-elb-example"
   }
 }
 

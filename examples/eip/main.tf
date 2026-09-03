@@ -1,34 +1,9 @@
-terraform {
-  required_version = ">= 0.12"
-
-  required_providers {
-    aws = {
-      source  = "c2devel/rockitcloud"
-      version = "~> 25.4"
-    }
-  }
-}
-
-provider "aws" {
-  # For K2 Cloud, specify one of the supported regions.
-  # For other cloud platforms, enter a non-empty string,
-  # for example, "region-1", and API endpoints.
-  region = var.region
-}
-
-resource "aws_eip" "example" {
-  instance = aws_instance.example.id
-
-  tags = {
-    Name = "terraform-eip-example"
-  }
-}
-
 # Default security group to access
 # the instances over SSH and HTTP
 resource "aws_security_group" "example" {
   name        = "terraform-eip-example"
   description = "Used in the terraform"
+  vpc_id      = aws_vpc.example.id
 
   # SSH access from anywhere
   ingress {
@@ -73,6 +48,8 @@ data "aws_ami" "selected" {
 }
 
 resource "aws_instance" "example" {
+  depends_on = [aws_route.default_route]
+
   instance_type = "c5.large"
   ami           = data.aws_ami.selected.id
 
@@ -84,7 +61,18 @@ resource "aws_instance" "example" {
   # this should be on port 80
   user_data = file("userdata.sh")
 
+  subnet_id              = aws_subnet.example.id
   vpc_security_group_ids = [aws_security_group.example.id]
+
+  tags = {
+    Name = "terraform-eip-example"
+  }
+}
+
+resource "aws_eip" "example" {
+  depends_on = [aws_route.default_route]
+
+  instance = aws_instance.example.id
 
   tags = {
     Name = "terraform-eip-example"

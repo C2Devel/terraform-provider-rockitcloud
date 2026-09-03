@@ -1,36 +1,3 @@
-terraform {
-  required_version = ">= 0.12"
-
-  required_providers {
-    aws = {
-      source  = "c2devel/rockitcloud"
-      version = "~> 25.4"
-    }
-  }
-}
-
-provider "aws" {
-  alias = "first"
-
-  # For K2 Cloud, specify one of the supported regions.
-  # For other cloud platforms, enter a non-empty string,
-  # for example, "region-1", and API endpoints.
-  region     = var.region
-  access_key = var.first_access_key
-  secret_key = var.first_secret_key
-}
-
-provider "aws" {
-  alias = "second"
-
-  # For K2 Cloud, specify one of the supported regions.
-  # For other cloud platforms, enter a non-empty string,
-  # for example, "region-1", and API endpoints.
-  region     = var.region
-  access_key = var.second_access_key
-  secret_key = var.second_secret_key
-}
-
 resource "aws_ec2_transit_gateway" "example" {
   provider = aws.first
 
@@ -43,7 +10,7 @@ resource "aws_ec2_transit_gateway_project_access" "example" {
   provider = aws.first
 
   transit_gateway_id = aws_ec2_transit_gateway.example.id
-  account_id = var.second_account_id
+  account_id         = local.second_account_id
 }
 
 resource "aws_vpc" "example" {
@@ -56,14 +23,16 @@ resource "aws_vpc" "example" {
   }
 }
 
-data "aws_availability_zones" "all" {
+data "aws_availability_zones" "available" {
   provider = aws.second
+
+  state = "available"
 }
 
 resource "aws_subnet" "example" {
   provider = aws.second
 
-  availability_zone = data.aws_availability_zones.all.names[0]
+  availability_zone = data.aws_availability_zones.available.names[0]
   cidr_block        = "10.0.0.0/24"
   vpc_id            = aws_vpc.example.id
 

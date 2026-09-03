@@ -34,8 +34,10 @@ resource "aws_security_group" "example" {
 # }
 
 resource "aws_eks_cluster" "example" {
-  name     = "terraform-eks-example"
-  version  = "1.33.1"
+  depends_on = [aws_route.default_route]
+
+  name    = "terraform-eks-example"
+  version = "1.33.1"
 
   vpc_config {
     security_group_ids = [aws_security_group.example.id]
