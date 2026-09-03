@@ -26,7 +26,6 @@ var routeValidTargets = []string{
 	"core_network_arn",
 	"egress_only_gateway_id",
 	"gateway_id",
-	"instance_id",
 	"local_gateway_id",
 	"nat_gateway_id",
 	"network_interface_id",
@@ -108,12 +107,10 @@ func ResourceRoute() *schema.Resource {
 				Optional:     true,
 				ExactlyOneOf: routeValidTargets,
 			},
+			// Read-only: the API reports it for a route to an attached ENI.
 			"instance_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Deprecated:   "Use network_interface_id instead",
-				ExactlyOneOf: routeValidTargets,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"local_gateway_id": {
 				Type:         schema.TypeString,
@@ -215,8 +212,6 @@ func resourceRouteCreate(d *schema.ResourceData, meta interface{}) error {
 		input.EgressOnlyInternetGatewayId = target
 	case "gateway_id":
 		input.GatewayId = target
-	case "instance_id":
-		input.InstanceId = target
 	case "local_gateway_id":
 		input.LocalGatewayId = target
 	case "nat_gateway_id":
@@ -366,8 +361,6 @@ func resourceRouteUpdate(d *schema.ResourceData, meta interface{}) error {
 		input.EgressOnlyInternetGatewayId = target
 	case "gateway_id":
 		input.GatewayId = target
-	case "instance_id":
-		input.InstanceId = target
 	case "local_gateway_id":
 		input.LocalGatewayId = target
 	case "nat_gateway_id":
