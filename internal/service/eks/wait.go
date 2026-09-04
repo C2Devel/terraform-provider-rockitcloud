@@ -297,7 +297,7 @@ func waitNodegroupDeleted(ctx context.Context, conn *eks.EKS, clusterName, nodeG
 
 func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName, id string, timeout time.Duration) (*eks.Update, error) {
 	if id == "" {
-		if _, err := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, timeout); err != nil {
+		if err := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, timeout); err != nil {
 			return nil, err
 		}
 
@@ -315,7 +315,7 @@ func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterNa
 
 	outputRaw, err := stateConf.WaitForStateContext(ctx)
 	if tfawserr.ErrCodeEquals(err, "PathNotFoundError") {
-		if _, fallbackErr := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, timeout); fallbackErr != nil {
+		if fallbackErr := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, timeout); fallbackErr != nil {
 			return nil, fallbackErr
 		}
 
@@ -336,7 +336,7 @@ func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterNa
 	return nil, err
 }
 
-func waitNodegroupActiveAfterUpdate(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName string, timeout time.Duration) (*eks.Nodegroup, error) {
+func waitNodegroupActiveAfterUpdate(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName string, timeout time.Duration) error {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
 			eks.NodegroupStatusClaimed,
@@ -356,10 +356,10 @@ func waitNodegroupActiveAfterUpdate(ctx context.Context, conn *eks.EKS, clusterN
 			tfresource.SetLastError(err, IssuesError(health.Issues))
 		}
 
-		return output, err
+		return err
 	}
 
-	return nil, err
+	return err
 }
 
 func waitOIDCIdentityProviderConfigCreated(ctx context.Context, conn *eks.EKS, clusterName, configName string, timeout time.Duration) (*eks.OidcIdentityProviderConfig, error) {
