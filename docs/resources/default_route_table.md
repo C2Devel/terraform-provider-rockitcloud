@@ -31,13 +31,22 @@ resource "aws_vpc" "example" {
 }
 
 resource "aws_subnet" "example" {
-  availability_zone = "ru-msk-vol52"
-  vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 1, 0)
+  vpc_id     = aws_vpc.example.id
+  cidr_block = "10.1.0.0/24"
 }
 
 resource "aws_network_interface" "example" {
   subnet_id = aws_subnet.example.id
+}
+
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
+}
+
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
 }
 
 resource "aws_default_route_table" "example" {
@@ -48,13 +57,21 @@ resource "aws_default_route_table" "example" {
     network_interface_id = aws_network_interface.example.id
   }
 
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.example.id
+  }
+
   tags = {
-    Name = "example"
+    Name = "tf default route table"
   }
 }
 ```
 
 ### Specific example: removing all managed routes subsequently
+
+~> **Note** This example redefines the default route table from the [Basic example](#basic-example) with `route = []` instead of the `route` blocks.
+Applying it removes all routes managed by Terraform.
 
 ```terraform
 resource "aws_default_route_table" "example" {
@@ -63,7 +80,7 @@ resource "aws_default_route_table" "example" {
   route = []
 
   tags = {
-    Name = "example"
+    Name = "tf default route table"
   }
 }
 ```
@@ -90,9 +107,12 @@ The following destination argument must be supplied:
 One of the following target arguments must be supplied:
 
 * `gateway_id` - (Optional, Editable, String) The ID of the internet gateway.
-* `instance_id` - (Optional, Editable, String) The ID of the instance.
+* `nat_gateway_id` - (Optional, Editable, String) The ID of the NAT gateway.
 * `network_interface_id` - (Optional, Editable, String) The ID of the network interface.
 * `transit_gateway_id` - (Optional, Editable, String) The ID of the transit gateway.
+
+~> **Note** The `instance_id` argument was removed and cannot be specified in configuration files anymore.
+To route traffic to an instance, use `network_interface_id`.
 
 ## Attribute reference
 
@@ -102,7 +122,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `arn` - (String) The Amazon Resource Name (ARN) of the route table.
 * `id` - (String) The ID of the route table.
-* `tags_all` - (Map of strings) Key-value pairs assigned to the resource, including any tags inherited from the  [`default_tags` configuration block][default-tags] if used within a provider configuration.
+* `route.instance_id` - (String) The ID of the instance the target network interface is attached to.
+* `tags_all` - (Map of strings) Key-value pairs assigned to the resource, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
 * `vpc_id` - (String) The ID of the VPC.
 
 ### Unsupported attributes
@@ -111,14 +132,14 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`owner_id`, `route.core_network_arn`, `route.destination_prefix_list_id`, `route.egress_only_gateway_id`, `route.ipv6_cidr_block`, `route.nat_gateway_id`, `route.vpc_endpoint_id`, `route.vpc_peering_connection_id`.
+`owner_id`, `route.core_network_arn`, `route.destination_prefix_list_id`, `route.egress_only_gateway_id`, `route.ipv6_cidr_block`, `route.vpc_endpoint_id`, `route.vpc_peering_connection_id`.
 
 ## Timeouts
 
 The `timeouts` block allows you to specify [timeouts] for certain actions:
 
 - `create` - (Default `2 minutes`) Used for route creation.
-- `update` - (Default `2 minutes`) Used for route creation.
+- `update` - (Default `2 minutes`) Used for updating the route.
 
 ## Import
 
@@ -127,4 +148,3 @@ Default VPC route tables can be imported using the `vpc_id`, for example:
 ```
 $ terraform import aws_default_route_table.example vpc-12345678
 ```
-
