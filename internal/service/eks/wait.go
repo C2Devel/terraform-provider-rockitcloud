@@ -136,9 +136,9 @@ func waitClusterDeleted(conn *eks.EKS, name string, timeout time.Duration) (*eks
 	return nil, err
 }
 
-func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Duration) (*eks.Update, error) { //nolint:unparam
+func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Duration) (*eks.Update, error) {
 	if id == "" {
-		if _, err := waitClusterReadyAfterUpdate(conn, name, timeout); err != nil {
+		if err := waitClusterReadyAfterUpdate(conn, name, timeout); err != nil {
 			return nil, err
 		}
 
@@ -156,7 +156,7 @@ func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Du
 
 	outputRaw, err := stateConf.WaitForState()
 	if tfawserr.ErrCodeEquals(err, "PathNotFoundError") {
-		if _, fallbackErr := waitClusterReadyAfterUpdate(conn, name, timeout); fallbackErr != nil {
+		if fallbackErr := waitClusterReadyAfterUpdate(conn, name, timeout); fallbackErr != nil {
 			return nil, fallbackErr
 		}
 
@@ -177,7 +177,7 @@ func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Du
 	return nil, err
 }
 
-func waitClusterReadyAfterUpdate(conn *eks.EKS, name string, timeout time.Duration) (*eks.Cluster, error) {
+func waitClusterReadyAfterUpdate(conn *eks.EKS, name string, timeout time.Duration) error {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
 			eks.ClusterStatusActive,
@@ -199,10 +199,10 @@ func waitClusterReadyAfterUpdate(conn *eks.EKS, name string, timeout time.Durati
 			tfresource.SetLastError(err, ClusterIssuesError(health.Issues))
 		}
 
-		return output, err
+		return err
 	}
 
-	return nil, err
+	return err
 }
 
 func waitFargateProfileCreated(conn *eks.EKS, clusterName, fargateProfileName string, timeout time.Duration) (*eks.FargateProfile, error) {
