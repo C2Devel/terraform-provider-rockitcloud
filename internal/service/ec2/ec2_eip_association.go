@@ -52,9 +52,7 @@ func ResourceEIPAssociation() *schema.Resource {
 
 			"private_ip_address": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
-				ForceNew: true,
 			},
 
 			"public_ip": {
@@ -75,7 +73,9 @@ func resourceEIPAssociationCreate(d *schema.ResourceData, meta interface{}) erro
 	if v, ok := d.GetOk("allocation_id"); ok {
 		request.AllocationId = aws.String(v.(string))
 	}
-	if v, ok := d.GetOk("allow_reassociation"); ok {
+	// GetOkExists is required (instead of GetOk) so that an explicitly configured
+	// false value is still sent. GetOk treats false as "unset".
+	if v, ok := d.GetOkExists("allow_reassociation"); ok {
 		request.AllowReassociation = aws.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk("instance_id"); ok {
@@ -83,9 +83,6 @@ func resourceEIPAssociationCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	if v, ok := d.GetOk("network_interface_id"); ok {
 		request.NetworkInterfaceId = aws.String(v.(string))
-	}
-	if v, ok := d.GetOk("private_ip_address"); ok {
-		request.PrivateIpAddress = aws.String(v.(string))
 	}
 	if v, ok := d.GetOk("public_ip"); ok {
 		request.PublicIp = aws.String(v.(string))
