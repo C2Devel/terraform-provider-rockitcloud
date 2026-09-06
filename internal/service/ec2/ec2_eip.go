@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/hashicorp/aws-sdk-go-base/v2/awsv1shim/v2/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -195,9 +194,7 @@ func resourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 		err := resource.Retry(d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 			describeAddresses, err = conn.DescribeAddresses(req)
 			if err != nil {
-				awsErr, ok := err.(awserr.Error)
-				if ok && (awsErr.Code() == "InvalidAllocationID.NotFound" ||
-					awsErr.Code() == "InvalidAddress.NotFound") {
+				if tfawserr.ErrCodeEquals(err, ErrCodeInvalidAllocationIDNotFound, ErrCodeInvalidAddressNotFound) {
 					return resource.RetryableError(err)
 				}
 
@@ -214,9 +211,7 @@ func resourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		describeAddresses, err = conn.DescribeAddresses(req)
 		if err != nil {
-			awsErr, ok := err.(awserr.Error)
-			if ok && (awsErr.Code() == "InvalidAllocationID.NotFound" ||
-				awsErr.Code() == "InvalidAddress.NotFound") {
+			if tfawserr.ErrCodeEquals(err, ErrCodeInvalidAllocationIDNotFound, ErrCodeInvalidAddressNotFound) {
 				log.Printf("[WARN] EIP not found, removing from state: %s", req)
 				d.SetId("")
 				return nil
@@ -403,7 +398,7 @@ func resourceEIPDelete(d *schema.ResourceData, meta interface{}) error {
 	// Every other refusal is permanent, so retrying it just hide reason timeout
 	_, err := tfresource.RetryWhenAWSErrCodeEquals(d.Timeout(schema.TimeoutDelete), func() (interface{}, error) {
 		return conn.ReleaseAddress(input)
-	}, "AuthFailure")
+	}, ErrCodeAuthFailure)
 
 	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidAllocationIDNotFound) {
 		return nil
