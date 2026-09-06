@@ -137,17 +137,15 @@ func dataSourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("network_interface_id", eip.NetworkInterfaceId)
 	d.Set("network_interface_owner_id", eip.NetworkInterfaceOwnerId)
 
-	region := aws.StringValue(conn.Config.Region)
-
 	d.Set("private_ip", eip.PrivateIpAddress)
-	if eip.PrivateIpAddress != nil {
-		d.Set("private_dns", fmt.Sprintf("ip-%s.%s", ConvertIPToDashIP(aws.StringValue(eip.PrivateIpAddress)), RegionalPrivateDNSSuffix(region)))
-	}
-
 	d.Set("public_ip", eip.PublicIp)
-	if eip.PublicIp != nil {
-		d.Set("public_dns", meta.(*conns.AWSClient).PartitionHostname(fmt.Sprintf("ec2-%s.%s", ConvertIPToDashIP(aws.StringValue(eip.PublicIp)), RegionalPublicDNSSuffix(region))))
+
+	privateDNS, publicDNS, err := eipDNSNames(conn, eip.NetworkInterfaceId)
+	if err != nil {
+		return fmt.Errorf("error reading EC2 Network Interface (%s) for EIP (%s): %w", aws.StringValue(eip.NetworkInterfaceId), d.Id(), err)
 	}
+	d.Set("private_dns", privateDNS)
+	d.Set("public_dns", publicDNS)
 	d.Set("public_ipv4_pool", eip.PublicIpv4Pool)
 	d.Set("carrier_ip", eip.CarrierIp)
 	d.Set("customer_owned_ipv4_pool", eip.CustomerOwnedIpv4Pool)
