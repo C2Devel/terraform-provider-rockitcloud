@@ -133,9 +133,8 @@ func TestAccEC2EIP_Instance_reassociate(t *testing.T) {
 	})
 }
 
-// This test is an expansion of TestAccEC2EIP_Instance_associatedUserPrivateIP, by testing the
-// associated Private EIPs of two instances
-func TestAccEC2EIP_Instance_associatedUserPrivateIP(t *testing.T) {
+// Moving an EIP from one instance to another must keep it associated.
+func TestAccEC2EIP_Instance_switch(t *testing.T) {
 	var one ec2.Address
 	resourceName := "aws_eip.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
@@ -156,10 +155,9 @@ func TestAccEC2EIP_Instance_associatedUserPrivateIP(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"associate_with_private_ip"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccEIPInstanceAssociatedSwitchConfig(rName),
@@ -931,8 +929,7 @@ resource "aws_instance" "test2" {
 }
 
 resource "aws_eip" "test" {
-  instance                  = aws_instance.test2.id
-  associate_with_private_ip = "10.0.0.19"
+  instance = aws_instance.test2.id
 }
 `, rName))
 }
@@ -995,8 +992,7 @@ resource "aws_instance" "test2" {
 }
 
 resource "aws_eip" "test" {
-  instance                  = aws_instance.test.id
-  associate_with_private_ip = "10.0.0.12"
+  instance = aws_instance.test.id
 }
 `, rName))
 }
