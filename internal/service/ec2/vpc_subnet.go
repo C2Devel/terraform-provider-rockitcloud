@@ -110,9 +110,10 @@ func ResourceSubnet() *schema.Resource {
 				RequiredWith: []string{"customer_owned_ipv4_pool", "outpost_arn"},
 			},
 			"map_public_ip_on_launch": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:       schema.TypeBool,
+				Optional:   true,
+				Default:    false,
+				Deprecated: "The map_public_ip_on_launch argument will be removed in a future release.",
 			},
 			"outpost_arn": {
 				Type:         schema.TypeString,

@@ -84,8 +84,10 @@ In addition to all arguments above, the following attribute is exported:
 
 * `available_ip_address_count` - (Integer) The number of remaining available IPv4 addresses in the subnet.
 * `cidr_block` - (String) The IPv4 CIDR block for the subnet.
-* `map_public_ip_on_launch` - (Boolean) Indicates whether public IP addresses will be associated with instances created in this subnet. Addresses are associated only if there are available allocated Elastic IP addresses.
+* `map_public_ip_on_launch` - (Boolean, **Deprecated**) Indicates whether public IP addresses will be associated with instances created in this subnet. Addresses are associated only if there are available allocated Elastic IP addresses.
 * `state` - (String) The state that the desired subnet must have.
+
+~> **Note** The attribute `map_public_ip_on_launch` is deprecated and will be removed in a future release.
 
 ### Unsupported attributes
 
