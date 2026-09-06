@@ -208,9 +208,13 @@ func testAccCheckEIPAssociationExists(name string, res *ec2.Address) resource.Te
 		conn := acctest.Provider.Meta().(*conns.AWSClient).EC2Conn
 		platforms := acctest.Provider.Meta().(*conns.AWSClient).SupportedPlatforms
 
-		request, err := tfec2.DescribeAddressesByID(rs.Primary.ID, platforms)
-		if err != nil {
-			return err
+		request := &ec2.DescribeAddressesInput{
+			Filters: []*ec2.Filter{
+				{
+					Name:   aws.String("association-id"),
+					Values: []*string{aws.String(rs.Primary.ID)},
+				},
+			},
 		}
 
 		describe, err := conn.DescribeAddresses(request)
@@ -239,13 +243,8 @@ func testAccCheckEIPAssociationClassicExists(name string, res *ec2.Address) reso
 		}
 
 		conn := acctest.ProviderEC2Classic.Meta().(*conns.AWSClient).EC2Conn
-		platforms := acctest.ProviderEC2Classic.Meta().(*conns.AWSClient).SupportedPlatforms
 
-		request, err := tfec2.DescribeAddressesByID(rs.Primary.ID, platforms)
-
-		if err != nil {
-			return err
-		}
+		request := tfec2.DescribeAddressesByID(rs.Primary.ID)
 
 		describe, err := conn.DescribeAddresses(request)
 
