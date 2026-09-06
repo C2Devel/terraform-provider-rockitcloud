@@ -350,7 +350,6 @@ resource "aws_instance" "test" {
 
 resource "aws_eip" "test" {
   count = 3
-  vpc   = true
 }
 
 resource "aws_eip_association" "by_allocation_id" {
@@ -416,7 +415,6 @@ resource "aws_instance" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc = true
 }
 
 resource "aws_eip_association" "test" {
@@ -481,7 +479,6 @@ resource "aws_spot_instance_request" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc = true
 }
 
 resource "aws_eip_association" "test" {
@@ -518,7 +515,6 @@ resource "aws_instance" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc = true
 }
 
 resource "aws_eip_association" "test" {
@@ -546,9 +542,7 @@ resource "aws_network_interface" "test" {
   subnet_id = aws_subnet.test.id
 }
 
-resource "aws_eip" "test" {
-  vpc = true
-}
+resource "aws_eip" "test" {}
 
 resource "aws_eip_association" "test" {
   allocation_id        = aws_eip.test.id
