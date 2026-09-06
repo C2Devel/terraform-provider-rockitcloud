@@ -441,7 +441,3 @@ func eipDNSNames(conn *ec2.EC2, networkInterfaceID *string) (*string, *string, e
 
 	return eni.PrivateDnsName, publicDNS, nil
 }
-
-func ConvertIPToDashIP(ip string) string {
-	return strings.Replace(ip, ".", "-", -1)
-}
