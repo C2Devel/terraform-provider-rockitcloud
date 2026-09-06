@@ -1,0 +1,7 @@
+```release-note:note
+resource/aws_subnet: deprecate the `map_public_ip_on_launch` argument, which will be removed in future releases
+```
+
+```release-note:note
+data-source/aws_subnet: deprecate the `map_public_ip_on_launch` attribute, which will be removed in future releases
+```
