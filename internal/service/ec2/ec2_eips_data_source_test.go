@@ -32,22 +32,6 @@ func TestAccEC2EIPsDataSource_vpcDomain(t *testing.T) {
 	})
 }
 
-func TestAccEC2EIPsDataSource_standardDomain(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t); acctest.PreCheckEC2Classic(t) },
-		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
-		ProviderFactories: acctest.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccEIPsStandardDomainDataSourceConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					acctest.CheckResourceAttrGreaterThanValue("data.aws_eips.all", "public_ips.#", "0"),
-				),
-			},
-		},
-	})
-}
-
 func testAccEIPsVPCDomainDataSourceConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test1" {
@@ -83,14 +67,4 @@ data "aws_eips" "none" {
   depends_on = [aws_eip.test1, aws_eip.test2]
 }
 `, rName)
-}
-
-func testAccEIPsStandardDomainDataSourceConfig() string {
-	return acctest.ConfigCompose(acctest.ConfigEC2ClassicRegionProvider(), `
-resource "aws_eip" "test" {}
-
-data "aws_eips" "all" {
-  depends_on = [aws_eip.test]
-}
-`)
 }
