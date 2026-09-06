@@ -2,7 +2,6 @@ package ec2
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -124,12 +123,7 @@ func dataSourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 
 	eip := resp.Addresses[0]
 
-	if aws.StringValue(eip.Domain) == ec2.DomainTypeVpc {
-		d.SetId(aws.StringValue(eip.AllocationId))
-	} else {
-		log.Printf("[DEBUG] Reading EIP, has no AllocationId, this means we have a Classic EIP, the id will also be the public ip : %s", req)
-		d.SetId(aws.StringValue(eip.PublicIp))
-	}
+	d.SetId(aws.StringValue(eip.AllocationId))
 
 	d.Set("association_id", eip.AssociationId)
 	d.Set("domain", eip.Domain)

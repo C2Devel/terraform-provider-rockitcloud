@@ -18,11 +18,6 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/verify"
 )
 
-const (
-	// Maximum amount of time to wait for EIP association with EC2-Classic instances
-	ec2AddressAssociationClassicTimeout = 2 * time.Minute
-)
-
 func ResourceEIP() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceEIPCreate,
@@ -119,7 +114,6 @@ func ResourceEIP() *schema.Resource {
 			"vpc": {
 				Type:       schema.TypeBool,
 				Optional:   true,
-				ForceNew:   false,
 				Default:    true,
 				Deprecated: "The specified value is ignored.",
 			},
@@ -160,12 +154,9 @@ func resourceEIPCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error creating EIP: %s", err)
 	}
 
-	d.Set("domain", allocResp.Domain)
-
-	log.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
 	d.SetId(aws.StringValue(allocResp.AllocationId))
 
-	log.Printf("[INFO] EIP ID: %s (domain: %v)", d.Id(), *allocResp.Domain)
+	log.Printf("[INFO] EIP ID: %s (domain: %v)", d.Id(), aws.StringValue(allocResp.Domain))
 
 	return resourceEIPUpdate(d, meta)
 }
@@ -266,18 +257,12 @@ func resourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("network_border_group", address.NetworkBorderGroup)
 	d.Set("public_ipv4_pool", address.PublicIpv4Pool)
 
-	// On import (domain never set, which it must've been if we created),
-	// set the 'vpc' attribute depending on if we're in a VPC.
-	if address.Domain != nil {
-		d.Set("vpc", aws.StringValue(address.Domain) == ec2.DomainTypeVpc)
-	}
-
+	d.Set("vpc", aws.StringValue(address.Domain) == ec2.DomainTypeVpc)
 	d.Set("domain", address.Domain)
 
-	// Force ID to be an Allocation ID if we're on a VPC
-	// This allows users to import the EIP based on the IP if they are in a VPC
-	if aws.StringValue(address.Domain) == ec2.DomainTypeVpc && net.ParseIP(id) != nil {
-		log.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), *address.AllocationId)
+	// The EIP can be imported by its IP address; store the allocation ID instead.
+	if net.ParseIP(id) != nil {
+		log.Printf("[DEBUG] Re-assigning EIP ID (%s) to its Allocation ID (%s)", d.Id(), aws.StringValue(address.AllocationId))
 		d.SetId(aws.StringValue(address.AllocationId))
 	}
 
@@ -433,60 +418,6 @@ func disassociateEip(d *schema.ResourceData, meta interface{}) error {
 	return err
 }
 
-// waitForEc2AddressAssociationClassic ensures the correct Instance is associated with an Address
-//
-// This can take a few seconds to appear correctly for EC2-Classic addresses.
-func waitForEc2AddressAssociationClassic(conn *ec2.EC2, publicIP string, instanceID string) error {
-	input := &ec2.DescribeAddressesInput{
-		Filters: []*ec2.Filter{
-			{
-				Name:   aws.String("public-ip"),
-				Values: []*string{aws.String(publicIP)},
-			},
-			{
-				Name:   aws.String("domain"),
-				Values: []*string{aws.String(ec2.DomainTypeStandard)},
-			},
-		},
-	}
-
-	err := resource.Retry(ec2AddressAssociationClassicTimeout, func() *resource.RetryError {
-		output, err := conn.DescribeAddresses(input)
-
-		if tfawserr.ErrCodeEquals(err, ErrCodeInvalidAddressNotFound) {
-			return resource.RetryableError(err)
-		}
-
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-
-		if len(output.Addresses) == 0 || output.Addresses[0] == nil {
-			return resource.RetryableError(fmt.Errorf("not found"))
-		}
-
-		if aws.StringValue(output.Addresses[0].InstanceId) != instanceID {
-			return resource.RetryableError(fmt.Errorf("not associated"))
-		}
-
-		return nil
-	})
-
-	if tfresource.TimedOut(err) { // nosemgrep: helper-schema-TimeoutError-check-doesnt-return-output
-		_, err = conn.DescribeAddresses(input)
-	}
-
-	if err != nil {
-		return fmt.Errorf("error describing EC2 Address (%s) association: %w", publicIP, err)
-	}
-
-	return nil
-}
-
-func ConvertIPToDashIP(ip string) string {
-	return strings.Replace(ip, ".", "-", -1)
-}
-
 // eipDNSNames returns the DNS names of the network interface the EIP is attached
 // to. They are read from the interface rather than from its instance, since an
 // instance may own several interfaces and only this one matches the EIP.
@@ -509,4 +440,8 @@ func eipDNSNames(conn *ec2.EC2, networkInterfaceID *string) (*string, *string, e
 	}
 
 	return eni.PrivateDnsName, publicDNS, nil
+}
+
+func ConvertIPToDashIP(ip string) string {
+	return strings.Replace(ip, ".", "-", -1)
 }
