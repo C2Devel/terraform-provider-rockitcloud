@@ -135,11 +135,8 @@ func resourceEIPCreate(d *schema.ResourceData, meta interface{}) error {
 
 	// EC2-Classic is not supported; all Elastic IPs are VPC-domain.
 	allocOpts := &ec2.AllocateAddressInput{
-		Domain: aws.String(ec2.DomainTypeVpc),
-	}
-
-	if v := d.Get("tags").(map[string]interface{}); len(v) > 0 {
-		allocOpts.TagSpecifications = ec2TagSpecificationsFromKeyValueTags(tags, ec2.ResourceTypeElasticIp)
+		Domain:            aws.String(ec2.DomainTypeVpc),
+		TagSpecifications: ec2TagSpecificationsFromKeyValueTags(tags, ec2.ResourceTypeElasticIp),
 	}
 
 	if v, ok := d.GetOk("address"); ok {
