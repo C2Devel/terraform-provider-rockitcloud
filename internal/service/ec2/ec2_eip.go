@@ -118,10 +118,11 @@ func ResourceEIP() *schema.Resource {
 			"tags":     tftags.TagsSchema(),
 			"tags_all": tftags.TagsSchemaComputed(),
 			"vpc": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:       schema.TypeBool,
+				Optional:   true,
+				ForceNew:   false,
+				Default:    true,
+				Deprecated: "The specified value is ignored.",
 			},
 		},
 	}
@@ -132,29 +133,16 @@ func resourceEIPCreate(d *schema.ResourceData, meta interface{}) error {
 	defaultTagsConfig := meta.(*conns.AWSClient).DefaultTagsConfig
 	tags := defaultTagsConfig.MergeTags(tftags.New(d.Get("tags").(map[string]interface{})))
 
-	// By default, we're not in a VPC
-	domainOpt := ""
-	if v := d.Get("vpc"); v != nil && v.(bool) {
-		domainOpt = ec2.DomainTypeVpc
-	}
-
+	// EC2-Classic is not supported; all Elastic IPs are VPC-domain.
 	allocOpts := &ec2.AllocateAddressInput{
-		Domain: aws.String(domainOpt),
+		Domain: aws.String(ec2.DomainTypeVpc),
 	}
 
 	if v := d.Get("tags").(map[string]interface{}); len(v) > 0 {
-		supportedPlatforms := meta.(*conns.AWSClient).SupportedPlatforms
-		if domainOpt != ec2.DomainTypeVpc && len(supportedPlatforms) > 0 && conns.HasEC2Classic(supportedPlatforms) {
-			return fmt.Errorf("tags cannot be set for a standard-domain EIP - must be a VPC-domain EIP")
-		}
 		allocOpts.TagSpecifications = ec2TagSpecificationsFromKeyValueTags(tags, ec2.ResourceTypeElasticIp)
 	}
 
 	if v, ok := d.GetOk("address"); ok {
-		supportedPlatforms := meta.(*conns.AWSClient).SupportedPlatforms
-		if domainOpt != ec2.DomainTypeVpc && len(supportedPlatforms) > 0 && conns.HasEC2Classic(supportedPlatforms) {
-			return fmt.Errorf("error, address to recover cannot be set for a standard-domain EIP - must be a VPC-domain EIP")
-		}
 		allocOpts.Address = aws.String(v.(string))
 	}
 
@@ -176,19 +164,10 @@ func resourceEIPCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error creating EIP: %s", err)
 	}
 
-	// The domain tells us if we're in a VPC or not
 	d.Set("domain", allocResp.Domain)
 
-	// Assign the eips (unique) allocation id for use later
-	// the EIP api has a conditional unique ID (really), so
-	// if we're in a VPC we need to save the ID as such, otherwise
-	// it defaults to using the public IP
 	log.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
-	if d.Get("domain").(string) == ec2.DomainTypeVpc {
-		d.SetId(aws.StringValue(allocResp.AllocationId))
-	} else {
-		d.SetId(aws.StringValue(allocResp.PublicIp))
-	}
+	d.SetId(aws.StringValue(allocResp.AllocationId))
 
 	log.Printf("[INFO] EIP ID: %s (domain: %v)", d.Id(), *allocResp.Domain)
 
@@ -200,20 +179,17 @@ func resourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 	defaultTagsConfig := meta.(*conns.AWSClient).DefaultTagsConfig
 	ignoreTagsConfig := meta.(*conns.AWSClient).IgnoreTagsConfig
 
-	domain := resourceEIPDomain(d)
 	id := d.Id()
 
+	// The ID is an allocation ID, unless the EIP was imported by its public IP.
 	req := &ec2.DescribeAddressesInput{}
-
-	if domain == ec2.DomainTypeVpc {
+	if strings.Contains(id, "eipalloc") {
 		req.AllocationIds = []*string{aws.String(id)}
 	} else {
 		req.PublicIps = []*string{aws.String(id)}
 	}
 
-	log.Printf(
-		"[DEBUG] EIP describe configuration: %s (domain: %s)",
-		req, domain)
+	log.Printf("[DEBUG] EIP describe configuration: %s", req)
 
 	var err error
 	var describeAddresses *ec2.DescribeAddressesOutput
@@ -257,7 +233,7 @@ func resourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 	// In the case that AWS returns more EIPs than we intend it to, we loop
 	// over the returned addresses to see if it's in the list of results
 	for _, addr := range describeAddresses.Addresses {
-		if (domain == ec2.DomainTypeVpc && aws.StringValue(addr.AllocationId) == id) || aws.StringValue(addr.PublicIp) == id {
+		if aws.StringValue(addr.AllocationId) == id || aws.StringValue(addr.PublicIp) == id {
 			address = addr
 			break
 		}
@@ -281,16 +257,15 @@ func resourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("network_interface", "")
 	}
 
-	region := aws.StringValue(conn.Config.Region)
 	d.Set("private_ip", address.PrivateIpAddress)
-	if address.PrivateIpAddress != nil {
-		d.Set("private_dns", fmt.Sprintf("ip-%s.%s", ConvertIPToDashIP(*address.PrivateIpAddress), RegionalPrivateDNSSuffix(region)))
-	}
-
 	d.Set("public_ip", address.PublicIp)
-	if address.PublicIp != nil {
-		d.Set("public_dns", meta.(*conns.AWSClient).PartitionHostname(fmt.Sprintf("ec2-%s.%s", ConvertIPToDashIP(*address.PublicIp), RegionalPublicDNSSuffix(region))))
+
+	privateDNS, publicDNS, err := eipDNSNames(conn, address.NetworkInterfaceId)
+	if err != nil {
+		return fmt.Errorf("error reading EC2 Network Interface (%s) for EIP (%s): %w", aws.StringValue(address.NetworkInterfaceId), d.Id(), err)
 	}
+	d.Set("private_dns", privateDNS)
+	d.Set("public_dns", publicDNS)
 
 	d.Set("allocation_id", address.AllocationId)
 	d.Set("carrier_ip", address.CarrierIp)
@@ -331,8 +306,6 @@ func resourceEIPRead(d *schema.ResourceData, meta interface{}) error {
 func resourceEIPUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*conns.AWSClient).EC2Conn
 
-	domain := resourceEIPDomain(d)
-
 	// If we are updating an EIP that is not newly created, and we are attached to
 	// an instance or interface, detach first.
 	disassociate := false
@@ -349,40 +322,35 @@ func resourceEIPUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	// Associate to instance or interface if specified
-	associate := false
 	v_instance, ok_instance := d.GetOk("instance")
 	v_interface, ok_interface := d.GetOk("network_interface")
 
-	if d.HasChange("instance") && ok_instance {
-		associate = true
-	} else if (d.HasChanges("network_interface", "associate_with_private_ip")) && ok_interface {
-		associate = true
-	}
+	associateByInstance := d.HasChange("instance") && ok_instance
+	// "network_interface" is Optional+Computed, so it can hold a stale ENI ID
+	// from a prior instance-based association; don't treat that as a trigger.
+	associateByInterface := !associateByInstance &&
+		d.HasChanges("network_interface", "associate_with_private_ip") && ok_interface
+	associate := associateByInstance || associateByInterface
 	if associate {
 		instanceId := v_instance.(string)
 		networkInterfaceId := v_interface.(string)
 
+		var privateIpAddress *string
+		if v := d.Get("associate_with_private_ip").(string); v != "" {
+			privateIpAddress = aws.String(v)
+		}
 		assocOpts := &ec2.AssociateAddressInput{
-			InstanceId: aws.String(instanceId),
-			PublicIp:   aws.String(d.Id()),
+			AllocationId:     aws.String(d.Id()),
+			PrivateIpAddress: privateIpAddress,
+		}
+		// Specifying both InstanceId and NetworkInterfaceId is rejected.
+		if associateByInstance {
+			assocOpts.InstanceId = aws.String(instanceId)
+		} else {
+			assocOpts.NetworkInterfaceId = aws.String(networkInterfaceId)
 		}
 
-		// more unique ID conditionals
-		if domain == ec2.DomainTypeVpc {
-			var privateIpAddress *string
-			if v := d.Get("associate_with_private_ip").(string); v != "" {
-				privateIpAddress = aws.String(v)
-			}
-			assocOpts = &ec2.AssociateAddressInput{
-				NetworkInterfaceId: aws.String(networkInterfaceId),
-				InstanceId:         aws.String(instanceId),
-				AllocationId:       aws.String(d.Id()),
-				PrivateIpAddress:   privateIpAddress,
-			}
-		}
-
-		log.Printf("[DEBUG] EIP associate configuration: %s (domain: %s)", assocOpts, domain)
+		log.Printf("[DEBUG] EIP associate configuration: %s", assocOpts)
 
 		err := resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 			_, err := conn.AssociateAddress(assocOpts)
@@ -404,18 +372,9 @@ func resourceEIPUpdate(d *schema.ResourceData, meta interface{}) error {
 			d.Set("network_interface", "")
 			return fmt.Errorf("Failure associating EIP: %s", err)
 		}
-
-		if assocOpts.AllocationId == nil {
-			if err := waitForEc2AddressAssociationClassic(conn, aws.StringValue(assocOpts.PublicIp), aws.StringValue(assocOpts.InstanceId)); err != nil {
-				return fmt.Errorf("error waiting for EC2 Address (%s) to associate with EC2-Classic Instance (%s): %w", aws.StringValue(assocOpts.PublicIp), aws.StringValue(assocOpts.InstanceId), err)
-			}
-		}
 	}
 
 	if d.HasChange("tags_all") && !d.IsNewResource() {
-		if d.Get("domain").(string) == ec2.DomainTypeStandard {
-			return fmt.Errorf("tags cannot be set for a standard-domain EIP - must be a VPC-domain EIP")
-		}
 		o, n := d.GetChange("tags_all")
 		if err := UpdateTags(conn, d.Id(), o, n); err != nil {
 			return fmt.Errorf("error updating EIP (%s) tags: %s", d.Id(), err)
@@ -428,14 +387,6 @@ func resourceEIPUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceEIPDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*conns.AWSClient).EC2Conn
 
-	if err := resourceEIPRead(d, meta); err != nil {
-		return err
-	}
-	if d.Id() == "" {
-		// This might happen from the read
-		return nil
-	}
-
 	// If we are attached to an instance or interface, detach first.
 	if d.Get("instance").(string) != "" || d.Get("association_id").(string) != "" {
 		if err := disassociateEip(d, meta); err != nil {
@@ -443,21 +394,12 @@ func resourceEIPDelete(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	domain := resourceEIPDomain(d)
-
-	var input *ec2.ReleaseAddressInput
-	switch domain {
-	case ec2.DomainTypeVpc:
-		log.Printf("[DEBUG] EIP release (destroy) address allocation: %v", d.Id())
-		input = &ec2.ReleaseAddressInput{
-			AllocationId:       aws.String(d.Id()),
-			NetworkBorderGroup: aws.String(d.Get("network_border_group").(string)),
-		}
-	case ec2.DomainTypeStandard:
-		log.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
-		input = &ec2.ReleaseAddressInput{
-			PublicIp: aws.String(d.Id()),
-		}
+	log.Printf("[DEBUG] EIP release (destroy) address allocation: %v", d.Id())
+	input := &ec2.ReleaseAddressInput{
+		AllocationId: aws.String(d.Id()),
+	}
+	if v := d.Get("network_border_group").(string); v != "" {
+		input.NetworkBorderGroup = aws.String(v)
 	}
 
 	// AuthFailure is the only error worth waiting out here
@@ -466,49 +408,32 @@ func resourceEIPDelete(d *schema.ResourceData, meta interface{}) error {
 		return conn.ReleaseAddress(input)
 	}, "AuthFailure")
 
+	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidAllocationIDNotFound) {
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("error releasing EC2 EIP (%s): %w", d.Id(), err)
 	}
 	return nil
 }
 
-func resourceEIPDomain(d *schema.ResourceData) string {
-	if v, ok := d.GetOk("domain"); ok {
-		return v.(string)
-	} else if strings.Contains(d.Id(), "eipalloc") {
-		// We have to do this for backwards compatibility since TF 0.1
-		// didn't have the "domain" computed attribute.
-		return ec2.DomainTypeVpc
-	}
-
-	return ec2.DomainTypeStandard
-}
-
 func disassociateEip(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*conns.AWSClient).EC2Conn
 	log.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
-	var err error
-	switch resourceEIPDomain(d) {
-	case ec2.DomainTypeVpc:
-		associationID := d.Get("association_id").(string)
-		if associationID == "" {
-			// If assiciationID is empty, it means there's no association.
-			// Hence this disassociation can be skipped.
-			return nil
-		}
-		_, err = conn.DisassociateAddress(&ec2.DisassociateAddressInput{
-			AssociationId: aws.String(associationID),
-		})
-	case ec2.DomainTypeStandard:
-		_, err = conn.DisassociateAddress(&ec2.DisassociateAddressInput{
-			PublicIp: aws.String(d.Get("public_ip").(string)),
-		})
+
+	associationID := d.Get("association_id").(string)
+	if associationID == "" {
+		return nil
 	}
+
+	_, err := conn.DisassociateAddress(&ec2.DisassociateAddressInput{
+		AssociationId: aws.String(associationID),
+	})
 
 	// First check if the association ID is not found. If this
 	// is the case, then it was already disassociated somehow,
-	// and that is okay. The most commmon reason for this is that
-	// the instance or ENI it was attached it was destroyed.
+	// and that is okay. The most common reason for this is that
+	// the instance or ENI it was attached to was destroyed.
 	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidAssociationIDNotFound) {
 		err = nil
 	}
@@ -568,4 +493,28 @@ func waitForEc2AddressAssociationClassic(conn *ec2.EC2, publicIP string, instanc
 
 func ConvertIPToDashIP(ip string) string {
 	return strings.Replace(ip, ".", "-", -1)
+}
+
+// eipDNSNames returns the DNS names of the network interface the EIP is attached
+// to. They are read from the interface rather than from its instance, since an
+// instance may own several interfaces and only this one matches the EIP.
+func eipDNSNames(conn *ec2.EC2, networkInterfaceID *string) (*string, *string, error) {
+	if aws.StringValue(networkInterfaceID) == "" {
+		return nil, nil, nil
+	}
+
+	eni, err := FindNetworkInterfaceByID(conn, aws.StringValue(networkInterfaceID))
+	if err != nil {
+		if tfresource.NotFound(err) {
+			return nil, nil, nil
+		}
+		return nil, nil, err
+	}
+
+	var publicDNS *string
+	if eni.Association != nil {
+		publicDNS = eni.Association.PublicDnsName
+	}
+
+	return eni.PrivateDnsName, publicDNS, nil
 }
