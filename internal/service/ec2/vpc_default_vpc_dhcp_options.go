@@ -118,12 +118,3 @@ func RegionalPrivateDNSSuffix(region string) string {
 
 	return fmt.Sprintf("%s.compute.internal", region)
 }
-
-func RegionalPublicDNSSuffix(region string) string {
-	// lintignore:AWSAT003
-	if region == "us-east-1" {
-		return "compute-1"
-	}
-
-	return fmt.Sprintf("%s.compute", region)
-}
