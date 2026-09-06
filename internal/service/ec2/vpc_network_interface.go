@@ -1159,6 +1159,16 @@ func DetachNetworkInterface(conn *ec2.EC2, networkInterfaceID, attachmentID stri
 		return fmt.Errorf("error waiting for EC2 Network Interface (%s/%s) detach: %w", networkInterfaceID, attachmentID, err)
 	}
 
+	_, err = WaitNetworkInterfaceDetachedFromInstance(conn, networkInterfaceID, timeout)
+
+	if tfresource.NotFound(err) {
+		return nil
+	}
+
+	if err != nil {
+		return fmt.Errorf("error waiting for EC2 Network Interface (%s) to become available: %w", networkInterfaceID, err)
+	}
+
 	return nil
 }
 
