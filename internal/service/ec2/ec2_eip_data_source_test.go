@@ -209,7 +209,6 @@ data "aws_ec2_coip_pools" "test" {}
 
 resource "aws_eip" "test" {
   customer_owned_ipv4_pool = tolist(data.aws_ec2_coip_pools.test.pool_ids)[0]
-  vpc                      = true
 }
 
 data "aws_eip" "test" {
@@ -221,8 +220,6 @@ data "aws_eip" "test" {
 func testAccEIPFilterDataSourceConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc = true
-
   tags = {
     Name = %q
   }
@@ -238,9 +235,7 @@ data "aws_eip" "test" {
 }
 
 const testAccEIPIDDataSourceConfig = `
-resource "aws_eip" "test" {
-  vpc = true
-}
+resource "aws_eip" "test" {}
 
 data "aws_eip" "test" {
   id = aws_eip.test.id
@@ -260,9 +255,7 @@ data "aws_eip" "test" {
 }
 
 const testAccEIPPublicIPVPCDataSourceConfig = `
-resource "aws_eip" "test" {
-  vpc = true
-}
+resource "aws_eip" "test" {}
 
 data "aws_eip" "test" {
   public_ip = aws_eip.test.public_ip
@@ -272,8 +265,6 @@ data "aws_eip" "test" {
 func testAccEIPTagsDataSourceConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc = true
-
   tags = {
     Name = %q
   }
@@ -306,7 +297,6 @@ resource "aws_network_interface" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc               = true
   network_interface = aws_network_interface.test.id
 }
 
@@ -350,7 +340,6 @@ resource "aws_instance" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc      = true
   instance = aws_instance.test.id
 }
 
@@ -371,7 +360,6 @@ data "aws_availability_zone" "available" {
 }
 
 resource "aws_eip" "test" {
-  vpc                  = true
   network_border_group = data.aws_availability_zone.available.network_border_group
 
   tags = {
