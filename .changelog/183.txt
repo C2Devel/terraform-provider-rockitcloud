@@ -1,0 +1,35 @@
+```release-note:note
+resource/aws_eip: deprecate the `vpc` argument, which is ignored since all EIPs are for use in a VPC
+```
+
+```release-note:bug
+resource/aws_eip, data-source/aws_eip: fix `private_dns` and `public_dns`, which were predicted instead of read from the attached network interface
+```
+
+```release-note:note
+resource/aws_eip, data-source/aws_eip: reading an attached EIP now also calls `ec2:DescribeNetworkInterfaces`
+```
+
+```release-note:bug
+resource/aws_eip: fix `terraform destroy` failing when the address was already released outside of Terraform
+```
+
+```release-note:bug
+resource/aws_eip: fix `default_tags` not being applied on the first apply when the resource has no `tags` argument
+```
+
+```release-note:enhancement
+resource/aws_eip: reject specifying both `instance` and `network_interface` at plan time instead of failing during apply
+```
+
+```release-note:bug
+resource/aws_network_interface, resource/aws_network_interface_attachment: fix deletion failing with `Network interface is currently in use` right after the interface is detached
+```
+
+```release-note:bug
+resource/aws_eip_association: fix `allow_reassociation` being ignored when set to `false`, which allowed an already associated Elastic IP to be re-associated
+```
+
+```release-note:bug
+resource/aws_eip_association: make `private_ip_address` read-only, as the API ignores the specified value and the association was recreated on every apply. Configurations that set it explicitly must remove the argument
+```

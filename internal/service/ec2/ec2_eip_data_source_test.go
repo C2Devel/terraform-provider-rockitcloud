@@ -53,27 +53,6 @@ func TestAccEC2EIPDataSource_id(t *testing.T) {
 	})
 }
 
-func TestAccEC2EIPDataSource_PublicIP_ec2Classic(t *testing.T) {
-	dataSourceName := "data.aws_eip.test"
-	resourceName := "aws_eip.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t); acctest.PreCheckEC2Classic(t) },
-		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
-		ProviderFactories: acctest.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccEIPPublicIPClassicDataSourceConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(dataSourceName, "id", resourceName, "id"),
-					resource.TestCheckResourceAttrPair(dataSourceName, "public_dns", resourceName, "public_dns"),
-					resource.TestCheckResourceAttrPair(dataSourceName, "public_ip", resourceName, "public_ip"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccEC2EIPDataSource_PublicIP_vpc(t *testing.T) {
 	dataSourceName := "data.aws_eip.test"
 	resourceName := "aws_eip.test"
@@ -133,7 +112,10 @@ func TestAccEC2EIPDataSource_networkInterface(t *testing.T) {
 					resource.TestCheckResourceAttrPair(dataSourceName, "id", resourceName, "id"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "network_interface_id", resourceName, "network_interface"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "private_dns", resourceName, "private_dns"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "private_dns"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "private_ip", resourceName, "private_ip"),
+					resource.TestCheckResourceAttrPair(dataSourceName, "public_dns", resourceName, "public_dns"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "public_dns"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "domain", resourceName, "domain"),
 				),
 			},
@@ -209,7 +191,6 @@ data "aws_ec2_coip_pools" "test" {}
 
 resource "aws_eip" "test" {
   customer_owned_ipv4_pool = tolist(data.aws_ec2_coip_pools.test.pool_ids)[0]
-  vpc                      = true
 }
 
 data "aws_eip" "test" {
@@ -221,8 +202,6 @@ data "aws_eip" "test" {
 func testAccEIPFilterDataSourceConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc = true
-
   tags = {
     Name = %q
   }
@@ -238,31 +217,15 @@ data "aws_eip" "test" {
 }
 
 const testAccEIPIDDataSourceConfig = `
-resource "aws_eip" "test" {
-  vpc = true
-}
+resource "aws_eip" "test" {}
 
 data "aws_eip" "test" {
   id = aws_eip.test.id
 }
 `
 
-func testAccEIPPublicIPClassicDataSourceConfig() string {
-	return acctest.ConfigCompose(
-		acctest.ConfigEC2ClassicRegionProvider(),
-		`
-resource "aws_eip" "test" {}
-
-data "aws_eip" "test" {
-  public_ip = aws_eip.test.public_ip
-}
-`)
-}
-
 const testAccEIPPublicIPVPCDataSourceConfig = `
-resource "aws_eip" "test" {
-  vpc = true
-}
+resource "aws_eip" "test" {}
 
 data "aws_eip" "test" {
   public_ip = aws_eip.test.public_ip
@@ -272,8 +235,6 @@ data "aws_eip" "test" {
 func testAccEIPTagsDataSourceConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc = true
-
   tags = {
     Name = %q
   }
@@ -306,7 +267,6 @@ resource "aws_network_interface" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc               = true
   network_interface = aws_network_interface.test.id
 }
 
@@ -319,6 +279,7 @@ data "aws_eip" "test" {
 `
 
 var testAccEIPInstanceDataSourceConfig = acctest.ConfigCompose(
+	testAccEIPInstanceAMIConfig(),
 	acctest.ConfigAvailableAZsNoOptInDefaultExclude(), `
 resource "aws_vpc" "test" {
   cidr_block = "10.2.0.0/16"
@@ -334,31 +295,18 @@ resource "aws_internet_gateway" "test" {
   vpc_id = aws_vpc.test.id
 }
 
-data "aws_ami" "test" {
-  most_recent = true
-  name_regex  = "^amzn-ami.*ecs-optimized$"
-
-  owners = [
-    "amazon",
-  ]
-}
-
 resource "aws_instance" "test" {
-  ami           = data.aws_ami.test.id
+  ami           = data.aws_ami.eip_test.id
   subnet_id     = aws_subnet.test.id
-  instance_type = "t2.micro"
+  instance_type = "m1.micro"
 }
 
 resource "aws_eip" "test" {
-  vpc      = true
   instance = aws_instance.test.id
 }
 
 data "aws_eip" "test" {
-  filter {
-    name   = "instance-id"
-    values = [aws_eip.test.instance]
-  }
+  id = aws_eip.test.id
 }
 `)
 
@@ -371,7 +319,6 @@ data "aws_availability_zone" "available" {
 }
 
 resource "aws_eip" "test" {
-  vpc                  = true
   network_border_group = data.aws_availability_zone.available.network_border_group
 
   tags = {

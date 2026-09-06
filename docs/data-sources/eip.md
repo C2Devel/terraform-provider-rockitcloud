@@ -7,78 +7,91 @@ description: |-
 ---
 
 [describe-addresses]: https://docs.k2.cloud/en/api/ec2/actions/addresses/DescribeAddresses.html
-[vpc-dns-hostnames]: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html#vpc-dns-hostnames
 
 # Data Source: aws_eip
 
-Provides information about an Elastic IP.
+Provides information about an Elastic IP (EIP).
 
-## Example Usage
+## Example usage
 
-### Search By Allocation ID
+### Search by allocation ID
 
 ```terraform
-data "aws_eip" "by_allocation_id" {
+data "aws_eip" "selected" {
   id = "eipalloc-12345678"
 }
 ```
 
-### Search By Filters
+### Search by filters
 
 ```terraform
-data "aws_eip" "by_filter" {
+data "aws_eip" "selected" {
   filter {
     name   = "tag:Name"
-    values = ["exampleNameTagValue"]
+    values = ["tf-eip"]
   }
 }
 ```
 
-### Search By Public IP
+### Search by public IP
 
 ```terraform
-data "aws_eip" "by_public_ip" {
+data "aws_eip" "selected" {
   public_ip = "1.2.3.4"
 }
 ```
 
-### Search By Tags
+### Search by tags
 
 ```terraform
-data "aws_eip" "by_tags" {
+data "aws_eip" "selected" {
   tags = {
-    Name = "exampleNameTagValue"
+    Name = "tf-eip"
   }
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The arguments of this data source act as filters for querying the available Elastic IPs.
-The given filters must match exactly one Elastic IP whose data will be exported as attributes.
+The arguments of this data source act as filters for querying the available EIPs.
+The given filters must match exactly one EIP whose data will be exported as attributes.
 
-* `filter` - (Optional) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-addresses]
-* `id` - (Optional) The ID of the allocation of the specific VPC Elastic IP to retrieve.
-* `public_ip` - (Optional) The public IP of the specific Elastic IP to retrieve.
-* `tags` - (Optional) Map of tags, each pair of which must exactly match a pair on the desired Elastic IP.
+* `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-addresses]
+* `id` - (Optional, String) The allocation ID of the specific EIP to retrieve.
+* `public_ip` - (Optional, String) The public IP address of the specific EIP to retrieve.
+* `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resource.
 
-## Attribute Reference
+### filter
+
+* `name` - (Required, String) The name of the filter.
+    * _Constraints:_ Filter names are case-sensitive
+* `values` - (Required, List of strings) One or more filter values.
+    * _Constraints:_ Filter values are case-sensitive
+
+## Attribute reference
 
 ### Supported attributes
 
 In addition to all arguments above, the following attributes are exported:
 
-* `association_id` - The ID representing the association of the address with an instance in a VPC.
-* `domain` - Indicates whether the address is for use in EC2-Classic (standard) or in a VPC (vpc).
-* `id` - If VPC Elastic IP, the allocation identifier.
-* `instance_id` - The ID of the instance that the address is associated with (if any).
-* `network_interface_id` - The ID of the network interface.
-* `network_interface_owner_id` - The ID of the project that owns the network interface.
-* `private_ip` - The private IP address associated with the Elastic IP address.
-* `public_ip` - Public IP address of Elastic IP.
-* `public_ipv4_pool` - The ID of an address pool.
-* `tags` - Map of tags assigned to the Elastic IP.
+* `association_id` - (String) The ID of the address association with an instance.
+    * _Constraints:_ Empty unless the EIP is attached to an instance or a network interface
+* `domain` - (String) The domain in which the EIP is used.
+    * _Constraints:_ Always `vpc`
+* `instance_id` - (String) The ID of the instance that the address is associated with.
+    * _Constraints:_ Empty unless the EIP is attached to an instance or a network interface
+* `network_interface_id` - (String) The ID of the network interface.
+    * _Constraints:_ Empty unless the EIP is attached to an instance or a network interface
+* `network_interface_owner_id` - (String) The ID of the project that the network interface belongs to.
+    * _Constraints:_ Empty unless the EIP is attached to an instance or a network interface
+* `private_dns` - (String) The private DNS name of the network interface this EIP is attached to.
+    * _Constraints:_ Empty unless the EIP is attached to an instance or a network interface
+* `private_ip` - (String) The private IP address.
+    * _Constraints:_ Empty unless the EIP is attached to an instance or a network interface
+* `public_dns` - (String) The public DNS name of the network interface this EIP is attached to.
+    * _Constraints:_ Empty unless the EIP is attached to an instance or a network interface
+* `public_ipv4_pool` - (String) The ID of the EC2 IPv4 address pool.
 
 ### Unsupported attributes
 
@@ -86,6 +99,4 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`carrier_ip`, `customer_owned_ip`, `customer_owned_ipv4_pool`, `private_dns`, `public_dns`.
-
-~> **Note** The data source computes the `public_dns` and `private_dns` attributes according to the [AWS VPC DNS Guide][vpc-dns-hostnames] as they are not available with the EC2 API.
+`carrier_ip`, `customer_owned_ip`, `customer_owned_ipv4_pool`.

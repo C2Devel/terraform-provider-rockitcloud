@@ -2109,6 +2109,26 @@ func WaitNetworkInterfaceCreated(conn *ec2.EC2, id string, timeout time.Duration
 	return nil, err
 }
 
+// WaitNetworkInterfaceDetachedFromInstance waits for the interface itself to
+// leave the detaching state. The attachment reaches "detached" earlier, and the
+// interface cannot be deleted until it becomes available.
+func WaitNetworkInterfaceDetachedFromInstance(conn *ec2.EC2, id string, timeout time.Duration) (*ec2.NetworkInterface, error) {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{ec2.NetworkInterfaceStatusInUse, ec2.NetworkInterfaceStatusDetaching},
+		Target:  []string{ec2.NetworkInterfaceStatusAvailable},
+		Timeout: timeout,
+		Refresh: StatusNetworkInterfaceStatus(conn, id),
+	}
+
+	outputRaw, err := stateConf.WaitForState()
+
+	if output, ok := outputRaw.(*ec2.NetworkInterface); ok {
+		return output, err
+	}
+
+	return nil, err
+}
+
 func WaitNetworkInterfaceDetached(conn *ec2.EC2, id string, timeout time.Duration) (*ec2.NetworkInterfaceAttachment, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{ec2.AttachmentStatusDetaching},
