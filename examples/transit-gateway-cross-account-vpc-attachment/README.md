@@ -3,37 +3,19 @@
 This example demonstrates how to create a transit gateway in one account and share it with a second account to attach it to a VPC.
 To access infrastructure in different accounts, two providers are configured with different aliases.
 
-The example uses several variables. You can copy `terraform.template.tfvars` to `terraform.tfvars` and specify their values in this file.
-
-```
-$ cp terraform.template.tfvars terraform.tfvars 
-```
+The example takes credentials from two `c2rc.sh` files, one per account.
+Get the file for each project and place them in this directory as `c2rc-first.sh` and `c2rc-second.sh`.
+The id of the second account is derived from `c2rc-second.sh`, so no variables have to be specified.
 
 Running the example:
 
-```
+```shell
 $ terraform init
 $ terraform apply
-
-# or
-$ terraform apply \
-	-var="first_access_key=your-first-access-key" \
-	-var="first_secret_key=your-first-secret-key" \
-	-var="second_access_key=your-second-access-key" \
-	-var="second_secret_key=your-second-secret-key" \
-	-var="second_account_id=your-second-account-id"
 ```
 
 Destroying the example:
 
-```
+```shell
 $ terraform destroy
-
-# or
-$ terraform destroy \
-	-var="first_access_key=your-first-access-key" \
-	-var="first_secret_key=your-first-secret-key" \
-	-var="second_access_key=your-second-access-key" \
-	-var="second_secret_key=your-second-secret-key" \
-	-var="second_account_id=your-second-account-id"
 ```

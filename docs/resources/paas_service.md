@@ -43,7 +43,8 @@ description: |-
 
 Manages a PaaS service. For details about PaaS, see the [user documentation][paas].
 
-~> **Note** A PaaS service requires the VPC to have an [internet gateway] with a default route to it (`0.0.0.0/0`); otherwise creating the service fails with `InvalidNetworkConfigurations`. The minimal examples below do not create these resources.
+~> **Important** A PaaS service requires the VPC to have an [internet gateway], a NAT gateway and a default route (`0.0.0.0/0`) to the NAT gateway; otherwise creating the service fails.
+It's recommended to specify the route as an explicit dependency via `depends_on`.
 
 ## Example Usage
 
@@ -68,7 +69,33 @@ resource "aws_subnet" "example" {
   }
 }
 
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-igw"
+  }
+}
+
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-nat-gw"
+  }
+}
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.example.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
+}
+
 resource "aws_paas_service" "elasticsearch" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -129,10 +156,12 @@ resource "aws_paas_service" "elk" {
 
 ### Memcached Service with Enabled Monitoring
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch Service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "memcached" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -166,10 +195,12 @@ resource "aws_paas_service" "memcached" {
 
 ### MongoDB Service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch Service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "mongodb" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -219,10 +250,12 @@ resource "aws_paas_service" "mongodb" {
 
 ### MySQL Service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch Service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "mysql" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -279,6 +312,10 @@ resource "aws_paas_service" "mysql" {
 ### PostgreSQL Service with Arbitrator
 
 ```terraform
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
 resource "aws_vpc" "example" {
   cidr_block = "172.33.0.0/16"
 
@@ -287,34 +324,40 @@ resource "aws_vpc" "example" {
   }
 }
 
-resource "aws_subnet" "subnet_vol52" {
+resource "aws_subnet" "example" {
+  count = length(slice(data.aws_availability_zones.available.names, 0, 3))
+
   vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 15)
-  availability_zone = "ru-msk-vol52"
+  cidr_block        = "172.33.${count.index}.0/24"
+  availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
     Name = "tf-subnet"
   }
 }
 
-resource "aws_subnet" "subnet_vol51" {
-  vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 14)
-  availability_zone = "ru-msk-vol51"
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
 
   tags = {
-    Name = "tf-subnet"
+    Name = "tf-igw"
   }
 }
 
-resource "aws_subnet" "subnet_comp1p" {
-  vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 13)
-  availability_zone = "ru-msk-comp1p"
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
 
   tags = {
-    Name = "tf-subnet"
+    Name = "tf-nat-gw"
   }
+}
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.example.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
 }
 
 resource "aws_s3_bucket" "example" {
@@ -322,6 +365,8 @@ resource "aws_s3_bucket" "example" {
 }
 
 resource "aws_paas_service" "pgsql" {
+  depends_on = [aws_route.default_route]
+
   name = "tf-service"
 
   arbitrator_required = true
@@ -341,7 +386,7 @@ resource "aws_paas_service" "pgsql" {
 
   delete_interfaces_on_destroy = true
   security_group_ids           = [aws_vpc.example.default_security_group_id]
-  subnet_ids                   = [aws_subnet.subnet_vol52.id, aws_subnet.subnet_vol51.id, aws_subnet.subnet_comp1p.id]
+  subnet_ids                   = aws_subnet.example[*].id
 
   ssh_key_name = "<name>"
 
@@ -391,12 +436,14 @@ resource "aws_paas_service" "pgsql" {
 
 ### Kafka Service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch Service example](#elasticsearch-service).
 
 ~> **Note** Kafka always requires a coordinator role. For HA clusters, use either a dedicated `coordinator` block (shown below) or `additional_roles = ["coordinator"]` for combined broker+coordinator nodes.
 
 ```terraform
 resource "aws_paas_service" "kafka" {
+  depends_on = [aws_route.default_route]
+
   name              = "tf-service"
   high_availability = true
   instance_type     = "c5.large"
@@ -435,12 +482,14 @@ To create topics in this service, use the [aws_paas_kafka_topic](paas_kafka_topi
 
 ### Prometheus Service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch Service example](#elasticsearch-service).
 
 ~> **Note** K2 Cloud supports Prometheus only as a single-node service, so `high_availability` must be `false`.
 
 ```terraform
 resource "aws_paas_service" "prometheus" {
+  depends_on = [aws_route.default_route]
+
   name              = "tf-prometheus"
   high_availability = false
   instance_type     = "c5.large"
@@ -480,10 +529,12 @@ A complete runnable configuration is available in the
 
 ### RabbitMQ Service
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch Service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "rabbitmq" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 
@@ -512,10 +563,12 @@ resource "aws_paas_service" "rabbitmq" {
 
 ### Redis Service with Logging Enabled
 
-~> **Note** This example uses the VPC and subnet defined in the [Elasticsearch Service example](#elasticsearch-service).
+~> **Note** This example uses the VPC, subnet, internet gateway, NAT gateway and default route defined in the [Elasticsearch Service example](#elasticsearch-service).
 
 ```terraform
 resource "aws_paas_service" "redis" {
+  depends_on = [aws_route.default_route]
+
   name          = "tf-service"
   instance_type = "c5.large"
 

@@ -5,7 +5,7 @@ using the `aws_paas_service` and `aws_paas_kafka_topic` resources.
 
 It creates:
 
-* a VPC with a single subnet and an Internet Gateway (required by PaaS);
+* a VPC with a single subnet, an internet gateway and a NAT gateway (required by PaaS);
 * an SSH key pair used for node access;
 * an HA Kafka cluster (3 brokers + 3 coordinators) running the configured
   Kafka version;
@@ -18,17 +18,17 @@ Layout:
 |------|---------|
 | `providers.tf`     | Terraform/provider versions and provider config |
 | `variables.tf`     | Input variables (region, instance type, SSH key, ...) |
-| `vpc.tf`           | VPC + subnet + Internet Gateway + default route |
+| `vpc.tf`           | VPC + subnet + internet gateway + NAT gateway + default route |
 | `kafka-cluster.tf` | SSH key pair, Kafka PaaS service, outputs |
 | `kafka-topics.tf`  | `aws_paas_kafka_topic` resources, outputs |
 | `terraform.tfvars.example` | Template for `terraform.tfvars` |
 
 ## Running the example
 
-```bash
-export AWS_ACCESS_KEY_ID="<project>:<user>"
-export AWS_SECRET_ACCESS_KEY="<secret>"
+The example takes credentials from a `c2rc.sh` file.
+Get the file for your project and place it in this directory before running the example.
 
+```bash
 cp terraform.tfvars.example terraform.tfvars
 # edit terraform.tfvars and at least set ssh_public_key
 
@@ -59,9 +59,9 @@ The example deploys an HA cluster with dedicated coordinator nodes (the
 `coordinator { ... }` block). Two more variants are documented in the
 provider source tree under `examples/paas-kafka/`:
 
-* `service-ha-combined.tf.example` — HA cluster where broker and coordinator
+* `service-ha-combined.tf.example`: HA cluster where broker and coordinator
   roles share the same nodes (`additional_roles = ["coordinator"]`).
-* `service-non-ha.tf.example` — single-node cluster
+* `service-non-ha.tf.example`: single-node cluster
   (`high_availability = false` plus `additional_roles = ["coordinator"]`).
 
 K2 Cloud Kafka always requires the coordinator role; the

@@ -42,9 +42,11 @@ The following arguments are supported:
 * `vpc_id` - (Required, Forces new resource, String) The ID of the VPC.
 * `availability_zone` - (Optional, Forces new resource, String) The availability zone for the subnet.
 * `cidr_block` - (Required, Forces new resource, String) The IPv4 CIDR block for the subnet.
-* `map_public_ip_on_launch` - (Optional, Editable, Boolean) Indicates whether public IP addresses will be associated with instances created in this subnet. Addresses are associated only if there are available allocated Elastic IP addresses.
+* `map_public_ip_on_launch` - (Optional, Editable, Boolean, **Deprecated**) Indicates whether public IP addresses will be associated with instances created in this subnet. Addresses are associated only if there are available allocated Elastic IP addresses.
     * _Default value:_ `false`
 * `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+
+~> **Note** The argument `map_public_ip_on_launch` is deprecated and will be removed in a future release.
 
 ## Attribute reference
 

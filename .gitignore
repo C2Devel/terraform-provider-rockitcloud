@@ -31,6 +31,9 @@ terraform-provider-rockitcloud
 aws/testdata/service/cloudformation/examplecompany-exampleservice-exampleresource/bin/handler
 .venv/
 
+# Credentials files used by the examples
+c2rc*.sh
+
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/

@@ -1,42 +1,3 @@
-provider "aws" {
-  region                      = var.region
-  skip_credentials_validation = true
-  skip_requesting_account_id  = true
-  skip_region_validation      = true
-}
-
-# --------------------------------------------------------------------------
-# VPC, subnet, IGW  (PaaS requires internet gateway in the VPC)
-# --------------------------------------------------------------------------
-
-resource "aws_vpc" "example" {
-  cidr_block = "172.16.0.0/16"
-  tags       = { Name = "${var.paas_service_name}-vpc" }
-}
-
-resource "aws_subnet" "example" {
-  vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 4, 1)
-  availability_zone = var.availability_zone
-  tags              = { Name = "${var.paas_service_name}-subnet" }
-}
-
-resource "aws_internet_gateway" "example" {
-  vpc_id = aws_vpc.example.id
-  tags   = { Name = "${var.paas_service_name}-igw" }
-}
-
-resource "aws_route" "example_default" {
-  route_table_id         = aws_vpc.example.main_route_table_id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.example.id
-}
-
-resource "aws_key_pair" "example" {
-  key_name   = "${var.paas_service_name}-key"
-  public_key = var.ssh_public_key
-}
-
 # --------------------------------------------------------------------------
 # Prometheus PaaS service — single node
 #
@@ -44,8 +5,13 @@ resource "aws_key_pair" "example" {
 # The provider schema requires data_volume.
 # --------------------------------------------------------------------------
 
+resource "aws_key_pair" "example" {
+  key_name   = "${var.paas_service_name}-key"
+  public_key = var.ssh_public_key
+}
+
 resource "aws_paas_service" "prometheus" {
-  depends_on = [aws_route.example_default]
+  depends_on = [aws_route.default_route]
 
   name              = var.paas_service_name
   high_availability = false

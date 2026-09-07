@@ -16,9 +16,71 @@ description: |-
 Manages an EKS node group, which can provision and optionally update an autoscaling group of Kubernetes worker nodes compatible with EKS.
 For details about EKS node groups, see the [user documentation][eks-node-groups].
 
+~> **Important** A node group can only be deployed in subnets with internet access, so the VPC must have an internet gateway, a NAT gateway and a default route (`0.0.0.0/0`) to the NAT gateway.
+It's recommended to specify the route as an explicit dependency via `depends_on`.
+
 ## Example Usage
 
 ```terraform
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+resource "aws_vpc" "example" {
+  cidr_block = "172.16.0.0/16"
+
+  tags = {
+    Name = "tf-vpc"
+  }
+}
+
+resource "aws_subnet" "example" {
+  count = length(data.aws_availability_zones.available.names)
+
+  vpc_id            = aws_vpc.example.id
+  cidr_block        = "172.16.${count.index}.0/24"
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "tf-subnet"
+  }
+}
+
+resource "aws_internet_gateway" "example" {
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-igw"
+  }
+}
+
+resource "aws_nat_gateway" "example" {
+  depends_on = [aws_internet_gateway.example]
+
+  vpc_id = aws_vpc.example.id
+
+  tags = {
+    Name = "tf-nat-gw"
+  }
+}
+
+resource "aws_route" "default_route" {
+  route_table_id         = aws_vpc.example.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.example.id
+}
+
+resource "aws_eks_cluster" "example" {
+  depends_on = [aws_route.default_route]
+
+  name    = "tf-cluster"
+  version = "1.30.2"
+
+  vpc_config {
+    subnet_ids = aws_subnet.example[*].id
+  }
+}
+
 resource "aws_eks_node_group" "example" {
   cluster_name    = aws_eks_cluster.example.name
   instance_types  = ["c5.large"]
@@ -39,42 +101,28 @@ resource "aws_eks_node_group" "example" {
 
 ### Ignoring Changes to Desired Size
 
+~> **Note**
+This example uses the VPC, subnets, internet gateway, NAT gateway, default route and cluster defined in the [example above](#example-usage).
+
 You can utilize the generic Terraform resource [lifecycle configuration block][lifecycle] with `ignore_changes` to create an EKS node group with an initial size of running instances, then ignore any changes to that count caused externally.
 
 ```terraform
 resource "aws_eks_node_group" "example" {
-  # ... other configurations ...
+  cluster_name    = aws_eks_cluster.example.name
+  instance_types  = ["c5.large"]
+  node_group_name = "example"
+  subnet_ids      = aws_subnet.example[*].id
 
   scaling_config {
     # Example: Create EKS node group with 2 instances to start
     desired_size = 2
-
-    # ... other configurations ...
+    max_size     = 2
+    min_size     = 1
   }
 
   # Optional: Allow external changes without Terraform plan difference
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-  }
-}
-```
-
-### Example Subnets for EKS Node Group
-
-```terraform
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-resource "aws_subnet" "example" {
-  count = 2
-
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, count.index)
-  vpc_id            = aws_vpc.example.id
-
-  tags = {
-    "kubernetes.io/cluster/${aws_eks_cluster.example.name}" = "shared"
   }
 }
 ```

@@ -1,53 +1,3 @@
-terraform {
-  required_version = ">= 0.12"
-
-  required_providers {
-    aws = {
-      source  = "c2devel/rockitcloud"
-      version = "~> 25.4"
-    }
-  }
-}
-
-provider "aws" {
-  # For K2 Cloud, specify one of the supported regions.
-  # For other cloud platforms, enter a non-empty string,
-  # for example, "region-1", and API endpoints.
-  region = var.region
-}
-
-resource "aws_vpc" "example" {
-  cidr_block           = "10.0.0.0/16"
-
-  tags = {
-    Name = "terraform-elb-example"
-  }
-}
-
-resource "aws_internet_gateway" "example" {
-  vpc_id = aws_vpc.example.id
-
-  tags = {
-    Name = "terraform-elb-example"
-  }
-}
-
-resource "aws_route" "igw_route" {
-  route_table_id         = aws_vpc.example.main_route_table_id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.example.id
-}
-
-resource "aws_subnet" "example" {
-  vpc_id                  = aws_vpc.example.id
-  cidr_block              = "10.0.0.0/24"
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "terraform-elb-example"
-  }
-}
-
 # Default security group to access
 # the instances over SSH and HTTP
 resource "aws_security_group" "example" {
@@ -91,7 +41,7 @@ resource "aws_lb" "example" {
   subnets            = [aws_subnet.example.id]
 
   # Ensure the VPC has an internet gateway with a configured route or this step will fail
-  depends_on = [aws_route.igw_route]
+  depends_on = [aws_route.default_route]
 
   tags = {
     Name = "terraform-elb-example"
@@ -158,6 +108,8 @@ data "aws_ami" "selected" {
 }
 
 resource "aws_instance" "example" {
+  depends_on = [aws_route.default_route]
+
   instance_type = "c5.large"
   ami           = data.aws_ami.selected.id
 
