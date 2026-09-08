@@ -11,7 +11,8 @@ description: |-
 
 # Resource: aws_ec2_traffic_mirror_filter_rule
 
-Manages a traffic mirror filter rule. For details about traffic mirroring, see the [user documentation][traffic-mirroring].
+Manages a traffic mirror filter rule.
+For details about traffic mirroring, see the [user documentation][traffic-mirroring].
 
 ## Example usage
 
@@ -56,21 +57,27 @@ resource "aws_ec2_traffic_mirror_filter_rule" "rulein" {
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
 * `destination_cidr_block` - (Required, Editable, String) The destination CIDR block to assign to the traffic mirror rule.
 * `rule_action` - (Required, Editable, String) The action to take on the filtered traffic.
     * _Valid values:_ `accept`, `reject`
-* `rule_number` - (Required, Editable, Integer) The number of the traffic mirror rule. This number must be unique for each traffic mirror rule in a given direction. The rules are processed in ascending order by rule number.
+* `rule_number` - (Required, Editable, Integer) The number of the traffic mirror rule.
+  This number must be unique for each traffic mirror rule in a given direction.
+  The rules are processed in ascending order by rule number.
     * _Valid values:_ From 1 to 128
 * `source_cidr_block` - (Required, Editable, String) The source CIDR block to assign to the traffic mirror rule.
 * `traffic_direction` - (Required, Editable, String) The direction of traffic to be captured.
     * _Valid values:_ `egress`, `ingress`
 * `traffic_mirror_filter_id` - (Required, Forces new resource, String) The ID of the traffic mirror filter to which this rule should be added.
+
+The following arguments are optional:
+
 * `description` - (Optional, Editable, String) The description of the traffic mirror filter rule.
 * `destination_port_range` - (Optional, Editable, [Block](#destination_port_range)) The destination port range.
     * _Constraints:_ Supported only when the `protocol` is set to TCP(6) or UDP(17).
-* `protocol` - (Optional, Editable, Integer) The protocol number to assign to the traffic mirror rule. For information about the protocol value, see [Protocol Numbers][protocol-numbers] on the Internet Assigned Numbers Authority (IANA) website.
+* `protocol` - (Optional, Editable, Integer) The protocol number to assign to the traffic mirror rule.
+  For information about the protocol value, see [Protocol Numbers][protocol-numbers] on the Internet Assigned Numbers Authority (IANA) website.
     * _Example:_ `17` (UDP)
 * `source_port_range` - (Optional, Editable, [Block](#source_port_range)) The source port range.
     * _Constraints:_ Supported only when the `protocol` is set to TCP(6) or UDP(17).
@@ -111,7 +118,7 @@ import {
 }
 ```
 
-In older Terraform versions, the traffic mirror filter rule can be imported by `traffic_mirror_filter_id` and its `id` separated by `:` using `terraform import`, e.g.:
+In older Terraform versions, the traffic mirror filter rule can be imported by `traffic_mirror_filter_id` and its `id` separated by `:` using `terraform import`, for example:
 
 ```console
 % terraform import aws_ec2_traffic_mirror_filter_rule.rule tmf-12345678:tmfr-12345678

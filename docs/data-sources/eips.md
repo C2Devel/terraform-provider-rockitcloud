@@ -37,7 +37,7 @@ output "public_ips" {
 The arguments of this data source act as filters for querying the available Elastic IPs.
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-addresses]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-addresses]
 * `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired Elastic IPs.
 
 ### filter

@@ -11,7 +11,8 @@ description: |-
 
 # Resource: aws_ec2_traffic_mirror_filter
 
-Manages a traffic mirror filter. For details about traffic mirroring, see the [user documentation][traffic-mirroring].
+Manages a traffic mirror filter.
+For details about traffic mirroring, see the [user documentation][traffic-mirroring].
 
 ## Example usage
 
@@ -25,10 +26,9 @@ resource "aws_ec2_traffic_mirror_filter" "foo" {
 
 ## Argument reference
 
-The following arguments are supported:
-
 * `description` - (Optional, Forces new resource, String) The description of the filter.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror filter. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror filter.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 
@@ -63,7 +63,7 @@ import {
 }
 ```
 
-In older Terraform versions, the traffic mirror filter can be imported by its `id` using `terraform import`, e.g.:
+In older Terraform versions, the traffic mirror filter can be imported by its `id` using `terraform import`, for example:
 
 ```console
 terraform import aws_ec2_traffic_mirror_filter.foo tmf-12345678

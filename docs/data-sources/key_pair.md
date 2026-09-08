@@ -14,7 +14,7 @@ Provides information about a key pair.
 
 ## Example usage
 
-The following example shows how to get a key pair from its name.
+The following example shows how to get a key pair by its name.
 
 ```terraform
 data "aws_key_pair" "example" {
@@ -44,7 +44,7 @@ The arguments of this data source act as filters for querying the available key 
 The given filters must match exactly one key pair whose data will be exported as attributes.
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-key-pairs]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-key-pairs]
 * `key_name` - (Optional, String) The name of the key pair.
 * `key_pair_id` - (Optional, String) The ID of the key pair.
 

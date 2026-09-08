@@ -38,10 +38,8 @@ data "aws_ec2_host" "selected" {
 
 ## Argument reference
 
-The following arguments are supported:
-
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-hosts]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-hosts]
 * `host_id` - (Optional, String) The ID of the dedicated host.
 * `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired resource.
 
@@ -64,7 +62,7 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - (String) The ID of the dedicated host.
 * `instance_family` - (List of strings) The instance family supported by the dedicated host.
 * `instance_type` - (String) The instance type supported by the dedicated host.
-* `owner_id` - (String) The ID of the project that owns the dedicated host.
+* `owner_id` - (String) The ID of the project the dedicated host belongs to.
 * `sockets` - (Integer) The number of sockets on the dedicated host.
 * `tags` - (Map of strings) Key-value pairs assigned to the resource.
 * `total_vcpus` - (Integer) The total number of vCPUs on the dedicated host.

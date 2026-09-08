@@ -58,7 +58,7 @@ The arguments of this data source act as filters for querying the available Elas
 The given filters must match exactly one Elastic IP whose data will be exported as attributes.
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-addresses]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-addresses]
 * `id` - (Optional, String) The ID of the allocation of the specific VPC Elastic IP to retrieve.
 * `public_ip` - (Optional, String) The public IP of the specific Elastic IP to retrieve.
 * `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired resource.
@@ -76,16 +76,16 @@ The given filters must match exactly one Elastic IP whose data will be exported 
 
 In addition to all arguments above, the following attributes are exported:
 
-* `association_id` - (String) The ID representing the association of the address with an instance in a VPC.
-* `domain` - (String) Indicates whether the address is for use in EC2-Classic (standard) or in a VPC (vpc).
+* `association_id` - (String) The ID of the address association with an instance in a VPC.
+* `domain` - (String) Indicates whether the address is for use in EC2 Classic (standard) or in a VPC (vpc).
 * `id` - (String) If VPC Elastic IP, the allocation identifier.
 * `instance_id` - (String) The ID of the instance that the address is associated with (if any).
 * `network_interface_id` - (String) The ID of the network interface.
-* `network_interface_owner_id` - (String) The ID of the project that owns the network interface.
+* `network_interface_owner_id` - (String) The ID of the project the network interface belongs to.
 * `private_ip` - (String) The private IP address associated with the Elastic IP address.
-* `public_ip` - (String) The public IP address of the Elastic IP.
+* `public_ip` - (String) The public IP address of the Elastic IP address.
 * `public_ipv4_pool` - (String) The ID of an address pool.
-* `tags` - (Map of strings) Key-value pairs assigned to the Elastic IP.
+* `tags` - (Map of strings) Key-value pairs assigned to the Elastic IP address.
 
 ### Unsupported attributes
 

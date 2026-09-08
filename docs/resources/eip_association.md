@@ -8,11 +8,9 @@ description: |-
 
 # Resource: aws_eip_association
 
-Manages an EIP association as a top level resource, to associate and
-disassociate Elastic IPs from instances and network interfaces.
+Manages an EIP association as a top level resource, to associate and disassociate Elastic IPs from instances and network interfaces.
 
-~> **Note** `aws_eip_association` is useful in scenarios where EIPs are either
-pre-existing or distributed to customers or users and therefore cannot be changed.
+~> **Note** `aws_eip_association` is useful in scenarios where EIPs are either pre-existing or distributed to customers or users and therefore cannot be changed.
 
 ## Example usage
 
@@ -39,8 +37,6 @@ resource "aws_eip" "example" {
 
 ## Argument reference
 
-The following arguments are supported:
-
 * `allocation_id` - (Optional, Forces new resource, String) The ID of the allocation.
     * _Constraints:_ Required if the `public_ip` is not supplied
 * `allow_reassociation` - (Optional, Forces new resource, Boolean) Indicates whether to allow an Elastic IP to be re-associated.
@@ -61,7 +57,7 @@ In addition to all arguments above, the following attributes are exported:
 * `instance_id` - (String) The ID of the instance that the address is associated with.
 * `network_interface_id` - (String) The ID of the network interface.
 * `private_ip_address` - (String) The private IP address associated with the Elastic IP address.
-* `public_ip` - (String) The public IP address of the Elastic IP.
+* `public_ip` - (String) The public IP address of the Elastic IP address.
 
 ## Timeouts
 

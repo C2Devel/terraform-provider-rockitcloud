@@ -12,7 +12,8 @@ description: |-
 
 # Resource: aws_instance
 
-Manages an EC2 instance. This allows instances to be created, updated, and deleted.
+Manages an EC2 instance.
+This allows instances to be created, updated, and deleted.
 Instances also support [provisioning].
 
 ## Example usage
@@ -88,8 +89,6 @@ resource "aws_instance" "example" {
 
 ## Argument reference
 
-The following arguments are supported:
-
 * `affinity` - (Optional, Forces new resource, String) The affinity setting for an instance on a dedicated host.
     * _Valid values:_ `default`, `host`
     * _Constraints:_ The parameter could be set to `host` only if `tenancy` is `host`
@@ -104,26 +103,29 @@ The following arguments are supported:
 
 * `availability_zone` - (Optional, Forces new resource, String) An availability zone to start the instance in.
 * `disable_api_termination` - (Optional, Editable, Boolean) Indicates whether the possibility to terminate an instance via the API is disabled.
-* `ebs_block_device` - (Optional, Editable, [Block](#ebs_block_device)) One or more configuration blocks with additional EBS block devices to attach to the instance. When accessing this as an attribute reference, it is a set of objects.
+* `ebs_block_device` - (Optional, Editable, [Block](#ebs_block_device)) One or more configuration blocks with additional EBS block devices to attach to the instance.
+  When accessing this as an attribute reference, it is a set of objects.
     * _Constraints:_ Block device configurations are applied only when the resource is created
-* `ephemeral_block_device` - (Optional, Forces new resource, [Block](#ephemeral_block_device)) One or more configuration blocks to customize ephemeral volumes on the instance. When accessing this as an attribute reference, it is a set of objects.
 * `get_password_data` - (Optional, Editable, Boolean) Indicates whether to retrieve the password data of a Windows instance.
     * _Default value:_ `false`
 * `hibernation` - (Optional, Forces new resource, Boolean) Indicates whether the instance is optimized for hibernation.
 * `host_id` - (Optional, Forces new resource, String) The ID of the dedicated host that the instance will be assigned to.
 * `instance_initiated_shutdown_behavior` - (Optional, Editable, String) The shutdown behavior for the instance.
     * _Valid values:_ `stop`, `terminate`
-* `instance_type` - (Optional, Editable, String) The instance type to use for the instance. Updates to this field will trigger a stop/start of the EC2 instance.
+* `instance_type` - (Optional, Editable, String) The instance type to use for the instance.
+  Updates to this field will trigger a stop/start of the EC2 instance.
 * `key_name` - (Optional, Forces new resource, String) The key name of the key pair to use for the instance; which can be managed using [the `aws_key_pair` resource](key_pair.md).
-* `launch_template` - (Optional, Forces new resource, [Block](#launch_template)) Specifies a launch template to configure the instance. Parameters configured on this resource will override the corresponding parameters in the launch template.
+* `launch_template` - (Optional, Forces new resource, [Block](#launch_template)) Specifies a launch template to configure the instance.
+  Parameters configured on this resource will override the corresponding parameters in the launch template.
 * `metadata_options` - (Optional, Editable, [Block](#metadata_options)) Customize the metadata options of the instance.
 * `monitoring` - (Optional, Editable, Boolean) Indicates whether detailed monitoring is enabled for the launched EC2 instance.
 * `network_interface` - (Optional, Editable, [Block](#network_interface)) Customize network interfaces to be attached at instance boot time.
-    * _Constraints:_ Conflicts with `associate_public_ip_address`, `private_ip`, `secondary_private_ips`, `subnet_id`, `vpc_security_group_ids` arguments
+    * _Constraints:_ Conflicts with the `associate_public_ip_address`, `private_ip`, `secondary_private_ips`, `subnet_id`, `vpc_security_group_ids` arguments
 * `placement_group` - (Optional, Forces new resource, String) The placement group to start the instance in.
 * `private_ip` - (Optional, Forces new resource, String) A private IP address to associate with the instance in a VPC.
     * _Constraints:_ Conflicts with the `network_interface` argument
-* `root_block_device` - (Optional, Editable, [Block](#root_block_device)) The root block device of the instance. When accessing this as an attribute reference, it is a list containing one object.
+* `root_block_device` - (Optional, Editable, [Block](#root_block_device)) The root block device of the instance.
+  When accessing this as an attribute reference, it is a list containing one object.
 * `secondary_private_ips` - (Optional, Editable, Set of strings) A list of secondary private IPv4 addresses to assign to the instance's primary network interface in a VPC.
     * _Constraints:_
         * Conflicts with the `network_interface` argument
@@ -131,22 +133,32 @@ The following arguments are supported:
 * `source_dest_check` - (Optional, Editable, Boolean) Indicates whether the traffic is routed to the instance when the destination address does not match the instance.
     * _Default value:_ `true`
 * `subnet_id` - (Optional, Forces new resource, String) The ID of a subnet to launch in.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the instance. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the instance.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
     * _Constraints:_ These tags apply to the instance and not block storage devices
 * `tenancy` - (Optional, Forces new resource, String) The placement type.
     * _Valid values:_ `default`, `host`
 
-    ~> **Note** If you use the `host` value, you may encounter the `NotEnoughResourcesForInstanceType` error when running an instance. To avoid this, it is recommended to provide either the `subnet_id` argument or the `availability_zone` argument.
+    ~> **Note** If you use the `host` value, you may encounter the `NotEnoughResourcesForInstanceType` error when running an instance.
+    To avoid this, it is recommended to provide either the `subnet_id` argument or the `availability_zone` argument.
 
-* `user_data` - (Optional, Editable, String) User data to provide when launching the instance. Do not pass gzip-compressed data via this argument; see `user_data_base64` instead. Updates to this field will trigger a stop/start of the EC2 instance by default. If the `user_data_replace_on_change` is set then updates to this field will trigger a destroy and recreate.
+* `user_data` - (Optional, Editable, String) User data to provide when launching the instance.
+  Do not pass gzip-compressed data via this argument; see `user_data_base64` instead.
+  Updates to this field will trigger a stop/start of the EC2 instance by default.
+  If the `user_data_replace_on_change` is set then updates to this field will trigger a destroy and recreate.
     * _Constraints:_ Conflicts with the `user_data_base64` argument
-* `user_data_base64` - (Optional, Editable, String) Can be used instead of `user_data` to pass base64-encoded binary data directly. Use this instead of `user_data` whenever the value is not a valid UTF-8 string. For example, gzip-encoded user data must be base64-encoded and passed via this argument to avoid corruption. Updates to this field will trigger a stop/start of the EC2 instance by default. If the `user_data_replace_on_change` is set then updates to this field will trigger a destroy and recreate.
+* `user_data_base64` - (Optional, Editable, String) Can be used instead of `user_data` to pass base64-encoded binary data directly.
+  Use this instead of `user_data` whenever the value is not a valid UTF-8 string.
+  For example, gzip-encoded user data must be base64-encoded and passed via this argument to avoid corruption.
+  Updates to this field will trigger a stop/start of the EC2 instance by default.
+  If the `user_data_replace_on_change` is set then updates to this field will trigger a destroy and recreate.
     * _Constraints:_ Conflicts with the `user_data` argument
 * `user_data_replace_on_change` - (Optional, Editable, Boolean) Indicates whether the resource will be destroyed and recreated when the `user_data` or `user_data_base64` argument changes.
     * _Default value:_ `false`
 * `volume_tags` - (Optional, Editable, Map of strings) A map of tags to assign to root and EBS volumes when the instance is created.
 
-    ~> **Note** Do not use `volume_tags` if you plan to manage block device tags outside the `aws_instance` configuration, such as using `tags` in an [`aws_ebs_volume`](ebs_volume.md) resource attached via [`aws_volume_attachment`](volume_attachment.md). Doing so will result in resource cycling and inconsistent behavior.
+    ~> **Note** Do not use `volume_tags` if you plan to manage block device tags outside the `aws_instance` configuration, such as using `tags` in an [`aws_ebs_volume`](ebs_volume.md) resource attached via [`aws_volume_attachment`](volume_attachment.md).
+    Doing so will result in resource cycling and inconsistent behavior.
 
 * `vpc_security_group_ids` - (Optional, Editable, Set of strings) A list of security group IDs to associate with.
     * _Constraints:_ Conflicts with the `network_interface` argument
@@ -173,21 +185,10 @@ To manage changes and attachments of an EBS block to an instance, use the [`aws_
 If you use `ebs_block_device` on an `aws_instance`, Terraform will assume management over the full set of non-root EBS block devices for the instance, treating additional block devices as drift.
 For this reason, `ebs_block_device` cannot be mixed with external `aws_ebs_volume` and `aws_volume_attachment` resources for a given instance.
 
-### ephemeral_block_device
-
-The following arguments are required:
-
-* `device_name` - (Required, Forces new resource, String) The name of the block device to mount on the instance.
-
-The following arguments are optional:
-
-* `no_device` - (Optional, Editable, Boolean) Indicates whether to suppress the specified device included in the block device mapping.
-* `virtual_name` - (Optional, Editable, String) A name for the ephemeral device. Must match the device name.
-
 ### network_interface
 
 Each of the `network_interface` blocks attaches a network interface to an EC2 instance during boot time.
-However, because the network interface is attached at boot-time, replacing/modifying the network interface **WILL** trigger a recreation of the EC2 instance.
+However, because the network interface is attached at boot time, replacing/modifying the network interface **will** trigger a recreation of the EC2 instance.
 If you should need at any point to detach/modify/re-attach a network interface to the instance, use the [`aws_network_interface`](network_interface.md) or [`aws_network_interface_attachment`](network_interface_attachment.md) resources instead.
 
 The `network_interface` configuration block _does_, however, allow users to supply their own network interface to be used as the default network interface on an EC2 instance, attached at `eth0`.
@@ -239,7 +240,7 @@ The `root_block_device` block has the following structure:
 * `delete_on_termination` - (Optional, Editable, Boolean) Indicates whether the volume should be destroyed on instance termination.
     * _Default value:_ `true`
 * `iops` - (Optional, Editable, Integer) The amount of provisioned IOPS.
-    * _Constraints:_ Only valid for volume_type of `io2`
+    * _Constraints:_ Only valid for `volume_type` of `io2`
 * `tags` - (Optional, Editable, Map of strings) A map of tags to assign to the device.
 * `volume_size` - (Optional, Editable, Integer) The size of the volume in GiB.
 * `volume_type` - (Optional, Editable, String) The type of the volume.
@@ -254,8 +255,10 @@ In addition to all arguments above, the following attributes are exported:
 * `instance_state` - (String) The state of the instance.
     * _Valid values:_ `pending`, `running`, `shutting-down`, `stopped`, `stopping`, `terminated`
 * `primary_network_interface_id` - (String) The ID of the instance's primary network interface.
-* `private_dns` - (String) The private DNS name assigned to the instance. For EC2-VPC, this is only available if you've enabled DNS hostnames for your VPC.
-* `public_dns` - (String) The public DNS name assigned to the instance. For EC2-VPC, this is only available if you've enabled DNS hostnames for your VPC.
+* `private_dns` - (String) The private DNS name assigned to the instance.
+  For EC2-VPC, this is only available if you've enabled DNS hostnames for your VPC.
+* `public_dns` - (String) The public DNS name assigned to the instance.
+  For EC2-VPC, this is only available if you've enabled DNS hostnames for your VPC.
 * `public_ip` - (String) The public IP address assigned to the instance, if applicable.
 
     ~> **Note** If you are using [`aws_eip`](eip.md) with your instance, you should refer to the EIP's address directly and not use `public_ip` as this field will change after the EIP is attached.
@@ -281,7 +284,7 @@ For `root_block_device`, in addition to the arguments above, the following attri
 
 The following attributes are not currently supported:
 
-`capacity_reservation_specification`, `cpu_core_count`, `cpu_threads_per_core`, `credit_specification`, `ebs_block_device.encrypted`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `hibernation`, `iam_instance_profile`, `ipv6_address_count`, `ipv6_addresses`, `maintenance_options`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.encrypted`, `root_block_device.kms_key_id`, `root_block_device.throughput`.
+`capacity_reservation_specification`, `cpu_core_count`, `cpu_threads_per_core`, `credit_specification`, `ebs_block_device.encrypted`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `ephemeral_block_device`, `hibernation`, `iam_instance_profile`, `ipv6_address_count`, `ipv6_addresses`, `maintenance_options`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.encrypted`, `root_block_device.kms_key_id`, `root_block_device.throughput`.
 
 ## Timeouts
 

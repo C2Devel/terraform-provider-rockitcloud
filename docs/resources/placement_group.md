@@ -19,20 +19,22 @@ For more information, see the documentation on [placement groups][placement-grou
 ```terraform
 resource "aws_placement_group" "example" {
   name     = "test-pg"
-  strategy = "cluster"
+  strategy = "spread"
 }
 ```
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
 * `name` - (Required, Forces new resource, String) The name of the placement group.
 * `strategy` - (Required, Forces new resource, String) The placement strategy.
-    * _Valid values:_ `cluster`, `partition`, `spread`
-* `partition_count` - (Optional, Forces new resource, Integer) The number of partitions to create in the placement group.
-    * _Constraints:_ Must be between 0 and 7. Can only be set when `strategy` is set to `partition`.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the placement group. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+    * _Valid values:_ `spread`
+
+The following arguments are optional:
+
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the placement group.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 
@@ -44,6 +46,14 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - (String) The name of the placement group.
 * `placement_group_id` - (String) The ID of the placement group.
 * `tags_all` - (Map of strings) Key-value pairs assigned to the placement group, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
+
+### Unsupported attributes
+
+~> **Note** This attribute may be present in the `terraform.tfstate` file, but it has a preset value and cannot be specified in configuration files.
+
+The following attribute is not currently supported:
+
+`partition_count`.
 
 ## Timeouts
 

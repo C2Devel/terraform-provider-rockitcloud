@@ -15,12 +15,8 @@ description: |-
 
 Provides lists of instance IDs, private IPs, and public IPs.
 
--> **Note:** It's a best practice to expose instance details via [outputs], and [remote state],
-and **use [`terraform_remote_state`][terraform_remote_state] data source instead** if you manage referenced instances via Terraform.
-
-~> **Note** It's strongly discouraged to use this data source for querying ephemeral
-instances (e.g., managed via autoscaling group), as the output may change at any time
-and you would need to re-run `apply` every time as an instance comes up or dies.
+-> **Note:** It's a best practice to expose instance details via [outputs] or [remote state].
+**Use the [`terraform_remote_state`][terraform_remote_state] data source instead** if you manage referenced instances via Terraform.
 
 ## Example usage
 
@@ -47,7 +43,7 @@ resource "aws_eip" "example" {
 ## Argument reference
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-instances]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-instances]
 * `instance_state_names` - (Optional, Set of strings) List of instance states that should be applicable to the desired instances.
     * _Valid values:_ `pending`, `running`, `shutting-down`, `stopped`, `stopping`, `terminated`
 * `instance_tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired resources.
@@ -64,6 +60,6 @@ resource "aws_eip" "example" {
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - (String) The region.
-* `ids` - (List of strings) IDs of instances found through the filter.
-* `private_ips` - (List of strings) Private IP addresses of instances found through the filter.
-* `public_ips` - (List of strings) Public IP addresses of instances found through the filter.
+* `ids` - (List of strings) The IDs of the instances found through the filter.
+* `private_ips` - (List of strings) The private IP addresses of the instances found through the filter.
+* `public_ips` - (List of strings) The public IP addresses of the instances found through the filter.

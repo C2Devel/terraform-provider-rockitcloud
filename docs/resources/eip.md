@@ -13,7 +13,7 @@ description: |-
 
 # Resource: aws_eip
 
-Manages an Elastic IP. For more information about EIPs, see [user documentation][elastic-ips].
+Manages an Elastic IP address. For more information about EIPs, see the [user documentation][elastic-ips].
 
 ## Example usage
 
@@ -53,7 +53,7 @@ resource "aws_eip" "bar" {
 }
 ```
 
-### Allocating EIP from the BYOIP pool
+### Allocating the EIP address from the BYOIP pool
 
 ```terraform
 resource "aws_eip" "byoip-ip" {
@@ -64,17 +64,15 @@ resource "aws_eip" "byoip-ip" {
 
 ## Argument reference
 
-The following arguments are supported:
-
 * `address` - (Optional, Forces new resource, String) An IP address from an EC2 BYOIP pool.
-    * _Constraints:_ This option is only available for VPC EIPs
+    * _Constraints:_ This option is only available for EIPs in a VPC
 * `associate_with_private_ip` - (Optional, Editable, String) A user-specified primary or secondary private IP address to associate with the Elastic IP address.
     * _Constraints:_ If no private IP address is specified, the Elastic IP address is associated with the primary private IP address
 * `instance` - (Optional, Editable, String) The ID of the EC2 instance.
 * `network_interface` - (Optional, Editable, String) The ID of the network interface to associate with.
 * `public_ipv4_pool` - (Optional, Forces new resource, String) The ID of the EC2 IPv4 address pool.
-    * _Constraints:_ This option is only available for VPC EIPs
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the Elastic IP. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+    * _Constraints:_ This option is only available for EIPs in a VPC
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the Elastic IP address. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
     * _Constraints:_ Tags can only be applied to EIPs in a VPC
 * `vpc` - (Optional, Forces new resource, Boolean) Indicates whether the EIP is in a VPC.
 
@@ -94,7 +92,8 @@ In addition to all arguments above, the following attributes are exported:
 * `association_id` - (String) The ID representing the association of the allocation of the IP address with an instance or a private IP address.
 * `domain` - (String) Indicates if this EIP is for use in VPC (`vpc`).
 * `id` - (String) The ID of the EIP allocation.
-* `private_ip` - (String) The private IP address. Can be `""` if `associate_with_private_ip` is specified.
+* `private_ip` - (String) The private IP address.
+  Can be `""` if `associate_with_private_ip` is specified.
 * `public_ip` - (String) The public IP address.
 * `tags_all` - (Map of strings) Key-value pairs assigned to the Elastic IP, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
 

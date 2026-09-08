@@ -33,10 +33,8 @@ data "aws_launch_template" "example" {
 
 ## Argument reference
 
-The following arguments are supported:
-
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-lts]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-lts]
 * `id` - (Optional, String) The ID of the specific launch template to retrieve.
 * `name` - (Optional, String) The name of the launch template.
 * `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the desired resource.

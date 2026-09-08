@@ -38,7 +38,7 @@ data "aws_instance" "selected" {
 ## Argument reference
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-instances]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-instances]
 * `get_user_data` - (Optional, Boolean) Indicates whether to retrieve Base64 encoded user data contents into the `user_data_base64` attribute.
   A SHA-1 hash of the user data contents will always be present in the `user_data` attribute.
     * _Default value:_ `false`
@@ -47,9 +47,8 @@ data "aws_instance" "selected" {
 
 ~> **Note** At least one of the arguments `filter`, `instance_tags`, or `instance_id` must be specified.
 
-~> **Note** If anything other than a single match is returned by the search,
-Terraform will fail. Ensure that your search is specific enough to return
-a single instance ID only.
+~> **Note** If anything other than a single match is returned by the search, Terraform will fail.
+Ensure that your search is specific enough to return a single instance ID only.
 
 ### filter
 
@@ -67,12 +66,11 @@ In addition to all arguments above, the following attributes are exported:
 * `affinity` - (String) The affinity setting for an instance on a dedicated host.
 * `ami` - (String) The ID of the image used to launch the instance.
 * `arn` - (String) The Amazon Resource Name (ARN) of the instance.
-* `associate_public_ip_address` - (Boolean) Indicates whether the instance is associated with a public IP address.
+* `associate_public_ip_address` - (Boolean) Indicates whether the instance has an associated a public IP address.
 * `availability_zone` - (String) The availability zone of the instance.
 * `disable_api_termination` - (Boolean) Indicates whether API termination is disabled for the instance.
 * `ebs_block_device` - ([Block](#ebs_block_device)) The EBS block device mappings of the instance.
-* `ephemeral_block_device` - ([Block](#ephemeral_block_device)) The ephemeral block device mappings of the instance.
-* `host_id` - (String) The ID of the dedicated host that the instance will be assigned to.
+* `host_id` - (String) The ID of the dedicated host where the instance will run.
 * `id` - (String) The ID of the instance.
 * `instance_state` - (String) The state of the instance.
     * _Valid values:_ `pending`, `running`, `shutting-down`, `stopped`, `stopping`, `terminated`
@@ -82,20 +80,23 @@ In addition to all arguments above, the following attributes are exported:
 * `network_interface_id` - (String) The ID of the network interface that was created with the instance.
 * `placement_group` - (String) The placement group of the instance.
 * `private_dns` - (String) The private DNS name assigned to the instance.
-* `private_ip` - (String) The private IP address assigned to the instance.
-* `secondary_private_ips` - (Set of strings) The secondary private IPv4 addresses assigned to the instance's primary network interface in a VPC.
+* `private_ip` - (String) The private IP address associated with the instance.
 * `public_dns` - (String) The public DNS name assigned to the instance.
-* `public_ip` - (String) The public IP address assigned to the instance, if applicable.
+* `public_ip` - (String) The public IP address associated with the instance, if applicable.
+
     ~> **Note** If you are using an [`aws_eip`](../resources/eip.md) with your instance, you should refer to the EIP's address directly and not use `public_ip`, as this field will change after the EIP is attached.
+
 * `root_block_device` - ([Block](#root_block_device)) The root block device mappings of the instance.
+* `secondary_private_ips` - (Set of strings) The secondary private IPv4 addresses associated with the instance's primary network interface in a VPC.
 * `security_groups` - (Set of strings) Security groups associated with the instance.
 * `source_dest_check` - (Boolean) Indicates whether the network interface performs source/destination checking.
 * `subnet_id` - (String) The ID of the subnet.
-* `user_data` - (String) SHA-1 hash of user data supplied to the instance.
-* `user_data_base64` - (String) Base64 encoded contents of user data supplied to the instance. Valid UTF-8 contents can be decoded with the [`base64decode` function][base64decode-function].
-    * _Constraints:_ This attribute is only exported if `get_user_data` is true
 * `tags` - (Map of strings) Key-value pairs assigned to the instance.
 * `tenancy` - (String) The placement type.
+* `user_data` - (String) SHA-1 hash of user data supplied to the instance.
+* `user_data_base64` - (String) Base64 encoded contents of user data supplied to the instance.
+  Valid UTF-8 contents can be decoded with the [`base64decode` function][base64decode-function].
+    * _Constraints:_ This attribute is only exported if `get_user_data` is true
 * `vpc_security_group_ids` - (Set of strings) Security groups associated with the instance in a non-default VPC.
 
 #### ebs_block_device
@@ -104,20 +105,13 @@ The `ebs_block_device` block has the following structure:
 
 * `delete_on_termination` - (Boolean) Indicates whether the EBS volume will be deleted on instance termination.
 * `device_name` - (String) The physical name of the device.
-* `iops` - (Integer) The number of I/O operations per second for the volume. `0` if the EBS volume is not a provisioned IOPS image, otherwise the supported IOPS count.
+* `iops` - (Integer) The number of I/O operations per second for the volume.
+    * _Constraints:_ `0` if the EBS volume is not a provisioned IOPS image, otherwise the supported IOPS count.
 * `snapshot_id` - (String) The ID of the snapshot.
 * `tags` - (Map of strings) Key-value pairs assigned to the volume.
 * `volume_id` - (String) The ID of the EBS volume.
 * `volume_size` - (Integer) The size of the volume in GiB.
 * `volume_type` - (String) The volume type.
-
-#### ephemeral_block_device
-
-The `ephemeral_block_device` block has the following structure:
-
-* `device_name` - (String) The physical name of the device.
-* `no_device` - (Boolean) Indicates whether the specified device included in the device mapping was suppressed.
-* `virtual_name` - (String) The virtual device name.
 
 #### root_block_device
 
@@ -125,7 +119,8 @@ The `root_block_device` block has the following structure:
 
 * `delete_on_termination` - (Boolean) Indicates whether the root block device will be deleted on instance termination.
 * `device_name` - (String) The physical name of the device.
-* `iops` - (Integer) The number of I/O operations per second for the volume. `0` if the volume is not a provisioned IOPS image, otherwise the supported IOPS count.
+* `iops` - (Integer) The number of I/O operations per second for the volume.
+    * _Constraints:_ `0` if the volume is not a provisioned IOPS image, otherwise the supported IOPS count.
 * `tags` - (Map of strings) Key-value pairs assigned to the volume.
 * `volume_id` - (String) The ID of the root block device volume.
 * `volume_size` - (Integer) The size of the volume in GiB.
@@ -137,4 +132,4 @@ The `root_block_device` block has the following structure:
 
 The following attributes are not currently supported:
 
-`credit_specification`, `ebs_block_device.encrypted`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `get_password_data`, `iam_instance_profile`, `ipv6_addresses`, `maintenance_options`, `metadata_options`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.encrypted`, `root_block_device.kms_key_id`, `root_block_device.throughput`.
+`credit_specification`, `ebs_block_device.encrypted`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `ephemeral_block_device`, `get_password_data`, `iam_instance_profile`, `ipv6_addresses`, `maintenance_options`, `metadata_options`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.encrypted`, `root_block_device.kms_key_id`, `root_block_device.throughput`.

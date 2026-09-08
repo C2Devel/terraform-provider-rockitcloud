@@ -49,11 +49,15 @@ resource "aws_ec2_traffic_mirror_target" "eni" {
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
 * `network_interface_id` - (Required, Forces new resource, String) The ID of the network interface that is associated with the target.
+
+The following arguments are optional:
+
 * `description` - (Optional, Forces new resource, String) The description of the traffic mirror target.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror target. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror target.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 
@@ -63,7 +67,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `arn` - (String) The Amazon Resource Name (ARN) of the traffic mirror target.
 * `id` - (String) The ID of the traffic mirror target.
-* `owner_id` - (String) The ID of the project that owns the traffic mirror target.
+* `owner_id` - (String) The ID of the project the traffic mirror target belongs to.
 * `tags_all` - (Map of strings) Key-value pairs assigned to the traffic mirror target, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
 
 ### Unsupported attributes
@@ -85,7 +89,7 @@ import {
 }
 ```
 
-In older Terraform versions, the traffic mirror target can be imported by its `id` using `terraform import`, e.g.:
+In older Terraform versions, the traffic mirror target can be imported by its `id` using `terraform import`, for example:
 
 ```console
 % terraform import aws_ec2_traffic_mirror_target.target tmt-12345678

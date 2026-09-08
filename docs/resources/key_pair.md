@@ -17,9 +17,9 @@ This key pair's public key will be registered to allow logging in to EC2 instanc
 When importing an existing key pair, the public key material may be in any format supported by AWS.
 Supported public key material formats are:
 
-* OpenSSH public key format (the format in ~/.ssh/authorized_keys)
-* Base64 encoded DER format
-* SSH public key file format as specified in RFC4716
+* OpenSSH public key format (the format in ~/.ssh/authorized_keys).
+* Base64 encoded DER format.
+* SSH public key file format as specified in RFC4716.
 
 ## Example usage
 
@@ -38,9 +38,11 @@ The following arguments are supported:
 * `key_name` - (Optional, Forces new resource, String) The name for the key pair.
     * _Constraints:_ If neither `key_name` nor `key_name_prefix` is provided, Terraform will create a unique key name using the prefix `terraform-`
 * `key_name_prefix` - (Optional, Forces new resource, String) Creates a unique name beginning with the specified prefix.
-    * _Constraints:_ Conflicts with `key_name`
-    * _Constraints:_ If neither `key_name` nor `key_name_prefix` is provided, Terraform will create a unique key name using the prefix `terraform-`
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+    * _Constraints:_
+        * Conflicts with `key_name`
+        * If neither `key_name` nor `key_name_prefix` is provided, Terraform will create a unique key name using the prefix `terraform-`
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 

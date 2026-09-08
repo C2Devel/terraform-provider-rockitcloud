@@ -55,30 +55,36 @@ resource "aws_launch_template" "example" {
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
 * `image_id` - (Required, Editable, String) The ID of the image from which to launch the instance.
+
+The following arguments are optional:
+
 * `block_device_mappings` - (Optional, Editable, [Block](#block_device_mappings)) Specify volumes to attach to the instance besides the volumes specified by the image.
-* `default_version` - (Optional, Editable, Integer) Default version of the launch template.
+* `default_version` - (Optional, Editable, Integer) The default version of the launch template.
     * _Constraints:_ Conflicts with `update_default_version`
-* `description` - (Optional, Editable, String) Description of the launch template version.
-* `disable_api_termination` - (Optional, Editable, Boolean) Indicates whether to disables the possibility to terminate an instance via API.
-* `instance_initiated_shutdown_behavior` - (Optional, Editable, String) Shutdown behavior for the instance.
+* `description` - (Optional, Editable, String) The description of the launch template version.
+* `disable_api_termination` - (Optional, Editable, Boolean) Indicates whether to disable the possibility to terminate an instance via the API.
+* `instance_initiated_shutdown_behavior` - (Optional, Editable, String) The shutdown behavior for the instance.
     * _Valid values:_ `stop`, `terminate`
 * `instance_type` - (Optional, Editable, String) The type of the instance.
 * `key_name` - (Optional, Editable, String) The key name to use for the instance.
 * `monitoring` - (Optional, Editable, [Block](#monitoring)) The monitoring option for the instance.
-* `name` - (Optional, Forces new resource, String) The name of the launch template. If you leave this blank, Terraform will auto-generate a unique name.
+* `name` - (Optional, Forces new resource, String) The name of the launch template.
+  If you leave this blank, Terraform will auto-generate a unique name.
     * _Constraints:_ Conflicts with `name_prefix`
 * `name_prefix` - (Optional, Forces new resource, String) Creates a unique name beginning with the specified prefix.
     * _Constraints:_ Conflicts with `name`
 * `network_interfaces` - (Optional, Editable, [Block](#network_interfaces)) Customize network interfaces to be attached at instance boot time.
 * `placement` - (Optional, Editable, [Block](#placement)) The placement of the instance.
 * `tag_specifications` - (Optional, Editable, [Block](#tag_specifications)) The tags to apply to the resources during launch.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the launch template. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
-* `update_default_version` - (Optional, Editable, Boolean) Whether to update default version each update.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the launch template.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `update_default_version` - (Optional, Editable, Boolean) Indicates whether to update the default version on each update.
     * _Constraints:_ Conflicts with `default_version`
-* `user_data` - (Optional, Editable, String) The base64-encoded user data to provide when launching the instance. The text length must not exceed 16 KB.
+* `user_data` - (Optional, Editable, String) The base64-encoded user data to provide when launching the instance.
+    * _Constraints:_ The text length must not exceed 16 KB
 * `vpc_security_group_ids` - (Optional, Editable, Set of strings) List of security group IDs to associate with.
 
 ### block_device_mappings
@@ -99,7 +105,7 @@ The `ebs` block has the following structure:
 
 * `delete_on_termination` - (Optional, Editable, String) Indicates whether the volume should be destroyed on instance termination.
 * `iops` - (Optional, Editable, Integer) The amount of provisioned IOPS.
-    * _Constraints:_ This must be set with the volume_type of `io2`
+    * _Constraints:_ This must be set with the `volume_type` of `io2`
 * `snapshot_id` - (Optional, Editable, String) The ID of the snapshot to mount.
 * `volume_size` - (Optional, Editable, Integer) The size of the volume in GiB.
 * `volume_type` - (Optional, Editable, String) The type of the volume.
@@ -118,10 +124,10 @@ For the details about configuring network interfaces when creating an Auto Scali
 
 The `network_interfaces` block has the following structure:
 
-* `associate_public_ip_address` - (Optional, Editable, String) Whether a public IP address should be associated with the network interface.
+* `associate_public_ip_address` - (Optional, Editable, String) Indicates whether a public IP address should be associated with the network interface.
     * _Constraints:_ The address will be assigned to the `eth0` interface if there are free allocated external addresses.
-      This operation is available only for instances running in the VPC and for new network interfaces.
-* `delete_on_termination` - (Optional, Editable, String) Whether the network interface should be destroyed on instance termination.
+      This operation is available only for instances running in a VPC and for new network interfaces.
+* `delete_on_termination` - (Optional, Editable, String) Indicates whether the network interface should be destroyed on instance termination.
 * `description` - (Optional, Editable, String) Description of the network interface.
 * `device_index` - (Optional, Editable, Integer) The integer index of the network interface attachment.
 * `network_interface_id` - (Optional, Editable, String) The ID of the network interface to attach.
@@ -145,7 +151,8 @@ The `placement` block has the following structure:
     * _Valid values:_ `default`, `host`
     * _Default value:_ `default`
 
-~> **Note** If you use the `host` value, you may encounter the `NotEnoughResourcesForInstanceType` error when running an instance. To avoid this, it is recommended to provide either the `subnet_id` argument or the `availability_zone` argument.
+~> **Note** If you use the `host` value, you may encounter the `NotEnoughResourcesForInstanceType` error when running an instance.
+To avoid this, it is recommended to provide either the `subnet_id` argument or the `availability_zone` argument.
 
 ### tag_specifications
 

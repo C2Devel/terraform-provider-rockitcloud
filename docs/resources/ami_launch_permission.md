@@ -25,7 +25,7 @@ resource "aws_ami_launch_permission" "example" {
 
 ```terraform
 # The cloud currently restricts adding public access permissions to images.
-# Applying the resource must throw an error.
+# Applying the resource will throw an error.
 resource "aws_ami_launch_permission" "example" {
   image_id = "cmi-12345678"
   group    = "all"
@@ -34,9 +34,12 @@ resource "aws_ami_launch_permission" "example" {
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
 * `image_id` - (Required, Forces new resource, String) The ID of the image.
+
+The following arguments are optional:
+
 * `account_id` - (Optional, Forces new resource, String) The ID of the project for the launch permission.
     * _Example:_ `project@customer`
 * `group` - (Optional, Forces new resource, String) The name of the group for the launch permission.

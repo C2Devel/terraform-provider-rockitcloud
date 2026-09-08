@@ -11,7 +11,8 @@ description: |-
 
 # Resource: aws_ec2_traffic_mirror_session
 
-Manages a traffic mirror session. For details about traffic mirroring, see the [user documentation][traffic-mirroring].
+Manages a traffic mirror session.
+For details about traffic mirroring, see the [user documentation][traffic-mirroring].
 
 ## Example usage
 
@@ -67,14 +68,19 @@ resource "aws_ec2_traffic_mirror_session" "session" {
 
 ## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
 * `network_interface_id` - (Required, Forces new resource, String) The ID of the source network interface.
-* `session_number` - (Required, Forces new resource, Integer) The session number determines the order in which sessions are evaluated when the interface is used by multiple sessions. The first session with a matching filter is the one that mirrors the packets.
+* `session_number` - (Required, Forces new resource, Integer) The session number determines the order in which sessions are evaluated when the interface is used by multiple sessions.
+  The first session with a matching filter is the one that mirrors the packets.
 * `traffic_mirror_filter_id` - (Required, Forces new resource, String) The ID of the traffic mirror filter to be used.
 * `traffic_mirror_target_id` - (Required, Forces new resource, String) The ID of the traffic mirror target to be used.
+
+The following arguments are optional:
+
 * `description` - (Optional, Forces new resource, String) The description of the traffic mirror session.
-* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror session. If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the traffic mirror session.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
 ## Attribute reference
 
@@ -84,7 +90,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `arn` - (String) The Amazon Resource Name (ARN) of the traffic mirror session.
 * `id` - (String) The ID of the traffic mirror session.
-* `owner_id` - (String) The ID of the project that owns the traffic mirror session.
+* `owner_id` - (String) The ID of the project the traffic mirror session belongs to.
 * `tags_all` - (Map of strings) Key-value pairs assigned to the traffic mirror session, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
 
 ### Unsupported attributes
@@ -106,7 +112,7 @@ import {
 }
 ```
 
-In older Terraform versions, the traffic mirror session can be imported by its `id` using `terraform import`, e.g.:
+In older Terraform versions, the traffic mirror session can be imported by its `id` using `terraform import`, for example:
 
 ```console
 % terraform import aws_ec2_traffic_mirror_session.session tms-12345678

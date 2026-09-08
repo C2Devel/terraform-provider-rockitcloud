@@ -29,13 +29,12 @@ output "availability_zone_to_region" {
 
 ## Argument reference
 
-The arguments of this data source act as filters for querying the available
-availability zones. The given filters must match exactly one availability
-zone whose data will be exported as attributes.
+The arguments of this data source act as filters for querying the available availability zones.
+The given filters must match exactly one availability zone whose data will be exported as attributes.
 
 * `all_availability_zones` - (Optional, Boolean) Indicates whether to include availability zones that are not currently available.
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
-    * _Valid values:_ See supported names and values in [EC2 API documentation][describe-azs]
+    * _Valid values:_ See supported names and values in the [EC2 API documentation][describe-azs]
 * `name` - (Optional, String) The full name of the availability zone to select.
 * `state` - (Optional, String) A specific availability zone state to require.
     * _Valid values:_ `available`, `impaired`, `information`

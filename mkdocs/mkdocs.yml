@@ -53,10 +53,6 @@ nav:
       - aws_ami_from_instance: resources/ami_from_instance.md
       - aws_ami_launch_permission: resources/ami_launch_permission.md
       - aws_ec2_tag: resources/ec2_tag.md
-      - aws_ec2_traffic_mirror_filter: resources/ec2_traffic_mirror_filter.md
-      - aws_ec2_traffic_mirror_filter_rule: resources/ec2_traffic_mirror_filter_rule.md
-      - aws_ec2_traffic_mirror_session: resources/ec2_traffic_mirror_session.md
-      - aws_ec2_traffic_mirror_target: resources/ec2_traffic_mirror_target.md
       - aws_eip: resources/eip.md
       - aws_eip_association: resources/eip_association.md
       - aws_instance: resources/instance.md
@@ -161,6 +157,12 @@ nav:
       - aws_s3_bucket_policy: data-sources/s3_bucket_policy.md
       - aws_s3_object: data-sources/s3_object.md
       - aws_s3_objects: data-sources/s3_objects.md
+  - Traffic Mirroring:
+    - Resources:
+      - aws_ec2_traffic_mirror_filter: resources/ec2_traffic_mirror_filter.md
+      - aws_ec2_traffic_mirror_filter_rule: resources/ec2_traffic_mirror_filter_rule.md
+      - aws_ec2_traffic_mirror_session: resources/ec2_traffic_mirror_session.md
+      - aws_ec2_traffic_mirror_target: resources/ec2_traffic_mirror_target.md
   - Transit Gateway:
     - Resources:
       - aws_ec2_transit_gateway: resources/ec2_transit_gateway.md
