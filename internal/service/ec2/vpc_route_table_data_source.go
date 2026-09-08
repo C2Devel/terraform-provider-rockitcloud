@@ -23,11 +23,6 @@ func DataSourceRouteTable() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"gateway_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
 			"route_table_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -177,20 +172,21 @@ func dataSourceRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	req := &ec2.DescribeRouteTablesInput{}
 	vpcId, vpcIdOk := d.GetOk("vpc_id")
 	subnetId, subnetIdOk := d.GetOk("subnet_id")
-	gatewayId, gatewayIdOk := d.GetOk("gateway_id")
-	rtbId, rtbOk := d.GetOk("route_table_id")
+	rtbId, rtbIdOk := d.GetOk("route_table_id")
 	tags, tagsOk := d.GetOk("tags")
 	filter, filterOk := d.GetOk("filter")
 
-	if !rtbOk && !vpcIdOk && !subnetIdOk && !gatewayIdOk && !filterOk && !tagsOk {
-		return fmt.Errorf("one of route_table_id, vpc_id, subnet_id, gateway_id, filters, or tags must be assigned")
+	if !rtbIdOk && !vpcIdOk && !subnetIdOk && !filterOk && !tagsOk {
+		return fmt.Errorf("one of route_table_id, vpc_id, subnet_id, filters, or tags must be assigned")
+	}
+	// The route-table-id filter is not supported, so the ID is passed as a request parameter.
+	if rtbIdOk {
+		req.RouteTableIds = aws.StringSlice([]string{rtbId.(string)})
 	}
 	req.Filters = BuildAttributeFilterList(
 		map[string]string{
-			"route-table-id":         rtbId.(string),
-			"vpc-id":                 vpcId.(string),
-			"association.subnet-id":  subnetId.(string),
-			"association.gateway-id": gatewayId.(string),
+			"vpc-id":                vpcId.(string),
+			"association.subnet-id": subnetId.(string),
 		},
 	)
 	req.Filters = append(req.Filters, BuildTagFilterList(
