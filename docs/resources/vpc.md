@@ -6,7 +6,7 @@ description: |-
   Manages a VPC.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [vpc]: https://docs.k2.cloud/en/services/networking/privatecloud.html
 
 # Resource: aws_vpc

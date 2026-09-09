@@ -7,7 +7,7 @@ description: |-
 ---
 
 [rfc-2132]: http://www.ietf.org/rfc/rfc2132.txt
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 
 # Resource: aws_default_vpc_dhcp_options
 

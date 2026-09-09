@@ -6,7 +6,7 @@ description: |-
   Manages an EC2 instance.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [provisioning]: https://www.terraform.io/docs/provisioners/index.html
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
 
