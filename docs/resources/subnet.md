@@ -6,7 +6,7 @@ description: |-
   Manages a subnet.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [subnets]: https://docs.k2.cloud/en/services/networking/subnets.html
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
 

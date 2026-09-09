@@ -6,7 +6,7 @@ description: |-
   Manages an EC2 placement group.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [placement-groups]: https://docs.k2.cloud/en/services/compute/placementgroups.html
 
 # Resource: aws_placement_group

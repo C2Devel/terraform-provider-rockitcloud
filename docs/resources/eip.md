@@ -6,7 +6,7 @@ description: |-
   Manages an Elastic IP.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [elastic-ips]: https://docs.k2.cloud/en/services/networking/addresses/operations.html
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
 [vpc-dns-guide]: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html#vpc-dns-hostnames

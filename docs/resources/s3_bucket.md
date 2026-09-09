@@ -9,7 +9,7 @@ description: |-
 [bucket-naming]: https://docs.k2.cloud/en/services/object_storage/operations.html#s3bucketnaming
 [canned-acl]: https://docs.k2.cloud/en/api/s3/acl.html#cannedacl
 [cors]: https://docs.k2.cloud/en/services/object_storage/operations.html#cors
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [hosting-website]: https://docs.k2.cloud/en/services/object_storage/operations.html#objectstoragestaticwebsitesmanual
 [lifecycle-management]: https://docs.k2.cloud/en/services/object_storage/operations.html#id28
 [s3-versioning]: https://docs.k2.cloud/en/services/object_storage/operations.html#s3versioningmanual

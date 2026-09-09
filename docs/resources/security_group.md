@@ -7,7 +7,7 @@ description: |-
 ---
 
 [attribute-as-blocks]: https://www.terraform.io/docs/configuration/attr-as-blocks.html
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [protocol-number]: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 [security-groups]: https://docs.k2.cloud/en/services/security/securitygroups.html
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts
