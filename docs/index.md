@@ -114,24 +114,24 @@ provider "aws" {
 The resulting set of endpoints depends on what resources are used.
 An API endpoint can be set using the corresponding provider parameter.
 
-| Resource Category                  | Provider Parameter | Environment Variable |
-|------------------------------------|--------------------|----------------------|
-| Auto Scaling                       | `autoscaling`      |                      |
-| Backup                             | `backup`           |                      |
-| CloudWatch                         | `cloudwatch`       |                      |
-| Direct Connect                     | `directconnect`    | `DIRECT_CONNECT_URL` |
-| EBS (EC2)                          | `ec2`              | `EC2_URL`            |
-| EC2 (Elastic Compute Cloud)        | `ec2`              | `EC2_URL`            |
-| EFS (Elastic File System)          | `efs`              |                      |
-| EKS (Elastic Kubernetes)           | `eks`              |                      |
-| ELB (Elastic Load Balancing)       | `elbv2`            |                      |
-| IAM (Identity & Access Management) | `iam`              | `IAM_URL`            |
-| PaaS                               | `paas`             | `PAAS_URL`           |
-| Route53                            | `route53`          |                      |
-| Transit Gateway                    | `ec2`              | `EC2_URL`            |
-| S3 (Simple Storage)                | `s3`               |                      |
-| VPC (Virtual Private Cloud)        | `ec2`              | `EC2_URL`            |
-| VPN (Site-to-Site)                 | `ec2`              | `EC2_URL`            |
+| Resource Category                  | Provider Parameters | Environment Variables       |
+|------------------------------------|---------------------|-----------------------------|
+| Auto Scaling                       | `autoscaling`       | `AUTO_SCALING_URL`          |
+| Backup                             | `backup`            | `BACKUP_URL`                |
+| CloudWatch                         | `cloudwatch`        | `AWS_CLOUDWATCH_URL`        |
+| Direct Connect                     | `directconnect`     | `DIRECT_CONNECT_URL`        |
+| EBS (EC2)                          | `ec2`               | `EC2_URL`                   |
+| EC2 (Elastic Compute Cloud)        | `ec2`               | `EC2_URL`                   |
+| EFS (Elastic File System)          | `efs`               | `EFS_URL`                   |
+| EKS (Elastic Kubernetes)           | `eks`, `ekslegacy`  | `EKS_URL`, `LEGACY_EKS_URL` |
+| ELB (Elastic Load Balancing)       | `elbv2`             | `ELB_URL`                   |
+| IAM (Identity & Access Management) | `iam`               | `IAM_URL`                   |
+| PaaS                               | `paas`              | `PAAS_URL`                  |
+| Route53                            | `route53`           | `ROUTE53_URL`               |
+| Transit Gateway                    | `ec2`               | `EC2_URL`                   |
+| S3 (Simple Storage)                | `s3`                | `S3_URL`                    |
+| VPC (Virtual Private Cloud)        | `ec2`               | `EC2_URL`                   |
+| VPN (Site-to-Site)                 | `ec2`               | `EC2_URL`                   |
 
 ### Environment Variables
 
