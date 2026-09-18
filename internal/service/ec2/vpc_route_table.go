@@ -81,21 +81,26 @@ func ResourceRouteTable() *schema.Resource {
 				ConfigMode: schema.SchemaConfigModeAttr,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						///
+						// FIXME: remove Computed after switch to the terraform-plugin-framework
+
+						//
 						// Destinations.
-						///
+						//
 						"cidr_block": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: verify.ValidIPv4CIDRNetworkAddress,
 						},
 						"destination_prefix_list_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"ipv6_cidr_block": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: verify.ValidIPv6CIDRNetworkAddress,
 						},
 
@@ -105,47 +110,58 @@ func ResourceRouteTable() *schema.Resource {
 						"carrier_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"core_network_arn": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"egress_only_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"instance_id": {
 							Type:       schema.TypeString,
 							Optional:   true,
+							Computed:   true,
 							Deprecated: "Use network_interface_id instead",
 						},
 						"local_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"nat_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"network_interface_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"transit_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"vpc_endpoint_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"vpc_peering_connection_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -243,10 +259,10 @@ func resourceRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("error setting route: %w", err)
 	}
 
-	//Ignore the AmazonFSx service tag in addition to standard ignores
+	// Ignore the AmazonFSx service tag in addition to standard ignores
 	tags := KeyValueTags(routeTable.Tags).IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Ignore(tftags.New([]string{"AmazonFSx"}))
 
-	//lintignore:AWSR002
+	// lintignore:AWSR002
 	if err := d.Set("tags", tags.RemoveDefaultConfig(defaultTagsConfig).Map()); err != nil {
 		return fmt.Errorf("error setting tags: %w", err)
 	}
