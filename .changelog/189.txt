@@ -1,3 +1,7 @@
 ```release-note:enhancement
-Support new environment variables for API endpoints: `autoscaling`, `backup`, `cloudwatch`, `eks`, `ekslegacy`, `elbv2`, `route53`, `s3`
+Support new environment variables for API endpoints: `autoscaling`, `backup`, `cloudwatch`, `efs`, `eks`, `ekslegacy`, `elbv2`, `route53`, `s3`
+```
+
+```release-note:breaking-change
+Remove `AWS_S3_ENDPOINT` and `TF_AWS_S3_ENDPOINT` environment variables. Use `S3_URL` to specify the S3 API endpoint
 ```
