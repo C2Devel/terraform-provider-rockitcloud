@@ -65,21 +65,26 @@ func ResourceDefaultRouteTable() *schema.Resource {
 				Optional:   true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						///
+						// FIXME: remove Computed after switch to the terraform-plugin-framework
+
+						//
 						// Destinations.
-						///
+						//
 						"cidr_block": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: verify.ValidIPv4CIDRNetworkAddress,
 						},
 						"destination_prefix_list_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"ipv6_cidr_block": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: verify.ValidIPv6CIDRNetworkAddress,
 						},
 
@@ -91,38 +96,47 @@ func ResourceDefaultRouteTable() *schema.Resource {
 						"core_network_arn": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"egress_only_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"instance_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"nat_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"network_interface_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"transit_gateway_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"vpc_endpoint_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"vpc_peering_connection_id": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 					},
 				},
