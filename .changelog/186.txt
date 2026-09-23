@@ -1,0 +1,3 @@
+```release-note:bug
+resource/aws_eks_node_group: Fall back to node group status when the update status endpoint is unavailable
+```
