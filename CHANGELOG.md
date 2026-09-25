@@ -1,5 +1,12 @@
 ## 25.6.0 (Unreleased)
 
+BUG FIXES:
+
+* data-source/aws_eks_cluster: Read clusters that use `kubernetes_network_config.pod_ipv4_cidr` or `legacy_cluster_params.cluster_autoscaler_config` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
+* resource/aws_eks_cluster: Do not recreate the cluster when `legacy_cluster_params.cluster_autoscaler_config.cluster_autoscaler_required` is set to `false` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
+* resource/aws_eks_cluster: Wait for the `MODIFYING` status instead of failing an update or a destroy with `unexpected state` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
+* resource/aws_eks_node_group: Fix `PathNotFoundError` when updating `scaling_config` and wait until the requested `desired_size` is applied ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
+
 ## 25.5.5 (August 10, 2026)
 
 FEATURES:
