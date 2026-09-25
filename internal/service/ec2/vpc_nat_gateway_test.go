@@ -328,24 +328,18 @@ resource "aws_internet_gateway" "test" {
 func testAccNATGatewayConfigBaseWithEIP(rName string) string {
 	return acctest.ConfigCompose(testAccNATGatewayConfigBase(rName), fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc = true
-
   tags = {
     Name = %[1]q
   }
 }
 
 resource "aws_eip" "test2" {
-  vpc = true
-
   tags = {
     Name = %[1]q
   }
 }
 
 resource "aws_eip" "test3" {
-  vpc = true
-
   tags = {
     Name = %[1]q
   }

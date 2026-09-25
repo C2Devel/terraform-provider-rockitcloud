@@ -53,8 +53,6 @@ resource "aws_vpc" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc = true
-
   tags = {
     Name = %[1]q
   }

@@ -6,7 +6,7 @@ description: |-
   Manages an EKS cluster.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [eks-clusters]: https://docs.k2.cloud/en/services/kubernetes/eks_cluster.html
 [ha-clusters]: https://docs.k2.cloud/en/services/kubernetes/overview.html#ha-control-plane
 [timeouts]: https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts

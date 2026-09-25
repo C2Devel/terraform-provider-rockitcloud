@@ -6,7 +6,7 @@ description: |-
   Manages a listener for a load balancer.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [elb]: https://docs.k2.cloud/en/services/elb/overview.html
 
 # Resource: aws_lb_listener

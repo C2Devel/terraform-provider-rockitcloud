@@ -60,4 +60,4 @@ Customer gateways can be imported using `id`, e.g.,
 $ terraform import aws_customer_gateway.main cgw-12345678
 ```
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block

@@ -6,7 +6,7 @@ description: |-
   Manages a target group.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [target-groups]: https://docs.k2.cloud/en/services/elb/target_groups.html
 
 # Resource: aws_lb_target_group

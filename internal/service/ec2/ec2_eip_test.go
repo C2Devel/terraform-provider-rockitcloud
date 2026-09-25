@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/hashicorp/aws-sdk-go-base/v2/awsv1shim/v2/tfawserr"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -38,9 +37,10 @@ func TestAccEC2EIP_basic(t *testing.T) {
 			{
 				Config: testAccEIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
-					testAccCheckEIPPublicDNS(resourceName),
+					// Not attached anywhere, so no DNS name to report.
+					resource.TestCheckResourceAttr(resourceName, "public_dns", ""),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 				),
 			},
@@ -66,7 +66,7 @@ func TestAccEC2EIP_disappears(t *testing.T) {
 			{
 				Config: testAccEIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					acctest.CheckResourceDisappears(acctest.Provider, tfec2.ResourceEIP(), resourceName),
 				),
 				ExpectNonEmptyPlan: true,
@@ -88,8 +88,10 @@ func TestAccEC2EIP_instance(t *testing.T) {
 			{
 				Config: testAccEIPInstanceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
+					// Attached, so DNS names must be real, not empty.
+					testAccCheckEIPDNS(resourceName, &conf),
 				),
 			},
 			{
@@ -131,9 +133,8 @@ func TestAccEC2EIP_Instance_reassociate(t *testing.T) {
 	})
 }
 
-// This test is an expansion of TestAccEC2EIP_Instance_associatedUserPrivateIP, by testing the
-// associated Private EIPs of two instances
-func TestAccEC2EIP_Instance_associatedUserPrivateIP(t *testing.T) {
+// Moving an EIP from one instance to another must keep it associated.
+func TestAccEC2EIP_Instance_switch(t *testing.T) {
 	var one ec2.Address
 	resourceName := "aws_eip.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
@@ -147,22 +148,21 @@ func TestAccEC2EIP_Instance_associatedUserPrivateIP(t *testing.T) {
 			{
 				Config: testAccEIPInstanceAssociatedConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &one),
+					testAccCheckEIPExists(resourceName, &one),
 					testAccCheckEIPAttributes(&one),
 					testAccCheckEIPAssociated(&one),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"associate_with_private_ip"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccEIPInstanceAssociatedSwitchConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &one),
+					testAccCheckEIPExists(resourceName, &one),
 					testAccCheckEIPAttributes(&one),
 					testAccCheckEIPAssociated(&one),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
@@ -185,7 +185,7 @@ func TestAccEC2EIP_Instance_notAssociated(t *testing.T) {
 			{
 				Config: testAccEIPInstanceAssociateNotAssociatedConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 				),
 			},
@@ -197,38 +197,10 @@ func TestAccEC2EIP_Instance_notAssociated(t *testing.T) {
 			{
 				Config: testAccEIPInstanceAssociateAssociatedConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					testAccCheckEIPAssociated(&conf),
 				),
-			},
-		},
-	})
-}
-
-func TestAccEC2EIP_Instance_ec2Classic(t *testing.T) {
-	resourceName := "aws_eip.test"
-	var conf ec2.Address
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t); acctest.PreCheckEC2Classic(t) },
-		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
-		ProviderFactories: acctest.ProviderFactories,
-		CheckDestroy:      testAccCheckEIPDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccEIPInstanceEC2ClassicConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, true, &conf),
-					testAccCheckEIPAttributes(&conf),
-					testAccCheckEIPPublicDNSClassic(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeStandard),
-				),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -248,10 +220,13 @@ func TestAccEC2EIP_networkInterface(t *testing.T) {
 			{
 				Config: testAccEIPNetworkInterfaceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					testAccCheckEIPAssociated(&conf),
-					testAccCheckEIPPrivateDNS(resourceName),
+					// DNS names come from the attached interface, so they are
+					// reported even when it belongs to no instance.
+					resource.TestCheckResourceAttrPair(resourceName, "private_dns", "aws_network_interface.test", "private_dns_name"),
+					resource.TestCheckResourceAttrSet(resourceName, "public_dns"),
 					resource.TestCheckResourceAttrSet(resourceName, "allocation_id"),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 				),
@@ -265,7 +240,11 @@ func TestAccEC2EIP_networkInterface(t *testing.T) {
 	})
 }
 
+// AssociateAddress ignores the requested private IP address and always uses the
+// primary one, so the second EIP fails with Resource.AlreadyAssociated.
 func TestAccEC2EIP_NetworkInterface_twoEIPsOneInterface(t *testing.T) {
+	t.Skip("an EIP can only be associated with the primary private IP address of an interface")
+
 	var one, two ec2.Address
 	resourceName := "aws_eip.test"
 	resourceName2 := "aws_eip.test2"
@@ -280,12 +259,12 @@ func TestAccEC2EIP_NetworkInterface_twoEIPsOneInterface(t *testing.T) {
 			{
 				Config: testAccEIPMultiNetworkInterfaceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &one),
+					testAccCheckEIPExists(resourceName, &one),
 					testAccCheckEIPAttributes(&one),
 					testAccCheckEIPAssociated(&one),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 
-					testAccCheckEIPExists(resourceName2, false, &two),
+					testAccCheckEIPExists(resourceName2, &two),
 					testAccCheckEIPAttributes(&two),
 					testAccCheckEIPAssociated(&two),
 					resource.TestCheckResourceAttr(resourceName2, "domain", ec2.DomainTypeVpc),
@@ -308,7 +287,7 @@ func TestAccEC2EIP_TagsEC2VPC_withVPCTrue(t *testing.T) {
 	rName2 := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t); testAccPreCheckEC2VPCOnly(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
 		ProviderFactories: acctest.ProviderFactories,
 		CheckDestroy:      testAccCheckEIPDestroy,
@@ -316,7 +295,7 @@ func TestAccEC2EIP_TagsEC2VPC_withVPCTrue(t *testing.T) {
 			{
 				Config: testAccEIPTagsEC2VPCConfig(rName, "vpc = true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
@@ -332,7 +311,7 @@ func TestAccEC2EIP_TagsEC2VPC_withVPCTrue(t *testing.T) {
 			{
 				Config: testAccEIPTagsEC2VPCConfig(rName2, "vpc = true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.RandomName", rName2),
@@ -351,7 +330,7 @@ func TestAccEC2EIP_TagsEC2VPC_withoutVPCTrue(t *testing.T) {
 	rName2 := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t); testAccPreCheckEC2VPCOnly(t) },
+		PreCheck:          func() { acctest.PreCheck(t) },
 		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
 		ProviderFactories: acctest.ProviderFactories,
 		CheckDestroy:      testAccCheckEIPDestroy,
@@ -359,7 +338,7 @@ func TestAccEC2EIP_TagsEC2VPC_withoutVPCTrue(t *testing.T) {
 			{
 				Config: testAccEIPTagsEC2VPCConfig(rName, ""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
@@ -375,71 +354,12 @@ func TestAccEC2EIP_TagsEC2VPC_withoutVPCTrue(t *testing.T) {
 			{
 				Config: testAccEIPTagsEC2VPCConfig(rName2, ""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.RandomName", rName2),
 					resource.TestCheckResourceAttr(resourceName, "tags.TestName", rName2),
 				),
-			},
-		},
-	})
-}
-
-func TestAccEC2EIP_TagsEC2Classic_withVPCTrue(t *testing.T) {
-	var conf ec2.Address
-	resourceName := "aws_eip.test"
-	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
-	rName2 := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t); acctest.PreCheckEC2Classic(t) },
-		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
-		ProviderFactories: acctest.ProviderFactories,
-		CheckDestroy:      testAccCheckEIPDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccEIPTagsEC2ClassicConfig(rName, "vpc = true"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, true, &conf),
-					testAccCheckEIPAttributes(&conf),
-					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
-					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
-					resource.TestCheckResourceAttr(resourceName, "tags.RandomName", rName),
-					resource.TestCheckResourceAttr(resourceName, "tags.TestName", rName),
-				),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				Config: testAccEIPTagsEC2ClassicConfig(rName2, "vpc = true"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, true, &conf),
-					testAccCheckEIPAttributes(&conf),
-					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
-					resource.TestCheckResourceAttr(resourceName, "tags.RandomName", rName2),
-					resource.TestCheckResourceAttr(resourceName, "tags.TestName", rName2),
-				),
-			},
-		},
-	})
-}
-
-func TestAccEC2EIP_TagsEC2Classic_withoutVPCTrue(t *testing.T) {
-	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t); acctest.PreCheckEC2Classic(t) },
-		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
-		ProviderFactories: acctest.ProviderFactories,
-		CheckDestroy:      testAccCheckEIPDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccEIPTagsEC2ClassicConfig(rName, ""),
-				ExpectError: regexp.MustCompile(`tags cannot be set for a standard-domain EIP - must be a VPC-domain EIP`),
 			},
 		},
 	})
@@ -458,9 +378,9 @@ func TestAccEC2EIP_PublicIPv4Pool_default(t *testing.T) {
 			{
 				Config: testAccEIPPublicIPv4PoolDefaultConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
-					resource.TestCheckResourceAttr(resourceName, "public_ipv4_pool", "amazon"),
+					resource.TestCheckResourceAttr(resourceName, "public_ipv4_pool", "default"),
 					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 				),
 			},
@@ -492,10 +412,10 @@ func TestAccEC2EIP_PublicIPv4Pool_custom(t *testing.T) {
 			{
 				Config: testAccEIPPublicIPv4PoolCustomConfig(poolName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					resource.TestCheckResourceAttr(resourceName, "public_ipv4_pool", poolName),
-					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeStandard),
+					resource.TestCheckResourceAttr(resourceName, "domain", ec2.DomainTypeVpc),
 				),
 			},
 			{
@@ -520,7 +440,7 @@ func TestAccEC2EIP_customerOwnedIPv4Pool(t *testing.T) {
 			{
 				Config: testAccEIPCustomerOwnedIPv4PoolConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					resource.TestMatchResourceAttr(resourceName, "customer_owned_ipv4_pool", regexp.MustCompile(`^ipv4pool-coip-.+$`)),
 					resource.TestMatchResourceAttr(resourceName, "customer_owned_ip", regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)),
 				),
@@ -534,7 +454,11 @@ func TestAccEC2EIP_customerOwnedIPv4Pool(t *testing.T) {
 	})
 }
 
+// The API ignores network_border_group in AllocateAddress/ReleaseAddress
+// and never returns it in DescribeAddresses.
 func TestAccEC2EIP_networkBorderGroup(t *testing.T) {
+	t.Skip("network_border_group is not supported")
+
 	var conf ec2.Address
 	resourceName := "aws_eip.test"
 
@@ -547,9 +471,9 @@ func TestAccEC2EIP_networkBorderGroup(t *testing.T) {
 			{
 				Config: testAccEIPNetworkBorderGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
-					resource.TestCheckResourceAttr(resourceName, "public_ipv4_pool", "amazon"),
+					resource.TestCheckResourceAttr(resourceName, "public_ipv4_pool", "default"),
 					resource.TestCheckResourceAttr(resourceName, "network_border_group", acctest.Region()),
 				),
 			},
@@ -562,7 +486,11 @@ func TestAccEC2EIP_networkBorderGroup(t *testing.T) {
 	})
 }
 
+// testAccPreCheckWavelengthZoneAvailable's zone-type filter is not honored
+// here, so the test does not skip on its own.
 func TestAccEC2EIP_carrierIP(t *testing.T) {
+	t.Skip("carrier_ip requires AWS Wavelength zones, which are not supported")
+
 	var conf ec2.Address
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
 	resourceName := "aws_eip.test"
@@ -576,7 +504,7 @@ func TestAccEC2EIP_carrierIP(t *testing.T) {
 			{
 				Config: testAccEIPCarrierIPConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					resource.TestCheckResourceAttrSet(resourceName, "carrier_ip"),
 					resource.TestCheckResourceAttrSet(resourceName, "network_border_group"),
 					resource.TestCheckResourceAttr(resourceName, "public_ip", ""),
@@ -605,7 +533,7 @@ func TestAccEC2EIP_BYOIPAddress_default(t *testing.T) {
 			{
 				Config: testAccEIPConfig_BYOIPAddress_custom_default,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 				),
 			},
@@ -634,7 +562,7 @@ func TestAccEC2EIP_BYOIPAddress_custom(t *testing.T) {
 			{
 				Config: testAccEIPConfig_BYOIPAddress_custom(address),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					resource.TestCheckResourceAttr(resourceName, "public_ip", address),
 				),
@@ -668,7 +596,7 @@ func TestAccEC2EIP_BYOIPAddress_customWithPublicIPv4Pool(t *testing.T) {
 			{
 				Config: testAccEIPConfig_BYOIPAddress_custom_with_PublicIPv4Pool(address, poolName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIPExists(resourceName, false, &conf),
+					testAccCheckEIPExists(resourceName, &conf),
 					testAccCheckEIPAttributes(&conf),
 					resource.TestCheckResourceAttr(resourceName, "public_ip", address),
 					resource.TestCheckResourceAttr(resourceName, "public_ipv4_pool", poolName),
@@ -693,7 +621,7 @@ func testAccCheckEIPDestroy(s *terraform.State) error {
 			describe, err := conn.DescribeAddresses(req)
 			if err != nil {
 				// Verify the error is what we want
-				if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidAllocationID.NotFound" || ae.Code() == "InvalidAddress.NotFound" {
+				if tfawserr.ErrCodeEquals(err, tfec2.ErrCodeInvalidAllocationIDNotFound, tfec2.ErrCodeInvalidAddressNotFound) {
 					continue
 				}
 				return err
@@ -709,7 +637,7 @@ func testAccCheckEIPDestroy(s *terraform.State) error {
 			describe, err := conn.DescribeAddresses(req)
 			if err != nil {
 				// Verify the error is what we want
-				if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidAllocationID.NotFound" || ae.Code() == "InvalidAddress.NotFound" {
+				if tfawserr.ErrCodeEquals(err, tfec2.ErrCodeInvalidAllocationIDNotFound, tfec2.ErrCodeInvalidAddressNotFound) {
 					continue
 				}
 				return err
@@ -744,7 +672,51 @@ func testAccCheckEIPAssociated(conf *ec2.Address) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckEIPExists(n string, ec2classic bool, res *ec2.Address) resource.TestCheckFunc {
+// Fetches the network interface via the API, since its Terraform state isn't
+// refreshed by the EIP's own apply and would show stale values.
+func testAccCheckEIPDNS(resourceName string, conf *ec2.Address) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if aws.StringValue(conf.NetworkInterfaceId) == "" {
+			return fmt.Errorf("EIP is not attached to a network interface")
+		}
+
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		conn := acctest.Provider.Meta().(*conns.AWSClient).EC2Conn
+
+		eni, err := tfec2.FindNetworkInterfaceByID(conn, aws.StringValue(conf.NetworkInterfaceId))
+		if err != nil {
+			return fmt.Errorf("error describing network interface %s: %w", aws.StringValue(conf.NetworkInterfaceId), err)
+		}
+
+		privateDNS := aws.StringValue(eni.PrivateDnsName)
+		if privateDNS == "" {
+			return fmt.Errorf("empty private_dns on network interface %s", aws.StringValue(conf.NetworkInterfaceId))
+		}
+		if got := rs.Primary.Attributes["private_dns"]; got != privateDNS {
+			return fmt.Errorf("EIP private_dns %q does not match network interface private_dns %q", got, privateDNS)
+		}
+
+		if eni.Association == nil {
+			return fmt.Errorf("no association on network interface %s", aws.StringValue(conf.NetworkInterfaceId))
+		}
+
+		publicDNS := aws.StringValue(eni.Association.PublicDnsName)
+		if publicDNS == "" {
+			return fmt.Errorf("empty public_dns on network interface %s", aws.StringValue(conf.NetworkInterfaceId))
+		}
+		if got := rs.Primary.Attributes["public_dns"]; got != publicDNS {
+			return fmt.Errorf("EIP public_dns %q does not match network interface public_dns %q", got, publicDNS)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckEIPExists(n string, res *ec2.Address) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -756,10 +728,6 @@ func testAccCheckEIPExists(n string, ec2classic bool, res *ec2.Address) resource
 		}
 
 		conn := acctest.Provider.Meta().(*conns.AWSClient).EC2Conn
-
-		if ec2classic {
-			conn = acctest.ProviderEC2Classic.Meta().(*conns.AWSClient).EC2Conn
-		}
 
 		input := &ec2.DescribeAddressesInput{}
 
@@ -776,11 +744,7 @@ func testAccCheckEIPExists(n string, ec2classic bool, res *ec2.Address) resource
 
 			output, err = conn.DescribeAddresses(input)
 
-			if tfawserr.ErrCodeEquals(err, "InvalidAllocationID.NotFound") {
-				return resource.RetryableError(err)
-			}
-
-			if tfawserr.ErrCodeEquals(err, "InvalidAddress.NotFound") {
+			if tfawserr.ErrCodeEquals(err, tfec2.ErrCodeInvalidAllocationIDNotFound, tfec2.ErrCodeInvalidAddressNotFound) {
 				return resource.RetryableError(err)
 			}
 
@@ -813,77 +777,8 @@ func testAccCheckEIPExists(n string, ec2classic bool, res *ec2.Address) resource
 	}
 }
 
-func testAccCheckEIPPrivateDNS(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
-		}
-
-		privateDNS := rs.Primary.Attributes["private_dns"]
-		expectedPrivateDNS := fmt.Sprintf(
-			"ip-%s.%s",
-			tfec2.ConvertIPToDashIP(rs.Primary.Attributes["private_ip"]),
-			tfec2.RegionalPrivateDNSSuffix(acctest.Region()),
-		)
-
-		if privateDNS != expectedPrivateDNS {
-			return fmt.Errorf("expected private_dns value (%s), received: %s", expectedPrivateDNS, privateDNS)
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckEIPPublicDNS(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
-		}
-
-		publicDNS := rs.Primary.Attributes["public_dns"]
-		expectedPublicDNS := fmt.Sprintf(
-			"ec2-%s.%s.%s",
-			tfec2.ConvertIPToDashIP(rs.Primary.Attributes["public_ip"]),
-			tfec2.RegionalPublicDNSSuffix(acctest.Region()),
-			acctest.PartitionDNSSuffix(),
-		)
-
-		if publicDNS != expectedPublicDNS {
-			return fmt.Errorf("expected public_dns value (%s), received: %s", expectedPublicDNS, publicDNS)
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckEIPPublicDNSClassic(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
-		}
-
-		publicDNS := rs.Primary.Attributes["public_dns"]
-		expectedPublicDNS := fmt.Sprintf(
-			"ec2-%s.%s.%s",
-			tfec2.ConvertIPToDashIP(rs.Primary.Attributes["public_ip"]),
-			tfec2.RegionalPublicDNSSuffix(acctest.EC2ClassicRegion()),
-			acctest.PartitionDNSSuffix(),
-		)
-
-		if publicDNS != expectedPublicDNS {
-			return fmt.Errorf("expected public_dns value (%s), received: %s", expectedPublicDNS, publicDNS)
-		}
-
-		return nil
-	}
-}
-
 const testAccEIPConfig = `
 resource "aws_eip" "test" {
-  vpc = true
 }
 `
 
@@ -900,63 +795,27 @@ resource "aws_eip" "test" {
 `, vpcConfig, rName)
 }
 
-func testAccEIPTagsEC2ClassicConfig(rName, vpcConfig string) string {
-	return acctest.ConfigCompose(
-		acctest.ConfigEC2ClassicRegionProvider(),
-		fmt.Sprintf(`
-resource "aws_eip" "test" {
-  %[1]s
-
-  tags = {
-    RandomName = %[2]q
-    TestName   = %[2]q
-  }
-}
-`, vpcConfig, rName))
-}
-
 const testAccEIPPublicIPv4PoolDefaultConfig = `
 resource "aws_eip" "test" {
-  vpc = true
 }
 `
 
 func testAccEIPPublicIPv4PoolCustomConfig(poolName string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc              = true
   public_ipv4_pool = %[1]q
 }
 `, poolName)
 }
 
-func testAccEIPInstanceEC2ClassicConfig() string {
-	return acctest.ConfigCompose(
-		acctest.ConfigEC2ClassicRegionProvider(),
-		testAccLatestAmazonLinuxPVEBSAMIConfig(),
-		acctest.AvailableEC2InstanceTypeForRegion("t1.micro", "m3.medium", "m3.large", "c3.large", "r3.large"),
-		`
-resource "aws_instance" "test" {
-  ami           = data.aws_ami.amzn-ami-minimal-pv-ebs.id
-  instance_type = data.aws_ec2_instance_type_offering.available.instance_type
-}
-
-resource "aws_eip" "test" {
-  instance = aws_instance.test.id
-}
-`)
-}
-
 const testAccEIPConfig_BYOIPAddress_custom_default = `
 resource "aws_eip" "test" {
-  vpc = true
 }
 `
 
 func testAccEIPConfig_BYOIPAddress_custom(address string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc     = true
   address = %[1]q
 }
 `, address)
@@ -965,17 +824,24 @@ resource "aws_eip" "test" {
 func testAccEIPConfig_BYOIPAddress_custom_with_PublicIPv4Pool(address string, poolname string) string {
 	return fmt.Sprintf(`
 resource "aws_eip" "test" {
-  vpc              = true
   address          = %[1]q
   public_ipv4_pool = %[2]q
 }
 `, address, poolname)
 }
 
+func testAccEIPInstanceAMIConfig() string {
+	return `
+data "aws_ami" "eip_test" {
+  most_recent = true
+  owners      = ["k2"]
+}
+`
+}
+
 func testAccEIPInstanceConfig() string {
 	return acctest.ConfigCompose(
-		acctest.ConfigLatestAmazonLinuxHvmEbsAmi(),
-		acctest.AvailableEC2InstanceTypeForAvailabilityZone("aws_subnet.test.availability_zone", "t3.micro", "t2.micro"),
+		testAccEIPInstanceAMIConfig(),
 		acctest.ConfigAvailableAZsNoOptIn(),
 		`
 resource "aws_vpc" "test" {
@@ -993,27 +859,24 @@ resource "aws_internet_gateway" "test" {
 }
 
 resource "aws_instance" "test" {
-  ami           = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
-  instance_type = data.aws_ec2_instance_type_offering.available.instance_type
+  ami           = data.aws_ami.eip_test.id
+  instance_type = "m1.micro"
   subnet_id     = aws_subnet.test.id
 }
 
 resource "aws_eip" "test" {
   instance = aws_instance.test.id
-  vpc      = true
 }
 `)
 }
 
 func testAccEIPInstanceAssociatedConfig(rName string) string {
 	return acctest.ConfigCompose(
-		acctest.ConfigLatestAmazonLinuxHvmEbsAmi(),
+		testAccEIPInstanceAMIConfig(),
 		acctest.ConfigAvailableAZsNoOptIn(),
-		acctest.AvailableEC2InstanceTypeForAvailabilityZone("aws_subnet.test.availability_zone", "t3.micro", "t2.micro"),
 		fmt.Sprintf(`
 resource "aws_vpc" "default" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
+  cidr_block = "10.0.0.0/16"
 
   tags = {
     Name = %[1]q
@@ -1042,8 +905,8 @@ resource "aws_subnet" "test" {
 }
 
 resource "aws_instance" "test" {
-  ami           = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
-  instance_type = data.aws_ec2_instance_type_offering.available.instance_type
+  ami           = data.aws_ami.eip_test.id
+  instance_type = "m1.micro"
 
   private_ip = "10.0.0.12"
   subnet_id  = aws_subnet.test.id
@@ -1054,8 +917,8 @@ resource "aws_instance" "test" {
 }
 
 resource "aws_instance" "test2" {
-  ami           = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
-  instance_type = data.aws_ec2_instance_type_offering.available.instance_type
+  ami           = data.aws_ami.eip_test.id
+  instance_type = "m1.micro"
 
   private_ip = "10.0.0.19"
   subnet_id  = aws_subnet.test.id
@@ -1066,21 +929,17 @@ resource "aws_instance" "test2" {
 }
 
 resource "aws_eip" "test" {
-  vpc = true
-
-  instance                  = aws_instance.test2.id
-  associate_with_private_ip = "10.0.0.19"
+  instance = aws_instance.test2.id
 }
 `, rName))
 }
 
 func testAccEIPInstanceAssociatedSwitchConfig(rName string) string {
 	return acctest.ConfigCompose(
-		acctest.ConfigLatestAmazonLinuxHvmEbsAmi(),
+		testAccEIPInstanceAMIConfig(),
 		fmt.Sprintf(`
 resource "aws_vpc" "default" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
+  cidr_block = "10.0.0.0/16"
 
   tags = {
     Name = %[1]q
@@ -1108,8 +967,8 @@ resource "aws_subnet" "test" {
 }
 
 resource "aws_instance" "test" {
-  ami           = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
-  instance_type = "t2.micro"
+  ami           = data.aws_ami.eip_test.id
+  instance_type = "m1.micro"
 
   private_ip = "10.0.0.12"
   subnet_id  = aws_subnet.test.id
@@ -1120,9 +979,9 @@ resource "aws_instance" "test" {
 }
 
 resource "aws_instance" "test2" {
-  ami = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
+  ami = data.aws_ami.eip_test.id
 
-  instance_type = "t2.micro"
+  instance_type = "m1.micro"
 
   private_ip = "10.0.0.19"
   subnet_id  = aws_subnet.test.id
@@ -1133,10 +992,7 @@ resource "aws_instance" "test2" {
 }
 
 resource "aws_eip" "test" {
-  vpc = true
-
-  instance                  = aws_instance.test.id
-  associate_with_private_ip = "10.0.0.12"
+  instance = aws_instance.test.id
 }
 `, rName))
 }
@@ -1172,7 +1028,6 @@ resource "aws_network_interface" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc               = "true"
   network_interface = aws_network_interface.test.id
   depends_on        = [aws_internet_gateway.test]
 }
@@ -1210,14 +1065,12 @@ resource "aws_network_interface" "test" {
 }
 
 resource "aws_eip" "test" {
-  vpc                       = "true"
   network_interface         = aws_network_interface.test.id
   associate_with_private_ip = "10.0.0.10"
   depends_on                = [aws_internet_gateway.test]
 }
 
 resource "aws_eip" "test2" {
-  vpc                       = "true"
   network_interface         = aws_network_interface.test.id
   associate_with_private_ip = "10.0.0.11"
   depends_on                = [aws_internet_gateway.test]
@@ -1227,12 +1080,10 @@ resource "aws_eip" "test2" {
 
 func testAccEIPInstanceReassociateConfig(rName string) string {
 	return acctest.ConfigCompose(
-		acctest.ConfigLatestAmazonLinuxHvmEbsAmi(),
-		acctest.AvailableEC2InstanceTypeForAvailabilityZone("aws_subnet.test.availability_zone", "t3.micro", "t2.micro"),
+		testAccEIPInstanceAMIConfig(),
 		fmt.Sprintf(`
 resource "aws_eip" "test" {
   instance = aws_instance.test.id
-  vpc      = true
 
   tags = {
     Name = %[1]q
@@ -1240,10 +1091,9 @@ resource "aws_eip" "test" {
 }
 
 resource "aws_instance" "test" {
-  ami                         = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
-  associate_public_ip_address = true
-  instance_type               = data.aws_ec2_instance_type_offering.available.instance_type
-  subnet_id                   = aws_subnet.test.id
+  ami           = data.aws_ami.eip_test.id
+  instance_type = "m1.micro"
+  subnet_id     = aws_subnet.test.id
 
   tags = {
     Name = %[1]q
@@ -1301,9 +1151,8 @@ resource "aws_route_table_association" "test" {
 
 func testAccEIPInstanceAssociateNotAssociatedConfig() string {
 	return acctest.ConfigCompose(
-		acctest.AvailableEC2InstanceTypeForAvailabilityZone("aws_subnet.test.availability_zone", "t3.micro", "t2.micro"),
 		acctest.ConfigAvailableAZsNoOptIn(),
-		acctest.ConfigLatestAmazonLinuxHvmEbsAmi(), `
+		testAccEIPInstanceAMIConfig(), `
 resource "aws_vpc" "test" {
   cidr_block = "10.0.0.0/16"
 }
@@ -1319,8 +1168,8 @@ resource "aws_internet_gateway" "test" {
 }
 
 resource "aws_instance" "test" {
-  ami           = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
-  instance_type = data.aws_ec2_instance_type_offering.available.instance_type
+  ami           = data.aws_ami.eip_test.id
+  instance_type = "m1.micro"
   subnet_id     = aws_subnet.test.id
 }
 
@@ -1331,9 +1180,8 @@ resource "aws_eip" "test" {
 
 func testAccEIPInstanceAssociateAssociatedConfig() string {
 	return acctest.ConfigCompose(
-		acctest.AvailableEC2InstanceTypeForAvailabilityZone("aws_subnet.test.availability_zone", "t3.micro", "t2.micro"),
 		acctest.ConfigAvailableAZsNoOptIn(),
-		acctest.ConfigLatestAmazonLinuxHvmEbsAmi(), `
+		testAccEIPInstanceAMIConfig(), `
 resource "aws_vpc" "test" {
   cidr_block = "10.0.0.0/16"
 }
@@ -1349,14 +1197,13 @@ resource "aws_internet_gateway" "test" {
 }
 
 resource "aws_instance" "test" {
-  ami           = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
-  instance_type = data.aws_ec2_instance_type_offering.available.instance_type
+  ami           = data.aws_ami.eip_test.id
+  instance_type = "m1.micro"
   subnet_id     = aws_subnet.test.id
 }
 
 resource "aws_eip" "test" {
   instance = aws_instance.test.id
-  vpc      = true
 }
 `)
 }
@@ -1367,7 +1214,6 @@ data "aws_ec2_coip_pools" "test" {}
 
 resource "aws_eip" "test" {
   customer_owned_ipv4_pool = tolist(data.aws_ec2_coip_pools.test.pool_ids)[0]
-  vpc                      = true
 }
 `
 }
@@ -1376,7 +1222,6 @@ const testAccEIPNetworkBorderGroupConfig = `
 data "aws_region" current {}
 
 resource "aws_eip" "test" {
-  vpc                  = true
   network_border_group = data.aws_region.current.name
 }
 `
@@ -1390,7 +1235,6 @@ data "aws_availability_zone" "available" {
 }
 
 resource "aws_eip" "test" {
-  vpc                  = true
   network_border_group = data.aws_availability_zone.available.network_border_group
 
   tags = {
