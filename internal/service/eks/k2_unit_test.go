@@ -1,9 +1,12 @@
 package eks
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -167,9 +170,6 @@ func TestExpandAndFlattenK2ClusterConfiguration(t *testing.T) {
 	}
 
 	emptyLegacy := flattenLegacyClusterParams(&eks.LegacyClusterParamsResponse{
-		ClusterAutoscalerConfig: &eks.ClusterAutoscalerConfig{
-			ClusterAutoscalerRequired: aws.Bool(false),
-		},
 		DockerRegistryConfig: &eks.DockerRegistryConfig{
 			DockerRegistryRequired: aws.Bool(false),
 		},
@@ -192,6 +192,27 @@ func TestExpandAndFlattenK2ClusterConfiguration(t *testing.T) {
 	}
 	if got := flattenClusterRemoteAccessConfig(&eks.RemoteAccessConfig{}); len(got) != 0 {
 		t.Fatalf("empty remote access block must not create Terraform drift: %#v", got)
+	}
+}
+
+// A disabled Cluster Autoscaler must survive the read: dropping it made an explicit
+// cluster_autoscaler_required = false replace the cluster on every apply.
+func TestDisabledClusterAutoscalerIsReadBack(t *testing.T) {
+	flattened := flattenClusterAutoscalerConfig(&eks.ClusterAutoscalerConfig{
+		ClusterAutoscalerRequired: aws.Bool(false),
+	})
+	if len(flattened) != 1 {
+		t.Fatalf("disabled Cluster Autoscaler was dropped: %#v", flattened)
+	}
+	if got := flattened[0].(map[string]interface{})["cluster_autoscaler_required"]; got != false {
+		t.Fatalf("unexpected Cluster Autoscaler flag: %#v", got)
+	}
+
+	// Configurations that do not declare the block must keep reading it from the API.
+	legacy := ResourceCluster().Schema["legacy_cluster_params"]
+	autoscaler := legacy.Elem.(*schema.Resource).Schema["cluster_autoscaler_config"]
+	if !legacy.Computed || !autoscaler.Computed {
+		t.Fatal("cluster_autoscaler_config must be computed to stay out of the diff when it is not configured")
 	}
 }
 
@@ -295,5 +316,187 @@ func TestClusterUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
 	}
 	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
 		t.Fatalf("unexpected empty ID fallback update status: %q", got)
+	}
+}
+
+func TestClusterUpdateFallbackAcceptsModifyingStatus(t *testing.T) {
+	var describes int32
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/clusters/test/updates/update-1":
+			w.Header().Set("X-Amzn-Errortype", "PathNotFoundError")
+			http.Error(w, `{"message":"Specified path does not exist."}`, http.StatusBadRequest)
+		case "/clusters/test":
+			status := eks.ClusterStatusReady
+			if atomic.AddInt32(&describes, 1) == 1 {
+				status = clusterStatusModifying
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"cluster":{"name":"test","status":%q}}`, status)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	update, err := waitClusterUpdateSuccessful(conn, "test", "update-1", 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected fallback waiter error: %s", err)
+	}
+	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
+		t.Fatalf("unexpected fallback update status: %q", got)
+	}
+}
+
+func TestClusterDeleteAcceptsModifyingStatus(t *testing.T) {
+	var describes int32
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if atomic.AddInt32(&describes, 1) == 1 {
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"cluster":{"name":"test","status":%q}}`, clusterStatusModifying)
+
+			return
+		}
+
+		w.Header().Set("X-Amzn-Errortype", ErrCodeClusterNotFound)
+		http.Error(w, `{"message":"Cluster not found."}`, http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	cluster, err := waitClusterDeleted(conn, "test", 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected delete waiter error: %s", err)
+	}
+	if cluster != nil {
+		t.Fatalf("deleted cluster was reported as existing: %#v", cluster)
+	}
+}
+
+// The cluster resource and data source are filled by the same flatten functions,
+// so every block the data source exposes must accept the whole resource block.
+func TestDataSourceClusterBlocksMatchResource(t *testing.T) {
+	block := func(fields map[string]*schema.Schema, name string) map[string]*schema.Schema {
+		if field, ok := fields[name]; ok {
+			if nested, ok := field.Elem.(*schema.Resource); ok {
+				return nested.Schema
+			}
+		}
+
+		return nil
+	}
+
+	var compare func(path string, resource, dataSource map[string]*schema.Schema)
+	compare = func(path string, resource, dataSource map[string]*schema.Schema) {
+		for name := range resource {
+			if _, ok := dataSource[name]; !ok {
+				t.Errorf("data source cannot store %s%s", path, name)
+				continue
+			}
+
+			if nested := block(resource, name); nested != nil {
+				compare(path+name+".", nested, block(dataSource, name))
+			}
+		}
+	}
+
+	resource := ResourceCluster().Schema
+	dataSource := DataSourceCluster().Schema
+
+	// Only the blocks the data source declares are compared: the resource also has
+	// top-level attributes the data source deliberately does not read.
+	for name := range dataSource {
+		if nested := block(dataSource, name); nested != nil {
+			compare(name+".", block(resource, name), nested)
+		}
+	}
+}
+
+func TestNodegroupUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/clusters/test/updates/update-1":
+			w.Header().Set("X-Amzn-Errortype", "PathNotFoundError")
+			http.Error(w, `{"message":"Specified path does not exist."}`, http.StatusBadRequest)
+		case "/clusters/test/node-groups/general":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"nodegroup":{"clusterName":"test","nodegroupName":"general","status":"ACTIVE"}}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	ctx := context.Background()
+	update, err := waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "update-1", nil, 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected fallback waiter error: %s", err)
+	}
+	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
+		t.Fatalf("unexpected fallback update status: %q", got)
+	}
+
+	update, err = waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "", nil, 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected empty update ID fallback error: %s", err)
+	}
+	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
+		t.Fatalf("unexpected empty ID fallback update status: %q", got)
+	}
+}
+
+func TestNodegroupUpdateFallbackWaitsForRequestedDesiredSize(t *testing.T) {
+	var describes int32
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/clusters/test/updates/update-1":
+			w.Header().Set("X-Amzn-Errortype", "PathNotFoundError")
+			http.Error(w, `{"message":"Specified path does not exist."}`, http.StatusBadRequest)
+		case "/clusters/test/node-groups/general":
+			desiredSize := 3
+			if atomic.AddInt32(&describes, 1) == 1 {
+				desiredSize = 2
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"nodegroup":{"clusterName":"test","nodegroupName":"general","status":"ACTIVE","scalingConfig":{"desiredSize":%d,"maxSize":3,"minSize":1}}}`, desiredSize)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	if _, err := waitNodegroupUpdateSuccessful(context.Background(), conn, "test", "general", "update-1", aws.Int64(3), 5*time.Second); err != nil {
+		t.Fatalf("unexpected fallback waiter error: %s", err)
+	}
+	if got := atomic.LoadInt32(&describes); got < 2 {
+		t.Fatalf("fallback waiter returned on the stale desired size after %d describes", got)
 	}
 }

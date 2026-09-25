@@ -571,7 +571,12 @@ func resourceNodeGroupUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 		updateID := aws.StringValue(output.Update.Id)
 
-		_, err = waitNodegroupUpdateSuccessful(ctx, conn, clusterName, nodeGroupName, updateID, d.Timeout(schema.TimeoutUpdate))
+		var desiredSize *int64
+		if input.ScalingConfig != nil {
+			desiredSize = input.ScalingConfig.DesiredSize
+		}
+
+		_, err = waitNodegroupUpdateSuccessful(ctx, conn, clusterName, nodeGroupName, updateID, desiredSize, d.Timeout(schema.TimeoutUpdate))
 
 		if err != nil {
 			return diag.Errorf("error waiting for EKS Node Group (%s) config update (%s): %s", d.Id(), updateID, err)

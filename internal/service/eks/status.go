@@ -105,6 +105,28 @@ func statusNodegroup(conn *eks.EKS, clusterName, nodeGroupName string) resource.
 	}
 }
 
+// statusNodegroupAfterUpdate reports an ACTIVE node group as still updating until the
+// requested desired size is visible: K2 keeps the node group ACTIVE for a short time
+// after UpdateNodegroupConfig is accepted.
+func statusNodegroupAfterUpdate(conn *eks.EKS, clusterName, nodeGroupName string, desiredSize *int64) resource.StateRefreshFunc {
+	refresh := statusNodegroup(conn, clusterName, nodeGroupName)
+
+	return func() (interface{}, string, error) {
+		output, status, err := refresh()
+
+		if err != nil || desiredSize == nil || status != eks.NodegroupStatusActive {
+			return output, status, err
+		}
+
+		if nodeGroup, ok := output.(*eks.Nodegroup); ok && nodeGroup.ScalingConfig != nil &&
+			aws.Int64Value(nodeGroup.ScalingConfig.DesiredSize) != aws.Int64Value(desiredSize) {
+			return output, eks.NodegroupStatusUpdating, nil
+		}
+
+		return output, status, nil
+	}
+}
+
 func statusNodegroupUpdate(conn *eks.EKS, clusterName, nodeGroupName, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		output, err := FindNodegroupUpdateByClusterNameNodegroupNameAndID(conn, clusterName, nodeGroupName, id)

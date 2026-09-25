@@ -170,6 +170,7 @@ func ResourceCluster() *schema.Resource {
 						"cluster_autoscaler_config": {
 							Type:     schema.TypeList,
 							Optional: true,
+							Computed: true,
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -1227,9 +1228,6 @@ func flattenClusterAutoscalerConfig(config *eks.ClusterAutoscalerConfig) []inter
 	user := aws.StringValue(config.ClusterAutoscalerUser)
 	if user == "" {
 		user = aws.StringValue(config.ClusterAutoscalerUserName)
-	}
-	if !aws.BoolValue(config.ClusterAutoscalerRequired) && user == "" {
-		return nil
 	}
 
 	return []interface{}{map[string]interface{}{

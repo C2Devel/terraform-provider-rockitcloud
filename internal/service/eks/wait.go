@@ -108,6 +108,7 @@ func waitClusterDeleted(conn *eks.EKS, name string, timeout time.Duration) (*eks
 			eks.ClusterStatusClaimed,
 			eks.ClusterStatusCreating,
 			eks.ClusterStatusDeleting,
+			clusterStatusModifying,
 			eks.ClusterStatusPending,
 			eks.ClusterStatusProvisioning,
 			eks.ClusterStatusReady,
@@ -136,9 +137,9 @@ func waitClusterDeleted(conn *eks.EKS, name string, timeout time.Duration) (*eks
 	return nil, err
 }
 
-func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Duration) (*eks.Update, error) { //nolint:unparam
+func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Duration) (*eks.Update, error) {
 	if id == "" {
-		if _, err := waitClusterReadyAfterUpdate(conn, name, timeout); err != nil {
+		if err := waitClusterReadyAfterUpdate(conn, name, timeout); err != nil {
 			return nil, err
 		}
 
@@ -156,7 +157,7 @@ func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Du
 
 	outputRaw, err := stateConf.WaitForState()
 	if tfawserr.ErrCodeEquals(err, "PathNotFoundError") {
-		if _, fallbackErr := waitClusterReadyAfterUpdate(conn, name, timeout); fallbackErr != nil {
+		if fallbackErr := waitClusterReadyAfterUpdate(conn, name, timeout); fallbackErr != nil {
 			return nil, fallbackErr
 		}
 
@@ -177,12 +178,13 @@ func waitClusterUpdateSuccessful(conn *eks.EKS, name, id string, timeout time.Du
 	return nil, err
 }
 
-func waitClusterReadyAfterUpdate(conn *eks.EKS, name string, timeout time.Duration) (*eks.Cluster, error) {
+func waitClusterReadyAfterUpdate(conn *eks.EKS, name string, timeout time.Duration) error {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
 			eks.ClusterStatusActive,
 			eks.ClusterStatusClaimed,
 			eks.ClusterStatusCreating,
+			clusterStatusModifying,
 			eks.ClusterStatusPending,
 			eks.ClusterStatusProvisioning,
 			eks.ClusterStatusUpdating,
@@ -199,10 +201,10 @@ func waitClusterReadyAfterUpdate(conn *eks.EKS, name string, timeout time.Durati
 			tfresource.SetLastError(err, ClusterIssuesError(health.Issues))
 		}
 
-		return output, err
+		return err
 	}
 
-	return nil, err
+	return err
 }
 
 func waitFargateProfileCreated(conn *eks.EKS, clusterName, fargateProfileName string, timeout time.Duration) (*eks.FargateProfile, error) {
@@ -295,7 +297,17 @@ func waitNodegroupDeleted(ctx context.Context, conn *eks.EKS, clusterName, nodeG
 	return nil, err
 }
 
-func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName, id string, timeout time.Duration) (*eks.Update, error) {
+func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName, id string, desiredSize *int64, timeout time.Duration) (*eks.Update, error) {
+	if id == "" {
+		if err := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, desiredSize, timeout); err != nil {
+			return nil, err
+		}
+
+		return &eks.Update{
+			Status: aws.String(eks.UpdateStatusSuccessful),
+		}, nil
+	}
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{eks.UpdateStatusInProgress},
 		Target:  []string{eks.UpdateStatusSuccessful},
@@ -304,6 +316,16 @@ func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterNa
 	}
 
 	outputRaw, err := stateConf.WaitForStateContext(ctx)
+	if tfawserr.ErrCodeEquals(err, "PathNotFoundError") {
+		if fallbackErr := waitNodegroupActiveAfterUpdate(ctx, conn, clusterName, nodeGroupName, desiredSize, timeout); fallbackErr != nil {
+			return nil, fallbackErr
+		}
+
+		return &eks.Update{
+			Id:     aws.String(id),
+			Status: aws.String(eks.UpdateStatusSuccessful),
+		}, nil
+	}
 
 	if output, ok := outputRaw.(*eks.Update); ok {
 		if status := aws.StringValue(output.Status); status == eks.UpdateStatusCancelled || status == eks.UpdateStatusFailed {
@@ -314,6 +336,32 @@ func waitNodegroupUpdateSuccessful(ctx context.Context, conn *eks.EKS, clusterNa
 	}
 
 	return nil, err
+}
+
+func waitNodegroupActiveAfterUpdate(ctx context.Context, conn *eks.EKS, clusterName, nodeGroupName string, desiredSize *int64, timeout time.Duration) error {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{
+			eks.NodegroupStatusClaimed,
+			eks.NodegroupStatusPending,
+			eks.NodegroupStatusProvisioning,
+			eks.NodegroupStatusUpdating,
+		},
+		Target:  []string{eks.NodegroupStatusActive},
+		Refresh: statusNodegroupAfterUpdate(conn, clusterName, nodeGroupName, desiredSize),
+		Timeout: timeout,
+	}
+
+	outputRaw, err := stateConf.WaitForStateContext(ctx)
+
+	if output, ok := outputRaw.(*eks.Nodegroup); ok {
+		if status, health := aws.StringValue(output.Status), output.Health; (status == eks.NodegroupStatusCreateFailed || status == eks.NodegroupStatusDegraded || status == eks.NodegroupStatusDeleteFailed) && health != nil {
+			tfresource.SetLastError(err, IssuesError(health.Issues))
+		}
+
+		return err
+	}
+
+	return err
 }
 
 func waitOIDCIdentityProviderConfigCreated(ctx context.Context, conn *eks.EKS, clusterName, configName string, timeout time.Duration) (*eks.OidcIdentityProviderConfig, error) {
