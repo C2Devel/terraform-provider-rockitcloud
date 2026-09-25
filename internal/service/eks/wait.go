@@ -183,6 +183,7 @@ func waitClusterReadyAfterUpdate(conn *eks.EKS, name string, timeout time.Durati
 			eks.ClusterStatusActive,
 			eks.ClusterStatusClaimed,
 			eks.ClusterStatusCreating,
+			clusterStatusModifying,
 			eks.ClusterStatusPending,
 			eks.ClusterStatusProvisioning,
 			eks.ClusterStatusUpdating,

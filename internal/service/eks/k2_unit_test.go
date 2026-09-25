@@ -301,6 +301,43 @@ func TestClusterUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
 	}
 }
 
+func TestClusterUpdateFallbackAcceptsModifyingStatus(t *testing.T) {
+	var describes int32
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/clusters/test/updates/update-1":
+			w.Header().Set("X-Amzn-Errortype", "PathNotFoundError")
+			http.Error(w, `{"message":"Specified path does not exist."}`, http.StatusBadRequest)
+		case "/clusters/test":
+			status := eks.ClusterStatusReady
+			if atomic.AddInt32(&describes, 1) == 1 {
+				status = clusterStatusModifying
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"cluster":{"name":"test","status":%q}}`, status)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	update, err := waitClusterUpdateSuccessful(conn, "test", "update-1", 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected fallback waiter error: %s", err)
+	}
+	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
+		t.Fatalf("unexpected fallback update status: %q", got)
+	}
+}
+
 func TestNodegroupUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
