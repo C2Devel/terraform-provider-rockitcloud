@@ -7,7 +7,7 @@ resource/aws_eks_cluster: Do not recreate the cluster when `legacy_cluster_param
 ```
 
 ```release-note:bug
-resource/aws_eks_cluster: Wait for the `MODIFYING` status instead of failing an update with `unexpected state`
+resource/aws_eks_cluster: Wait for the `MODIFYING` status instead of failing an update or a destroy with `unexpected state`
 ```
 
 ```release-note:bug

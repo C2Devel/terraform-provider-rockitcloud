@@ -356,6 +356,37 @@ func TestClusterUpdateFallbackAcceptsModifyingStatus(t *testing.T) {
 	}
 }
 
+func TestClusterDeleteAcceptsModifyingStatus(t *testing.T) {
+	var describes int32
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if atomic.AddInt32(&describes, 1) == 1 {
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"cluster":{"name":"test","status":%q}}`, clusterStatusModifying)
+
+			return
+		}
+
+		w.Header().Set("X-Amzn-Errortype", ErrCodeClusterNotFound)
+		http.Error(w, `{"message":"Cluster not found."}`, http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	cluster, err := waitClusterDeleted(conn, "test", 5*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected delete waiter error: %s", err)
+	}
+	if cluster != nil {
+		t.Fatalf("deleted cluster was reported as existing: %#v", cluster)
+	}
+}
+
 // The cluster resource and data source are filled by the same flatten functions,
 // so every block the data source exposes must accept the whole resource block.
 func TestDataSourceClusterBlocksMatchResource(t *testing.T) {

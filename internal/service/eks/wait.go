@@ -108,6 +108,7 @@ func waitClusterDeleted(conn *eks.EKS, name string, timeout time.Duration) (*eks
 			eks.ClusterStatusClaimed,
 			eks.ClusterStatusCreating,
 			eks.ClusterStatusDeleting,
+			clusterStatusModifying,
 			eks.ClusterStatusPending,
 			eks.ClusterStatusProvisioning,
 			eks.ClusterStatusReady,
