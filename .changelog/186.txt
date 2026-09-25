@@ -1,15 +1,15 @@
 ```release-note:bug
-resource/aws_eks_node_group: Fall back to node group status when the update status endpoint is unavailable
+data-source/aws_eks_cluster: Read clusters that use `kubernetes_network_config.pod_ipv4_cidr` or `legacy_cluster_params.cluster_autoscaler_config`
 ```
 
 ```release-note:bug
-resource/aws_eks_cluster: Wait for the `MODIFYING` status to finish instead of failing the update
+resource/aws_eks_cluster: Do not recreate the cluster when `legacy_cluster_params.cluster_autoscaler_config.cluster_autoscaler_required` is set to `false`
 ```
 
 ```release-note:bug
-data-source/aws_eks_cluster: Read clusters that have `kubernetes_network_config.pod_ipv4_cidr` set
+resource/aws_eks_cluster: Wait for the `MODIFYING` status instead of failing an update with `unexpected state`
 ```
 
 ```release-note:bug
-resource/aws_eks_cluster: Stop replacing the cluster on every apply when `legacy_cluster_params.cluster_autoscaler_config.cluster_autoscaler_required` is set to `false`
+resource/aws_eks_node_group: Fix `PathNotFoundError` when updating `scaling_config` and wait until the requested `desired_size` is applied
 ```
