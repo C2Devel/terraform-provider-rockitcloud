@@ -5,3 +5,7 @@ resource/aws_eks_node_group: Fall back to node group status when the update stat
 ```release-note:bug
 resource/aws_eks_cluster: Wait for the `MODIFYING` status to finish instead of failing the update
 ```
+
+```release-note:bug
+data-source/aws_eks_cluster: Read clusters that have `kubernetes_network_config.pod_ipv4_cidr` set
+```

@@ -73,6 +73,10 @@ func DataSourceCluster() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"pod_ipv4_cidr": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"service_ipv4_cidr": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -85,6 +89,22 @@ func DataSourceCluster() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"cluster_autoscaler_config": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cluster_autoscaler_required": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"cluster_autoscaler_user": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
 						"docker_registry_config": {
 							Type:     schema.TypeList,
 							Computed: true,

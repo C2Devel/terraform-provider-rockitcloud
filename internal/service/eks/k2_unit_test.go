@@ -338,6 +338,45 @@ func TestClusterUpdateFallbackAcceptsModifyingStatus(t *testing.T) {
 	}
 }
 
+// The cluster resource and data source are filled by the same flatten functions,
+// so every block the data source exposes must accept the whole resource block.
+func TestDataSourceClusterBlocksMatchResource(t *testing.T) {
+	block := func(fields map[string]*schema.Schema, name string) map[string]*schema.Schema {
+		if field, ok := fields[name]; ok {
+			if nested, ok := field.Elem.(*schema.Resource); ok {
+				return nested.Schema
+			}
+		}
+
+		return nil
+	}
+
+	var compare func(path string, resource, dataSource map[string]*schema.Schema)
+	compare = func(path string, resource, dataSource map[string]*schema.Schema) {
+		for name := range resource {
+			if _, ok := dataSource[name]; !ok {
+				t.Errorf("data source cannot store %s%s", path, name)
+				continue
+			}
+
+			if nested := block(resource, name); nested != nil {
+				compare(path+name+".", nested, block(dataSource, name))
+			}
+		}
+	}
+
+	resource := ResourceCluster().Schema
+	dataSource := DataSourceCluster().Schema
+
+	// Only the blocks the data source declares are compared: the resource also has
+	// top-level attributes the data source deliberately does not read.
+	for name := range dataSource {
+		if nested := block(dataSource, name); nested != nil {
+			compare(name+".", block(resource, name), nested)
+		}
+	}
+}
+
 func TestNodegroupUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

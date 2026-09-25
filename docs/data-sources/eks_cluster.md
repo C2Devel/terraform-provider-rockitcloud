@@ -49,12 +49,15 @@ In addition to all arguments above, the following attributes are exported:
 The `kubernetes_network_config` block has the following structure:
 
 * `ip_family` - The IP family used to assign Kubernetes pod and service addresses.
+* `pod_ipv4_cidr` - The CIDR block to assign Kubernetes pod IP addresses from.
 * `service_ipv4_cidr` - The CIDR block to assign Kubernetes service IP addresses from.
 
 #### legacy_cluster_params
 
 The `legacy_cluster_params` block has the following structure:
 
+* `cluster_autoscaler_config` – The configuration of the Cluster Autoscaler.
+  The structure of this block is [described below](#cluster_autoscaler_config).
 * `docker_registry_config` – The configuration of the Docker Registry.
   The structure of this block is [described below](#docker_registry_config).
 * `ebs_provider_config` – The configuration of the EBS Provider.
@@ -69,6 +72,13 @@ The `legacy_cluster_params` block has the following structure:
   The structure of this block is [described below](#nlb_provider_config).
 * `placement_config` - The placement of the cluster.
   The structure of this block is [described below](#placement_config).
+
+##### cluster_autoscaler_config
+
+The `cluster_autoscaler_config` block has the following structure:
+
+* `cluster_autoscaler_required` - Whether the Cluster Autoscaler is deployed.
+* `cluster_autoscaler_user` - K2 service user used by the Cluster Autoscaler.
 
 ##### docker_registry_config
 
