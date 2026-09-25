@@ -45,6 +45,7 @@ The following arguments are optional:
 
 * `filter` - (Optional, [Block](#filter)) One or more name/value pairs to use as filters.
     * _Valid values:_ See supported names and values in [EC2 API documentation][describe-route-tables]
+* `route_table_id` - (Optional, String) The ID of the route table.
 * `subnet_id` - (Optional, String) The ID of the subnet which is associated with the route table (not exported if not passed as a parameter).
 * `tags` - (Optional, Map of strings) Key-value pairs. Must exactly match pairs on the required resource.
 * `vpc_id` - (Optional, String) The ID of the VPC that owns the desired route table.
@@ -65,7 +66,6 @@ In addition to all arguments above, the following attributes are exported:
 * `arn` - (String) The Amazon Resource Name (ARN) of the route table.
 * `id` - (String) The ID of the route table.
 * `associations` - ([Block](#associations)) The list of associations.
-* `route_table_id` - (String) The ID of the route table.
 * `routes` - ([Block](#routes)) The list of routes.
 
 #### associations
@@ -80,6 +80,7 @@ In addition to all arguments above, the following attributes are exported:
 * `cidr_block` - (String) The CIDR block of the route.
 * `gateway_id` - (String) The ID of the gateway.
 * `instance_id` - (String) The ID of the instance.
+* `nat_gateway_id` - (String) The ID of the NAT gateway.
 * `network_interface_id` - (String) The ID of the network interface.
 * `transit_gateway_id` - (String) The ID of the transit gateway.
 
@@ -89,4 +90,4 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`associations.gateway_id`, `gateway_id`, `owner_id`, `routes.carrier_gateway_id`, `routes.core_network_arn`, `routes.destination_prefix_list_id`, `routes.egress_only_gateway_id`, `routes.ipv6_cidr_block`, `routes.local_gateway_id`, `routes.nat_gateway_id`, `routes.vpc_endpoint_id`, `routes.vpc_peering_connection_id`.
+`associations.gateway_id`, `gateway_id`, `owner_id`, `routes.carrier_gateway_id`, `routes.core_network_arn`, `routes.destination_prefix_list_id`, `routes.egress_only_gateway_id`, `routes.ipv6_cidr_block`, `routes.local_gateway_id`, `routes.vpc_endpoint_id`, `routes.vpc_peering_connection_id`.

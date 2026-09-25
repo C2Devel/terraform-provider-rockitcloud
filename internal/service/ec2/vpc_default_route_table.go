@@ -102,7 +102,7 @@ func ResourceDefaultRouteTable() *schema.Resource {
 						},
 						"instance_id": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"nat_gateway_id": {
 							Type:     schema.TypeString,
