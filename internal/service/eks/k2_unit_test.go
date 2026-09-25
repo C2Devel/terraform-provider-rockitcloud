@@ -2,9 +2,11 @@ package eks
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -321,7 +323,7 @@ func TestNodegroupUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
 	})))
 
 	ctx := context.Background()
-	update, err := waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "update-1", 5*time.Second)
+	update, err := waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "update-1", nil, 5*time.Second)
 	if err != nil {
 		t.Fatalf("unexpected fallback waiter error: %s", err)
 	}
@@ -329,11 +331,47 @@ func TestNodegroupUpdateFallsBackWhenDescribeUpdateIsUnavailable(t *testing.T) {
 		t.Fatalf("unexpected fallback update status: %q", got)
 	}
 
-	update, err = waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "", 5*time.Second)
+	update, err = waitNodegroupUpdateSuccessful(ctx, conn, "test", "general", "", nil, 5*time.Second)
 	if err != nil {
 		t.Fatalf("unexpected empty update ID fallback error: %s", err)
 	}
 	if got := aws.StringValue(update.Status); got != eks.UpdateStatusSuccessful {
 		t.Fatalf("unexpected empty ID fallback update status: %q", got)
+	}
+}
+
+func TestNodegroupUpdateFallbackWaitsForRequestedDesiredSize(t *testing.T) {
+	var describes int32
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/clusters/test/updates/update-1":
+			w.Header().Set("X-Amzn-Errortype", "PathNotFoundError")
+			http.Error(w, `{"message":"Specified path does not exist."}`, http.StatusBadRequest)
+		case "/clusters/test/node-groups/general":
+			desiredSize := 3
+			if atomic.AddInt32(&describes, 1) == 1 {
+				desiredSize = 2
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"nodegroup":{"clusterName":"test","nodegroupName":"general","status":"ACTIVE","scalingConfig":{"desiredSize":%d,"maxSize":3,"minSize":1}}}`, desiredSize)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+
+	if _, err := waitNodegroupUpdateSuccessful(context.Background(), conn, "test", "general", "update-1", aws.Int64(3), 5*time.Second); err != nil {
+		t.Fatalf("unexpected fallback waiter error: %s", err)
+	}
+	if got := atomic.LoadInt32(&describes); got < 2 {
+		t.Fatalf("fallback waiter returned on the stale desired size after %d describes", got)
 	}
 }
