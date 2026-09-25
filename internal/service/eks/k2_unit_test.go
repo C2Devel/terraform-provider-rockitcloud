@@ -170,9 +170,6 @@ func TestExpandAndFlattenK2ClusterConfiguration(t *testing.T) {
 	}
 
 	emptyLegacy := flattenLegacyClusterParams(&eks.LegacyClusterParamsResponse{
-		ClusterAutoscalerConfig: &eks.ClusterAutoscalerConfig{
-			ClusterAutoscalerRequired: aws.Bool(false),
-		},
 		DockerRegistryConfig: &eks.DockerRegistryConfig{
 			DockerRegistryRequired: aws.Bool(false),
 		},
@@ -195,6 +192,27 @@ func TestExpandAndFlattenK2ClusterConfiguration(t *testing.T) {
 	}
 	if got := flattenClusterRemoteAccessConfig(&eks.RemoteAccessConfig{}); len(got) != 0 {
 		t.Fatalf("empty remote access block must not create Terraform drift: %#v", got)
+	}
+}
+
+// A disabled Cluster Autoscaler must survive the read: dropping it made an explicit
+// cluster_autoscaler_required = false replace the cluster on every apply.
+func TestDisabledClusterAutoscalerIsReadBack(t *testing.T) {
+	flattened := flattenClusterAutoscalerConfig(&eks.ClusterAutoscalerConfig{
+		ClusterAutoscalerRequired: aws.Bool(false),
+	})
+	if len(flattened) != 1 {
+		t.Fatalf("disabled Cluster Autoscaler was dropped: %#v", flattened)
+	}
+	if got := flattened[0].(map[string]interface{})["cluster_autoscaler_required"]; got != false {
+		t.Fatalf("unexpected Cluster Autoscaler flag: %#v", got)
+	}
+
+	// Configurations that do not declare the block must keep reading it from the API.
+	legacy := ResourceCluster().Schema["legacy_cluster_params"]
+	autoscaler := legacy.Elem.(*schema.Resource).Schema["cluster_autoscaler_config"]
+	if !legacy.Computed || !autoscaler.Computed {
+		t.Fatal("cluster_autoscaler_config must be computed to stay out of the diff when it is not configured")
 	}
 }
 

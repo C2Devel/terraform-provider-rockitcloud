@@ -9,3 +9,7 @@ resource/aws_eks_cluster: Wait for the `MODIFYING` status to finish instead of f
 ```release-note:bug
 data-source/aws_eks_cluster: Read clusters that have `kubernetes_network_config.pod_ipv4_cidr` set
 ```
+
+```release-note:bug
+resource/aws_eks_cluster: Stop replacing the cluster on every apply when `legacy_cluster_params.cluster_autoscaler_config.cluster_autoscaler_required` is set to `false`
+```
