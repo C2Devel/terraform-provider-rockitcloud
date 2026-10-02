@@ -10,14 +10,24 @@ NOTES:
 * data-source/aws_subnet: deprecate the `map_public_ip_on_launch` attribute, which will be removed in future releases ([#187](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/187))
 * resource/aws_subnet: deprecate the `map_public_ip_on_launch` argument, which will be removed in future releases ([#187](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/187))
 
+ENHANCEMENTS:
+
+* resource/aws_eip: reject specifying both `instance` and `network_interface` at plan time instead of failing during apply ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
+
 BUG FIXES:
 
 * data-source/aws_eks_cluster: Read clusters that use `kubernetes_network_config.pod_ipv4_cidr` or `legacy_cluster_params.cluster_autoscaler_config` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
 * data-source/aws_route_table: fix the lookup by the `route_table_id` argument, which always failed with an API error ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
 * data-source/aws_route_table: remove the `gateway_id` argument, as gateway route table associations are not supported by the platform ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
+* resource/aws_eip, data-source/aws_eip: fix `private_dns` and `public_dns`, which were predicted instead of read from the attached network interface ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
+* resource/aws_eip: deprecate the `vpc` argument, which is ignored since all EIPs are for use in a VPC ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
+* resource/aws_eip: fix `default_tags` not being applied on the first apply when the resource has no `tags` argument ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
+* resource/aws_eip: fix `terraform destroy` failing when the address was already released outside of Terraform ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
+* resource/aws_eip_association: fix `allow_reassociation` being ignored when set to `false`, which allowed an already associated Elastic IP to be re-associated ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
 * resource/aws_eks_cluster: Do not recreate the cluster when `legacy_cluster_params.cluster_autoscaler_config.cluster_autoscaler_required` is set to `false` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
 * resource/aws_eks_cluster: Wait for the `MODIFYING` status instead of failing an update or a destroy with `unexpected state` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
 * resource/aws_eks_node_group: Fix `PathNotFoundError` when updating `scaling_config` and wait until the requested `desired_size` is applied ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
+* resource/aws_network_interface, resource/aws_network_interface_attachment: fix deletion failing with `Network interface is currently in use` right after the interface is detached ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
 
 ## 25.5.5 (August 10, 2026)
 
