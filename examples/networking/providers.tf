@@ -24,13 +24,3 @@ locals {
   ]
   dict_creds = { for i in local.loc_creds : i[0] => i[1] }
 }
-
-provider "aws" {
-  access_key = "${local.dict_creds["C2_PROJECT"]}:${local.dict_creds["BASE_ACCESS_KEY"]}"
-  secret_key = local.dict_creds["EC2_SECRET_KEY"]
-
-  # For K2 Cloud, specify one of the supported regions.
-  # For other cloud platforms, enter a non-empty string,
-  # for example, "region-1", and API endpoints.
-  region = var.region
-}

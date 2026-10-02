@@ -88,8 +88,9 @@ func DataSourceSubnet() *schema.Resource {
 				Computed: true,
 			},
 			"map_public_ip_on_launch": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:       schema.TypeBool,
+				Computed:   true,
+				Deprecated: "The map_public_ip_on_launch attribute will be removed in future releases.",
 			},
 			"outpost_arn": {
 				Type:     schema.TypeString,
