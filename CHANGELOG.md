@@ -1,5 +1,10 @@
 ## 25.6.0 (Unreleased)
 
+BREAKING CHANGES:
+
+* resource/aws_route: make the `instance_id` argument read-only. Use `network_interface_id` instead ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
+* resource/aws_route_table, resource/aws_default_route_table: make the `route.instance_id` argument read-only. Use `route.network_interface_id` instead ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
+
 NOTES:
 
 * data-source/aws_subnet: deprecate the `map_public_ip_on_launch` attribute, which will be removed in future releases ([#187](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/187))
@@ -8,6 +13,8 @@ NOTES:
 BUG FIXES:
 
 * data-source/aws_eks_cluster: Read clusters that use `kubernetes_network_config.pod_ipv4_cidr` or `legacy_cluster_params.cluster_autoscaler_config` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
+* data-source/aws_route_table: fix the lookup by the `route_table_id` argument, which always failed with an API error ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
+* data-source/aws_route_table: remove the `gateway_id` argument, as gateway route table associations are not supported by the platform ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
 * resource/aws_eks_cluster: Do not recreate the cluster when `legacy_cluster_params.cluster_autoscaler_config.cluster_autoscaler_required` is set to `false` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
 * resource/aws_eks_cluster: Wait for the `MODIFYING` status instead of failing an update or a destroy with `unexpected state` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
 * resource/aws_eks_node_group: Fix `PathNotFoundError` when updating `scaling_config` and wait until the requested `desired_size` is applied ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
