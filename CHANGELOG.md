@@ -1,5 +1,10 @@
 ## 25.6.0 (Unreleased)
 
+NOTES:
+
+* data-source/aws_subnet: deprecate the `map_public_ip_on_launch` attribute, which will be removed in future releases ([#187](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/187))
+* resource/aws_subnet: deprecate the `map_public_ip_on_launch` argument, which will be removed in future releases ([#187](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/187))
+
 BUG FIXES:
 
 * data-source/aws_eks_cluster: Read clusters that use `kubernetes_network_config.pod_ipv4_cidr` or `legacy_cluster_params.cluster_autoscaler_config` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
