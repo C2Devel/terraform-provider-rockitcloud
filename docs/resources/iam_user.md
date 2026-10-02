@@ -6,7 +6,7 @@ description: |-
   Manages an IAM user.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [iam-users-and-projects]: https://docs.k2.cloud/en/services/iam/iam.html
 [RFC3339 format]: https://datatracker.ietf.org/doc/html/rfc3339#section-5.8
 

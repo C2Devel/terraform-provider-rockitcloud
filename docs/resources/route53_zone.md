@@ -6,7 +6,7 @@ description: |-
   Manages a Route53 hosted zone.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 
 # Resource: aws_route53_zone
 

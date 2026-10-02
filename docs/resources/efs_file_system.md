@@ -6,7 +6,7 @@ description: |-
   Creates an Elastic File System (EFS) file system.
 ---
 
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 [efs]: http://docs.aws.amazon.com/efs/latest/ug/
 [file-system]: https://docs.k2.cloud/ru/services/efs/efs.html#id18
 

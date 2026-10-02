@@ -50,16 +50,12 @@ resource "aws_vpc" "test2" {
 }
 
 resource "aws_eip" "test1" {
-  vpc = true
-
   tags = {
     Name = %[1]q
   }
 }
 
 resource "aws_eip" "test2" {
-  vpc = true
-
   tags = {
     Name = %[1]q
   }

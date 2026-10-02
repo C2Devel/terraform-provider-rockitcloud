@@ -8,7 +8,7 @@ description: |-
 
 [attribute-as-blocks]: https://www.terraform.io/docs/configuration/attr-as-blocks.html
 [default-security-groups]: https://docs.k2.cloud/en/services/security/securitygroups.html#id3
-[default-tags]: https://www.terraform.io/docs/providers/aws/index.html#default_tags-configuration-block
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 
 # Resource: aws_default_security_group
 
