@@ -28,6 +28,7 @@ BUG FIXES:
 * resource/aws_eks_cluster: Wait for the `MODIFYING` status instead of failing an update or a destroy with `unexpected state` ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
 * resource/aws_eks_node_group: Fix `PathNotFoundError` when updating `scaling_config` and wait until the requested `desired_size` is applied ([#186](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/186))
 * resource/aws_network_interface, resource/aws_network_interface_attachment: fix deletion failing with `Network interface is currently in use` right after the interface is detached ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
+* resource/aws_route_table, resource/aws_default_route_table: fix redundant diff when updating routes. Only modified routes should be displayed in the plan ([#190](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/190))
 
 ## 25.5.5 (August 10, 2026)
 
