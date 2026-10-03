@@ -54,6 +54,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `arn` - (String) The Amazon Resource Name (ARN) of the volume.
 * `availability_zone` - (String) The availability zone where the volume will be located.
+* `encrypted` - (Boolean) Indicates whether the EBS volume is encrypted.
 * `id` - (String) The ID of the volume.
     * _Example:_ `vol-12345678`
 * `iops` - (Integer) The amount of IOPS for the volume.
@@ -71,4 +72,4 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`encrypted`, `kms_key_id`, `multi_attach_enabled`, `outpost_arn`.
+`kms_key_id`, `multi_attach_enabled`, `outpost_arn`.

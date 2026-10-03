@@ -89,6 +89,7 @@ The `block_device_mappings` block has the following structure:
 The `ebs` block is a part of the [`block_device_mappings`](#block_device_mappings) block. It has the following structure:
 
 * `delete_on_termination` - `true` if the EBS volume will be deleted on termination.
+* `encrypted` - Indicates whether the EBS volume is encrypted.
 * `iops` - `0` if the EBS volume is not a provisioned IOPS image, otherwise the supported IOPS count.
 * `snapshot_id` - The ID of the snapshot.
 * `volume_size` - The size of the volume in GiB.

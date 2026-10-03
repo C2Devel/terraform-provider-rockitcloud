@@ -161,6 +161,7 @@ The following arguments are optional:
 
 * `delete_on_termination` - (Optional) Whether the volume should be destroyed on instance termination.
     * _Default value:_ `true`
+* `encrypted` - (Optional) Indicates whether the EBS volume is encrypted.
 * `iops` - (Optional) Amount of provisioned IOPS.
     * _Constraints:_ Only valid for the volume type `io2`
 * `snapshot_id` - (Optional) The ID of the snapshot to mount.
@@ -225,6 +226,7 @@ The `root_block_device` block has the following structure:
 
 * `delete_on_termination` - (Optional) Whether the volume should be destroyed on instance termination.
     * _Default value:_ `true`
+* `encrypted` - (Optional) Indicates whether the EBS volume is encrypted.
 * `iops` - (Optional) Amount of provisioned IOPS.
     * _Constraints:_ Only valid for volume_type of `io2`
 * `tags` - (Optional) Map of tags to assign to the device.
@@ -265,7 +267,7 @@ For `root_block_device`, in addition to the arguments above, the following attri
 
 The following attributes are not currently supported:
 
-`capacity_reservation_specification`, `cpu_core_count`, `cpu_threads_per_core`, `credit_specification`, `ebs_block_device.encrypted`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `get_password_data`, `hibernation`, `iam_instance_profile`, `ipv6_address_count`, `ipv6_addresses`, `maintenance_options`, `metadata_options`, `network_interface.network_card_index`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.encrypted`, `root_block_device.kms_key_id`, `root_block_device.throughput`.
+`capacity_reservation_specification`, `cpu_core_count`, `cpu_threads_per_core`, `credit_specification`, `ebs_block_device.kms_key_id`, `ebs_block_device.throughput`, `ebs_optimized`, `enclave_options`, `get_password_data`, `hibernation`, `iam_instance_profile`, `ipv6_address_count`, `ipv6_addresses`, `maintenance_options`, `metadata_options`, `network_interface.network_card_index`, `outpost_arn`, `password_data`, `placement_partition_number`, `root_block_device.kms_key_id`, `root_block_device.throughput`.
 
 ## Timeouts
 
