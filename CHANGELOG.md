@@ -2,6 +2,7 @@
 
 BREAKING CHANGES:
 
+* Remove `AWS_S3_ENDPOINT` and `TF_AWS_S3_ENDPOINT` environment variables. Use `S3_URL` to specify the S3 API endpoint ([#189](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/189))
 * resource/aws_route: make the `instance_id` argument read-only. Use `network_interface_id` instead ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
 * resource/aws_route_table, resource/aws_default_route_table: make the `route.instance_id` argument read-only. Use `route.network_interface_id` instead ([#188](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/188))
 
@@ -12,6 +13,7 @@ NOTES:
 
 ENHANCEMENTS:
 
+* Support new environment variables for API endpoints: `autoscaling`, `backup`, `cloudwatch`, `efs`, `eks`, `ekslegacy`, `elbv2`, `route53`, `s3` ([#189](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/189))
 * resource/aws_eip: reject specifying both `instance` and `network_interface` at plan time instead of failing during apply ([#183](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/183))
 
 BUG FIXES:
