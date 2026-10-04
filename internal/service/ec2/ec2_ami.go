@@ -302,30 +302,6 @@ func resourceAMICreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if v, ok := d.GetOk("ebs_block_device"); ok && v.(*schema.Set).Len() > 0 {
-		for _, tfMapRaw := range v.(*schema.Set).List() {
-			tfMap, ok := tfMapRaw.(map[string]interface{})
-
-			if !ok {
-				continue
-			}
-
-			var encrypted bool
-
-			if v, ok := tfMap["encrypted"].(bool); ok {
-				encrypted = v
-			}
-
-			var snapshot string
-
-			if v, ok := tfMap["snapshot_id"].(string); ok && v != "" {
-				snapshot = v
-			}
-
-			if snapshot != "" && encrypted {
-				return errors.New("can't set both 'snapshot_id' and 'encrypted'")
-			}
-		}
-
 		input.BlockDeviceMappings = expandEc2BlockDeviceMappingsForAmiEbsBlockDevice(v.(*schema.Set).List())
 	}
 
@@ -565,10 +541,11 @@ func expandEc2BlockDeviceMappingForAmiEbsBlockDevice(tfMap map[string]interface{
 		apiObject.Ebs.Iops = aws.Int64(int64(v))
 	}
 
-	// "Parameter encrypted is invalid. You cannot specify the encrypted flag if specifying a snapshot id in a block device mapping."
 	if v, ok := tfMap["snapshot_id"].(string); ok && v != "" {
 		apiObject.Ebs.SnapshotId = aws.String(v)
-	} else if v, ok := tfMap["encrypted"].(bool); ok {
+	}
+
+	if v, ok := tfMap["encrypted"].(bool); ok {
 		apiObject.Ebs.Encrypted = aws.Bool(v)
 	}
 
