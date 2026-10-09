@@ -4,111 +4,79 @@ on:
   workflow_dispatch:
     inputs:
       previous_version:
-        description: 'Previous semver version (e.g., 1.2.3)'
+        description: 'Previous semver version (e.g., 25.5.5)'
         required: true
         type: string
+  workflow_call:
+    inputs:
+      previous_version:
+        description: 'Previous semver version (e.g., 25.5.5)'
+        required: true
+        type: string
+    secrets:
+      APP_ID:
+        description: 'GitHub App ID'
+        required: true
+      APP_PEM:
+        description: 'GitHub App private key'
+        required: true
 
 jobs:
   update-changelog:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v5 # v5.0.0
+      - name: Create provider-only GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         with:
-          token: ${{ secrets.AUTOMATION_PAT }}
-          fetch-depth: 0
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PEM }}
+          owner: C2Devel
+          repositories: terraform-provider-rockitcloud
+          permission-contents: write
+
+      - uses: actions/checkout@v5
+        with:
+          ref: develop
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Calculate next minor version
         id: version
+        env:
+          PREVIOUS_VERSION: ${{ inputs.previous_version }}
         run: |
-          PREV_VERSION="${{ github.event.inputs.previous_version }}"
-
-          # Remove 'v' prefix if present
-          PREV_VERSION=${PREV_VERSION#v}
-
-          # Split version into parts
-          IFS='.' read -ra VERSION_PARTS <<< "$PREV_VERSION"
-          MAJOR=${VERSION_PARTS[0]}
-          MINOR=${VERSION_PARTS[1]}
-          PATCH=${VERSION_PARTS[2]}
-
-          # Increment minor version and reset patch to 0
-          NEXT_MINOR=$((MINOR + 1))
-          NEXT_VERSION="${MAJOR}.${NEXT_MINOR}.0"
-
-          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
-          echo "branch_name=changelog_update_after_${PREV_VERSION}_release" >> $GITHUB_OUTPUT
-
-      - name: Create and checkout new branch
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git checkout -b ${{ steps.version.outputs.branch_name }}
+          PREVIOUS_VERSION=${PREVIOUS_VERSION#v}
+          IFS=. read -r MAJOR MINOR PATCH <<< "${PREVIOUS_VERSION}"
+          echo "next_version=${MAJOR}.$((10#${MINOR} + 1)).0" >> "${GITHUB_OUTPUT}"
 
       - name: Update CHANGELOG.md
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
         run: |
-          NEXT_VERSION="${{ steps.version.outputs.next_version }}"
-
-          # Check if CHANGELOG.md exists
-          if [ ! -f "CHANGELOG.md" ]; then
-            echo "# Changelog" > CHANGELOG.md
-            echo "" >> CHANGELOG.md
+          if grep -Fxq "## ${NEXT_VERSION} (Unreleased)" CHANGELOG.md; then
+            exit 0
           fi
-
-          # Create a temporary file with the new entry at the top
           {
-            echo "## $NEXT_VERSION (Unreleased)"
-            echo ""
-
-            # Add the existing content, skipping the first line if it's just "# Changelog"
-            if head -1 CHANGELOG.md | grep -q "^# Changelog$"; then
+            echo "## ${NEXT_VERSION} (Unreleased)"
+            echo
+            if head -n 1 CHANGELOG.md | grep -Fxq '# Changelog'; then
               tail -n +2 CHANGELOG.md
             else
               cat CHANGELOG.md
             fi
           } > CHANGELOG.tmp
-
-          # Replace the original file
           mv CHANGELOG.tmp CHANGELOG.md
 
-      - name: Commit changes
-        run: |
-          git add CHANGELOG.md
-          git commit -m "Add changelog entry for v${{ steps.version.outputs.next_version }}"
-
-      - name: Push branch
-        run: |
-          git push origin ${{ steps.version.outputs.branch_name }}
-
-      - name: Create PR description
-        id: create_pr_description
-        run: |
-          cat > pr_description.md << 'EOF'
-          <!-- heimdall_github_prtemplate:grc-pci_dss-2024-01-05 -->
-
-          ## Rollback Plan
-
-          If a change needs to be reverted, we will publish an updated version of the library.
-
-          ## Changes to Security Controls
-
-          Are there any changes to security controls (access controls, encryption, logging) in this pull request? If so, explain.
-
-          ## Description
-
-          This PR adds a changelog entry for the next minor version v${{ steps.version.outputs.next_version }} following the release of v${{ github.event.inputs.previous_version }}.
-
-          - Added changelog section for v${{ steps.version.outputs.next_version }} (Unreleased)
-
-          ### Relations
-          EOF
-
-      - name: Create Pull Request
+      - name: Commit directly to develop
         env:
-          GH_TOKEN: ${{ secrets.AUTOMATION_PAT }}
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
         run: |
-          gh pr create \
-            --title "Add CHANGELOG entry for v${{ steps.version.outputs.next_version }}" \
-            --body-file pr_description.md \
-            --base develop \
-            --head ${{ steps.version.outputs.branch_name }}
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "CHANGELOG.md already contains ${NEXT_VERSION}"
+            exit 0
+          fi
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add CHANGELOG.md
+          git commit -m "Add changelog entry for v${NEXT_VERSION}"
+          git push origin HEAD:develop
