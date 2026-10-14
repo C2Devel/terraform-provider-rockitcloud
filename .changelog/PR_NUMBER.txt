@@ -1,0 +1,11 @@
+```release-note:bug
+resource/aws_paas_service: update PostgreSQL parameters (except `version` and `replication_mode`) in place with `PatchServiceParameters` instead of recreating the service
+```
+
+```release-note:bug
+resource/aws_paas_service: do not send unset `effective_io_concurrency`, `max_parallel_workers`, `max_parallel_workers_per_gather` and `max_worker_processes` PostgreSQL parameters as `0` on service creation
+```
+
+```release-note:bug
+resource/aws_paas_service: send PostgreSQL `effective_cache_size` and `shared_buffers` parameters in bytes with an explicit dimension
+```

@@ -1397,7 +1397,8 @@ The following arguments are required:
 
 * `version` - (Required) The version to install. The list of supported versions is available in the [user documentation][pgsql-version].
 
-The following arguments are optional:
+The following arguments are optional. Except for `replication_mode`, they can be updated without recreating the service:
+only changed arguments are sent with `PatchServiceParameters`. An argument removed from the configuration keeps its current value.
 
 * `autovacuum` - (Optional) Indicates whether the server must run the autovacuum launcher daemon.
     * _Valid values:_ `ON`, `OFF`
@@ -1457,7 +1458,7 @@ starting with the _paas_v4_0_ environment version.
 ~> **Note** If a parameter name includes a dot, it cannot be passed in `options`.
 If you need to use such a parameter, contact [technical support].
 
-* `replication_mode` - (Optional) The replication mode in the _Patroni_ cluster.
+* `replication_mode` - (Optional, Forces new resource) The replication mode in the _Patroni_ cluster.
     * _Valid values:_ `asynchronous`, `synchronous`, `synchronous_strict`
     * _Constraints:_ The parameter must be set if `high_availability` is `true`
 * `shared_buffers` - (Optional) The amount of memory (in bytes, multiple of 1 KiB) the database server uses for shared memory buffers.
