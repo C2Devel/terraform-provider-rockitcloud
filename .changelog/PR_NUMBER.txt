@@ -1,4 +1,4 @@
-```release-note:bug
+```release-note:enhancement
 resource/aws_paas_service: update PostgreSQL parameters (except `version` and `replication_mode`) in place with `PatchServiceParameters` instead of recreating the service
 ```
 
