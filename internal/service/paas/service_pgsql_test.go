@@ -177,6 +177,60 @@ func TestChangedServiceParametersPostgreSQLUsersOnly(t *testing.T) {
 	}
 }
 
+func TestChangedServiceParametersPostgreSQLLoggingMonitoring(t *testing.T) {
+	t.Parallel()
+
+	logging := func(logTo string, tags ...interface{}) []interface{} {
+		return []interface{}{map[string]interface{}{"log_to": logTo, "logging_tags": tags}}
+	}
+	monitoring := func(monitorBy string, labels map[string]interface{}) []interface{} {
+		return []interface{}{map[string]interface{}{"monitor_by": monitorBy, "monitoring_labels": labels}}
+	}
+
+	for name, tc := range map[string]struct {
+		old, new map[string]interface{}
+		want     services.ServiceParameters
+	}{
+		"logging tags removed": {
+			old: map[string]interface{}{"version": "18", "logging": logging("fm-cluster-1", "a", "b")},
+			new: map[string]interface{}{"version": "18", "logging": logging("fm-cluster-1")},
+			want: services.ServiceParameters{
+				"logging":      true,
+				"log_to":       "fm-cluster-1",
+				"logging_tags": []interface{}{},
+			},
+		},
+		"logging tags unchanged": {
+			old: map[string]interface{}{"version": "18", "logging": logging("fm-cluster-1", "a")},
+			new: map[string]interface{}{"version": "18", "logging": logging("fm-cluster-2", "a")},
+			want: services.ServiceParameters{
+				"logging": true,
+				"log_to":  "fm-cluster-2",
+			},
+		},
+		"logging disabled": {
+			old: map[string]interface{}{"version": "18", "logging": logging("fm-cluster-1", "a")},
+			new: map[string]interface{}{"version": "18"},
+			want: services.ServiceParameters{
+				"logging": false,
+			},
+		},
+		"monitoring labels removed": {
+			old: map[string]interface{}{"version": "18", "monitoring": monitoring("fm-cluster-1", map[string]interface{}{"env": "prod"})},
+			new: map[string]interface{}{"version": "18", "monitoring": monitoring("fm-cluster-1", nil)},
+			want: services.ServiceParameters{
+				"monitoring":        true,
+				"monitor_by":        "fm-cluster-1",
+				"monitoring_labels": map[string]interface{}{},
+			},
+		},
+	} {
+		if got := testPostgreSQLChangedServiceParameters(t, tc.old, tc.new); !reflect.DeepEqual(got, tc.want) {
+			t.Errorf("%s: unexpected PostgreSQL patch parameters: got %#v want %#v", name, got, tc.want)
+		}
+	}
+}
+
 func TestExpandServiceParametersPostgreSQLOmitsUnsetParameters(t *testing.T) {
 	t.Parallel()
 
