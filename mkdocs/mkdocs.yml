@@ -228,6 +228,7 @@ nav:
   - VPN (Site-to-Site):
     - Resources:
       - aws_customer_gateway: resources/customer_gateway.md
+      - aws_vpn_connection: resources/vpn_connection.md
       - aws_vpn_gateway_route_propagation: resources/vpn_gateway_route_propagation.md
     - Data Sources:
       - aws_customer_gateway: data-sources/customer_gateway.md
