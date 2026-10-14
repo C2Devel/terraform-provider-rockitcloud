@@ -810,6 +810,22 @@ func changedServiceParameters(d *schema.ResourceData, serviceType string, parame
 		}
 	}
 
+	// Expanders omit zero numeric values, so a changed attribute explicitly set to zero is passed separately.
+	if v, ok := d.Get(serviceType).([]interface{}); ok && len(v) > 0 && v[0] != nil {
+		for key, value := range v[0].(map[string]interface{}) {
+			if _, ok := output[key]; ok || !d.HasChange(prefix+key) {
+				continue
+			}
+
+			switch value {
+			case 0:
+				output[key] = int64(0)
+			case 0.0:
+				output[key] = 0.0
+			}
+		}
+	}
+
 	return output
 }
 
@@ -926,8 +942,11 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 				Parameters: changedServiceParameters(d, serviceType, input.Parameters),
 			}
 
-			log.Printf("[DEBUG] Patching PaaS Service parameters: %s", patchInput)
-			_, err = conn.PatchServiceParametersWithContext(ctx, patchInput)
+			// Users and databases are updated with ModifyService below.
+			if len(patchInput.Parameters) > 0 {
+				log.Printf("[DEBUG] Patching PaaS Service parameters: %s", patchInput)
+				_, err = conn.PatchServiceParametersWithContext(ctx, patchInput)
+			}
 		} else {
 			log.Printf("[DEBUG] Modifying PaaS %s Service (%s) parameters", serviceType, id)
 			_, err = conn.ModifyServiceParametersWithContext(
