@@ -33,13 +33,11 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"connect_timeout": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(2, 31536000),
 		},
 		"galera_options": {
 			Type:     schema.TypeMap,
 			Optional: true,
-			ForceNew: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"gcache_size": {
@@ -51,14 +49,12 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"gcs_fc_factor": {
 			Type:         schema.TypeFloat,
 			Optional:     true,
-			ForceNew:     true,
 			Default:      mySQLGcsFcFactorDefault,
 			ValidateFunc: validation.FloatBetween(0.0, 1.0),
 		},
 		"gcs_fc_limit": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 2147483647),
 		},
 		"gcs_fc_master_slave": {
@@ -82,14 +78,12 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"innodb_buffer_pool_size": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			// FIXME: Uncomment the validation if all PaaS clusters run in the paas_v4_0 environment.
 			// ValidateFunc: nullable.ValidateTypeStringNullableIntAtLeast(128*Megabyte),
 		},
 		"innodb_change_buffering": {
 			Type:     schema.TypeString,
 			Optional: true,
-			ForceNew: true,
 			ValidateFunc: validation.StringInSlice([]string{
 				"inserts",
 				"deletes",
@@ -102,40 +96,34 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"innodb_flush_log_at_trx_commit": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(0, 2),
 		},
 		"innodb_io_capacity": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			// The actual max value is 2^64 - 1, but it doesn't fit in int64.
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(100, math.MaxInt64),
 		},
 		"innodb_io_capacity_max": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			// The actual max value is 2^64 - 1, but it doesn't fit in int64.
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(100, math.MaxInt64),
 		},
 		"innodb_log_file_size": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			// FIXME: Uncomment the validation if all PaaS clusters run in the paas_v4_0 environment.
 			// ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(4*Megabyte, 4*Gigabyte),
 		},
 		"innodb_log_files_in_group": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(2, 100),
 		},
 		"innodb_purge_threads": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 32),
 		},
 		"innodb_thread_concurrency": {
@@ -148,7 +136,6 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"innodb_strict_mode": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ForceNew:     true,
 			Default:      "OFF",
 			ValidateFunc: validation.StringInSlice([]string{"ON", "OFF"}, false),
 		},
@@ -161,34 +148,29 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"max_allowed_packet": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			Default:      16 * Megabyte,
 			ValidateFunc: validation.IntBetween(16*Megabyte, 1*Gigabyte),
 		},
 		"max_connect_errors": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			// The actual max value is 2^64 - 1, but it doesn't fit in int64.
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(1, math.MaxInt64),
 		},
 		"max_connections": {
 			Type:     schema.TypeInt,
 			Optional: true,
-			ForceNew: true,
 			// FIXME: Uncomment the validation if all PaaS clusters run in the paas_v4_0 environment.
 			// ValidateFunc: validation.IntBetween(10, 100000),
 		},
 		"max_heap_table_size": {
 			Type:         nullable.TypeNullableInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(16*Kilobyte, 4*Gigabyte),
 		},
 		"options": {
 			Type:     schema.TypeMap,
 			Optional: true,
-			ForceNew: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"pxc_strict_mode": {
@@ -200,20 +182,17 @@ func (s mySQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"table_open_cache": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 1048576),
 		},
 		"thread_cache_size": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			Default:      mySQLThreadCacheSizeDefault,
 			ValidateFunc: validation.IntBetween(0, 16*Kilobyte),
 		},
 		"tmp_table_size": {
 			Type:         nullable.TypeNullableInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: nullable.ValidateTypeStringNullableIntBetween(1*Kilobyte, 4*Gigabyte),
 		},
 		"transaction_isolation": {

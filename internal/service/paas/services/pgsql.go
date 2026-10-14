@@ -32,19 +32,16 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"autovacuum": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"ON", "OFF"}, false),
 		},
 		"autovacuum_max_workers": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 262143),
 		},
 		"autovacuum_vacuum_cost_delay": {
 			Type:     schema.TypeInt,
 			Optional: true,
-			ForceNew: true,
 			ValidateFunc: validation.Any(
 				validation.IntInSlice([]int{-1}),
 				validation.IntBetween(1, 100),
@@ -53,7 +50,6 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"autovacuum_vacuum_cost_limit": {
 			Type:     schema.TypeInt,
 			Optional: true,
-			ForceNew: true,
 			ValidateFunc: validation.Any(
 				validation.IntInSlice([]int{-1}),
 				validation.IntBetween(1, 10000),
@@ -62,19 +58,16 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"autovacuum_analyze_scale_factor": {
 			Type:         schema.TypeFloat,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.FloatBetween(0, 100),
 		},
 		"autovacuum_vacuum_scale_factor": {
 			Type:         schema.TypeFloat,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.FloatBetween(0, 100),
 		},
 		"effective_cache_size": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			// FIXME: Uncomment the validation if all PaaS clusters run in the paas_v4_0 environment.
 			// ValidateFunc: validation.All(
 			// 	nullable.ValidateTypeStringNullableIntBetween(8*Kilobyte, 17179869176*Kilobyte),
@@ -84,13 +77,11 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"effective_io_concurrency": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(0, 1000),
 		},
 		"maintenance_work_mem": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			ValidateFunc: validation.All(
 				nullable.ValidateTypeStringNullableIntBetween(1*Megabyte, 2*Gigabyte),
 				nullable.ValidateTypeStringNullableIntDivisibleBy(Kilobyte),
@@ -99,13 +90,11 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"max_connections": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 262143),
 		},
 		"max_wal_size": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			ValidateFunc: validation.All(
 				nullable.ValidateTypeStringNullableIntBetween(2*Megabyte, 2147483647*Megabyte),
 				nullable.ValidateTypeStringNullableIntDivisibleBy(Megabyte),
@@ -117,32 +106,27 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"max_parallel_maintenance_workers": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			Default:      postgreSQLMaxParallelMaintenanceWorkersDefault,
 			ValidateFunc: validation.IntBetween(0, 1024),
 		},
 		"max_parallel_workers": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(0, 1024),
 		},
 		"max_parallel_workers_per_gather": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(0, 1024),
 		},
 		"max_worker_processes": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(0, 262143),
 		},
 		"min_wal_size": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			ValidateFunc: validation.All(
 				nullable.ValidateTypeStringNullableIntBetween(32*Megabyte, 2147483647*Megabyte),
 				nullable.ValidateTypeStringNullableIntDivisibleBy(Megabyte),
@@ -154,7 +138,6 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"options": {
 			Type:     schema.TypeMap,
 			Optional: true,
-			ForceNew: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"replication_mode": {
@@ -170,7 +153,6 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"shared_buffers": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			// FIXME: Uncomment the validation if all PaaS clusters run in the paas_v4_0 environment.
 			// ValidateFunc: validation.All(
 			// 	nullable.ValidateTypeStringNullableIntBetween(128*Kilobyte, 8589934584*Kilobyte),
@@ -192,13 +174,11 @@ func (s postgreSQLManager) serviceParametersSchema() map[string]*schema.Schema {
 		"wal_buffers": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(8, 262143),
 		},
 		"work_mem": {
 			Type:     nullable.TypeNullableInt,
 			Optional: true,
-			ForceNew: true,
 			ValidateFunc: validation.All(
 				nullable.ValidateTypeStringNullableIntBetween(64*Kilobyte, 2147483647*Kilobyte),
 				nullable.ValidateTypeStringNullableIntDivisibleBy(Kilobyte),

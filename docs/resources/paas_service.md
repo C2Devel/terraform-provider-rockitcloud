@@ -1223,110 +1223,110 @@ the `mysql` block can contain arguments as described below.
 
 The following arguments are required:
 
-* `vendor` - (Required) The engine vendor.
+* `vendor` - (Required, Forces new resource) The engine vendor.
     * _Valid values:_ `mariadb`, `percona`, `mysql`
-* `version` - (Required) The version to install. The list of supported versions is available in the [user documentation][mysql-version].
+* `version` - (Required, Forces new resource) The version to install. The list of supported versions is available in the [user documentation][mysql-version].
 
 The following arguments are optional:
 
 * `class` - (Optional) The service class.
     * _Valid values:_ `database`
     * _Default value:_ `database`
-* `connect_timeout` - (Optional) The number of seconds that the _mysqld_ server waits for a connect packet before responding with **Bad handshake**.
+* `connect_timeout` - (Optional, Editable) The number of seconds that the _mysqld_ server waits for a connect packet before responding with **Bad handshake**.
     * _Valid values:_ From 2 to 31536000
 * `database` - (Optional, Editable) List of MySQL databases with parameters. The maximum number of databases is 1000.
   The structure of this block is [described below](#mysql-database).
-* `galera_options` - (Optional) Map containing other Galera parameters.
+* `galera_options` - (Optional, Editable) Map containing other Galera parameters.
   Parameter names must be in camelCase. Values are strings.
 
 ~> **Note** If a parameter name includes a dot, it cannot be passed in `galera_options`.
 If you need to use such a parameter, contact [technical support].
 
-* `gcache_size` - (Optional) A Galera parameter. The size of GCache circular buffer storage preallocated on startup in bytes.
+* `gcache_size` - (Optional, Forces new resource) A Galera parameter. The size of GCache circular buffer storage preallocated on startup in bytes.
     * _Valid values:_ From 128 MiB
     * _Constraints:_ The parameter can be set only if `high_availability` is `true`
-* `gcs_fc_factor` - (Optional) A Galera parameter. The fraction of `gcs_fc_limit` at which replication is resumed
+* `gcs_fc_factor` - (Optional, Editable) A Galera parameter. The fraction of `gcs_fc_limit` at which replication is resumed
   when the recv queue length falls below this value.
     * _Valid values:_ From 0.0 to 1.0
     * _Constraints:_ The parameter can be set only if `high_availability` is `true`
-* `gcs_fc_limit` - (Optional) A Galera parameter. The number of writesets. If the recv queue length exceeds it replication is suspended.
+* `gcs_fc_limit` - (Optional, Editable) A Galera parameter. The number of writesets. If the recv queue length exceeds it replication is suspended.
   Replication will resume according to the `gcs_fc_factor` setting.
     * _Valid values:_ From 1 to 2147483647
     * _Constraints:_ The parameter can be set only if `high_availability` is `true`
-* `gcs_fc_master_slave` - (Optional) A Galera parameter. Indicates whether the cluster has only one source node.
+* `gcs_fc_master_slave` - (Optional, Forces new resource) A Galera parameter. Indicates whether the cluster has only one source node.
     * _Constraints:_ The parameter can be set only if `high_availability` is `true`
 
 ~> **Note** `gcs_fc_master_slave` is deprecated. This parameter is relevant for Percona 5.7.
 Use `gcs_fc_single_primary` instead.
 
-* `gcs_fc_single_primary` - (Optional) A Galera parameter. Indicates whether there is more than one replication source.
+* `gcs_fc_single_primary` - (Optional, Forces new resource) A Galera parameter. Indicates whether there is more than one replication source.
     * _Constraints:_ The parameter can be set only if `high_availability` is `true`
 
 ~> **Note** `gcs_fc_single_primary` replaces the deprecated `gcs_fc_master_slave` parameter.
 This parameter is relevant for Percona 8.0, MySQL 8.0, and MariaDB 10.4, 10.5, 10.6 and 10.11.
 
-* `innodb_buffer_pool_instances` - (Optional) The number of regions that `innodb_buffer_pool_size` is divided into
+* `innodb_buffer_pool_instances` - (Optional, Forces new resource) The number of regions that `innodb_buffer_pool_size` is divided into
   when `innodb_buffer_pool_size` > 1 GiB. This parameter is relevant for Percona 5.7, 8.0 и MariaDB 10.2, 10.3, 10.4.
     * _Valid values:_ From 1 to 64
-* `innodb_buffer_pool_size` - (Optional) The size in bytes of the buffer pool used to cache table data and indexes.
+* `innodb_buffer_pool_size` - (Optional, Editable) The size in bytes of the buffer pool used to cache table data and indexes.
     * _Valid values:_ From 128 MiB
-* `innodb_change_buffering` - (Optional) Operations for which change buffering optimization is enabled.
+* `innodb_change_buffering` - (Optional, Editable) Operations for which change buffering optimization is enabled.
     * _Valid values:_ `inserts`, `deletes`, `changes`, `purges`, `all`, `none`
-* `innodb_flush_log_at_trx_commit` - (Optional) The value of the parameter controls the behaviour for transaction commit operations.
+* `innodb_flush_log_at_trx_commit` - (Optional, Editable) The value of the parameter controls the behaviour for transaction commit operations.
     * _Valid values:_ From 0 to 2
   For more information about the parameter, see the [MySQL documentation][doc-innodb_flush_log_at_trx_commit].
-* `innodb_io_capacity` - (Optional) The number of I/O operations per second (IOPS) available to InnoDB background tasks.
+* `innodb_io_capacity` - (Optional, Editable) The number of I/O operations per second (IOPS) available to InnoDB background tasks.
     * _Valid values:_ From 100 to 9223372036854775807
-* `innodb_io_capacity_max` - (Optional) The maximum number of IOPS that InnoDB background tasks can perform.
+* `innodb_io_capacity_max` - (Optional, Editable) The maximum number of IOPS that InnoDB background tasks can perform.
     * _Valid values:_ From 100 to 9223372036854775807
-* `innodb_log_file_size` - (Optional) The size of a single file in bytes in the redo system log.
+* `innodb_log_file_size` - (Optional, Editable) The size of a single file in bytes in the redo system log.
     * _Valid values:_ From 4 MiB to 4 GiB
-* `innodb_log_files_in_group` - (Optional) The number of system log files in a log group.
+* `innodb_log_files_in_group` - (Optional, Editable) The number of system log files in a log group.
     * _Valid values:_ From 2 to 100
-* `innodb_purge_threads` - (Optional) The number of background threads allocated for the InnoDB purge operation.
+* `innodb_purge_threads` - (Optional, Editable) The number of background threads allocated for the InnoDB purge operation.
     * _Valid values:_ From 1 to 32
-* `innodb_thread_concurrency` - (Optional) The maximum number of threads permitted inside of InnoDB.
+* `innodb_thread_concurrency` - (Optional, Forces new resource) The maximum number of threads permitted inside of InnoDB.
   This parameter is relevant for Percona 5.7, 8.0 and MariaDB 10.2, 10.3, 10.4.
     * _Valid values:_ From 0 to 1000
-* `innodb_strict_mode` - (Optional) The MySQL operation mode.
+* `innodb_strict_mode` - (Optional, Editable) The MySQL operation mode.
     * _Valid values:_ `ON`, `OFF`
     * _Default value:_ `OFF`
   For more information about the parameter, see the [MySQL documentation][doc-innodb_strict_mode].
-* `innodb_sync_array_size` - (Optional) The size of the mutex/lock wait array.
+* `innodb_sync_array_size` - (Optional, Forces new resource) The size of the mutex/lock wait array.
   This parameter is relevant for Percona 5.7, 8.0 and MariaDB 10.2, 10.3, 10.4.
     * _Valid values:_ From 1 to 1024
-* `max_allowed_packet` - (Optional) The maximum size of one packet, any generated/intermediate string  or any parameter sent by the _mysql_stmt_send_long_data()_ C API function.
+* `max_allowed_packet` - (Optional, Editable) The maximum size of one packet, any generated/intermediate string  or any parameter sent by the _mysql_stmt_send_long_data()_ C API function.
     * _Valid values:_ From 16 MiB to 1 GiB
     * _Default value:_ `16777216` (16 MiB)
-* `max_connect_errors` - (Optional) The maximum number of connection errors, at which the server blocks the host from further connections.
+* `max_connect_errors` - (Optional, Editable) The maximum number of connection errors, at which the server blocks the host from further connections.
     * _Valid values:_ From 1 to 9223372036854775807
-* `max_connections` - (Optional) The maximum permitted number of simultaneous client connections that a host can handle.
+* `max_connections` - (Optional, Editable) The maximum permitted number of simultaneous client connections that a host can handle.
     * _Valid values:_ From 10 to 100000
-* `max_heap_table_size` - (Optional) The maximum size in bytes, to which user-created `MEMORY` tables are permitted to grow.
+* `max_heap_table_size` - (Optional, Editable) The maximum size in bytes, to which user-created `MEMORY` tables are permitted to grow.
     * _Valid values:_ From 16 KiB to 4 GiB
 * `logging` - (Optional, Editable) The logging settings for the service. The structure of this block is [described below](#logging).
 * `monitoring` - (Optional, Editable) The monitoring settings for the service. The structure of this block is [described below](#monitoring).
-* `options` - (Optional) Map containing other MySQL parameters.
+* `options` - (Optional, Editable) Map containing other MySQL parameters.
   Parameter names must be in camelCase. Values are strings.
 
 ~> **Note** If a parameter name includes a dot, it cannot be passed in `options`.
 If you need to use such a parameter, contact [technical support].
 
-* `pxc_strict_mode` - (Optional) PXC mode. For more information about the parameter, see the [Percona documentation][doc-pxc_strict_mode].
+* `pxc_strict_mode` - (Optional, Forces new resource) PXC mode. For more information about the parameter, see the [Percona documentation][doc-pxc_strict_mode].
     * _Valid values:_ `DISABLED`, `PERMISSIVE`, `ENFORCING`, `MASTER`
     * _Constraints:_ The parameter can be set only if `high_availability` is `true`
-* `table_open_cache` - (Optional) The number of open tables for all threads.
+* `table_open_cache` - (Optional, Editable) The number of open tables for all threads.
     * _Valid values:_ From 1 to 1048576
-* `thread_cache_size` - (Optional) The number of threads that the server caches to establish new network connections.
+* `thread_cache_size` - (Optional, Editable) The number of threads that the server caches to establish new network connections.
     * _Valid values:_ From 0 to 16 KiB
-* `tmp_table_size` - (Optional) The maximum size of internal in-memory temporary tables in bytes.
+* `tmp_table_size` - (Optional, Editable) The maximum size of internal in-memory temporary tables in bytes.
     * _Valid values:_ From 1 KiB to 4 GiB
-* `transaction_isolation` - (Optional) The transaction isolation level.
+* `transaction_isolation` - (Optional, Forces new resource) The transaction isolation level.
   For more information about the parameter, see the [MySQL documentation][doc-transaction_isolation].
     * _Valid values:_ `READ-UNCOMMITTED`, `READ-COMMITTED`, `REPEATABLE-READ`, `SERIALIZABLE`
 * `user` - (Optional, Editable) List of MySQL users with parameters. The maximum number of users is 1000.
   The structure of this block is [described below](#mysql-user).
-* `wait_timeout` - (Optional) The number of seconds the server waits for activity on a noninteractive connection before closing it.
+* `wait_timeout` - (Optional, Forces new resource) The number of seconds the server waits for activity on a noninteractive connection before closing it.
     * _Valid values:_ From 1 to 31536000
 
 ### MySQL database
@@ -1395,23 +1395,23 @@ the `pgsql` block can contain arguments described below.
 
 The following arguments are required:
 
-* `version` - (Required) The version to install. The list of supported versions is available in the [user documentation][pgsql-version].
+* `version` - (Required, Forces new resource) The version to install. The list of supported versions is available in the [user documentation][pgsql-version].
 
 The following arguments are optional:
 
-* `autovacuum` - (Optional) Indicates whether the server must run the autovacuum launcher daemon.
+* `autovacuum` - (Optional, Editable) Indicates whether the server must run the autovacuum launcher daemon.
     * _Valid values:_ `ON`, `OFF`
-* `autovacuum_max_workers` - (Optional) The maximum number of autovacuum processes (other than the autovacuum launcher)
+* `autovacuum_max_workers` - (Optional, Editable) The maximum number of autovacuum processes (other than the autovacuum launcher)
   that can run simultaneously.
     * _Valid values:_ From 1 to 262143
-* `autovacuum_vacuum_cost_delay` - (Optional) The cost delay value in milliseconds used in automatic `VACUUM` operations.
+* `autovacuum_vacuum_cost_delay` - (Optional, Editable) The cost delay value in milliseconds used in automatic `VACUUM` operations.
     * _Valid values:_ `-1`, from 1 to 100
-* `autovacuum_vacuum_cost_limit` - (Optional) The cost limit value used in automatic `VACUUM` operations.
+* `autovacuum_vacuum_cost_limit` - (Optional, Editable) The cost limit value used in automatic `VACUUM` operations.
     * _Valid values:_ `-1`, from 1 to 10000
-* `autovacuum_analyze_scale_factor` - (Optional) The fraction of the table size to add to `autovacuum_analyze_threshold`
+* `autovacuum_analyze_scale_factor` - (Optional, Editable) The fraction of the table size to add to `autovacuum_analyze_threshold`
   when deciding whether to trigger `ANALYZE`.
     * _Valid values:_ From 0 to 100
-* `autovacuum_vacuum_scale_factor` - (Optional) The fraction of the table size to add to `autovacuum_vacuum_threshold`
+* `autovacuum_vacuum_scale_factor` - (Optional, Editable) The fraction of the table size to add to `autovacuum_vacuum_threshold`
   when deciding whether to trigger `VACUUM`.
     * _Valid values:_ From 0 to 100
 * `class` - (Optional) The service class.
@@ -1419,58 +1419,58 @@ The following arguments are optional:
     * _Default value:_ `database`
 * `database` - (Optional, Editable) List of PostgreSQL databases with parameters. The maximum number of databases is 1000.
   The structure of this block is [described below](#postgresql-database).
-* `effective_cache_size` - (Optional) The planner’s assumption about the effective size of the disk cache (in bytes, multiple of 1 KiB),
+* `effective_cache_size` - (Optional, Editable) The planner’s assumption about the effective size of the disk cache (in bytes, multiple of 1 KiB),
   that is available to a single query.
     * _Valid values:_ From 8 to 17179869176 KiB
   For more information about the parameter, see the [PostgreSQL documentation][doc-effective_cache_size].
-* `effective_io_concurrency` - (Optional) The number of concurrent disk I/O operations.
+* `effective_io_concurrency` - (Optional, Editable) The number of concurrent disk I/O operations.
     * _Valid values:_ From 0 to 1000
 * `logging` - (Optional, Editable) The logging settings for the service. The structure of this block is [described below](#logging).
-* `maintenance_work_mem` - (Optional) The maximum amount of memory (in bytes, multiple of 1 KiB) used by maintenance operations, such as `VACUUM`, `CREATE INDEX`, and `ALTER TABLE ADD FOREIGN KEY`.
+* `maintenance_work_mem` - (Optional, Editable) The maximum amount of memory (in bytes, multiple of 1 KiB) used by maintenance operations, such as `VACUUM`, `CREATE INDEX`, and `ALTER TABLE ADD FOREIGN KEY`.
     * _Valid values:_ From 1 MiB to 2 GiB
-* `max_connections` - (Optional) The maximum number of simultaneous connections to the database server.
+* `max_connections` - (Optional, Editable) The maximum number of simultaneous connections to the database server.
     * _Valid values:_ From 1 to 262143
-* `max_wal_size` - (Optional, **Deprecated**) The maximum size (in bytes, multiple of 1 MiB) that WAL can reach at automatic checkpoints.
+* `max_wal_size` - (Optional, Editable, **Deprecated**) The maximum size (in bytes, multiple of 1 MiB) that WAL can reach at automatic checkpoints.
     * _Valid values:_ From 2 to 2147483647 MiB
 
 ~> **Note** The parameter `max_wal_size` is marked as deprecated since it is not supported for PostgreSQL services
 starting with the _paas_v4_0_ environment version.
 
-* `max_parallel_maintenance_workers` - (Optional) The maximum number of parallel workers that a single utility command can start.
+* `max_parallel_maintenance_workers` - (Optional, Editable) The maximum number of parallel workers that a single utility command can start.
     * _Valid values:_ From 0 to 1024
     * _Constraints:_ This parameter is relevant only for PostgreSQL versions 11 and higher
-* `max_parallel_workers` - (Optional) The maximum number of workers that the system can support for parallel operations.
-* `max_parallel_workers_per_gather` - (Optional) The maximum number of workers that a single _Gather_ node can start.
+* `max_parallel_workers` - (Optional, Editable) The maximum number of workers that the system can support for parallel operations.
+* `max_parallel_workers_per_gather` - (Optional, Editable) The maximum number of workers that a single _Gather_ node can start.
     * _Valid values:_ From 0 to 1024
-* `max_worker_processes` - (Optional) The maximum number of background processes that the system can support.
+* `max_worker_processes` - (Optional, Editable) The maximum number of background processes that the system can support.
     * _Valid values:_ From 0 to 262143
-* `min_wal_size` - (Optional, **Deprecated**) The minimum size (in bytes, multiple of 1 MiB) to shrink the WAL to. As long as WAL disk usage stays below this setting, old WAL files are always recycled for future use at a checkpoint, rather than removed.
+* `min_wal_size` - (Optional, Editable, **Deprecated**) The minimum size (in bytes, multiple of 1 MiB) to shrink the WAL to. As long as WAL disk usage stays below this setting, old WAL files are always recycled for future use at a checkpoint, rather than removed.
     * _Valid values:_ From 32 to 2147483647 MiB
 
 ~> **Note** The parameter `min_wal_size` is marked as deprecated since it is not supported for PostgreSQL services
 starting with the _paas_v4_0_ environment version.
 
 * `monitoring` - (Optional, Editable) The monitoring settings for the service. The structure of this block is [described below](#monitoring).
-* `options` - (Optional) Map containing other PostgreSQL parameters.
+* `options` - (Optional, Editable) Map containing other PostgreSQL parameters.
   Parameter names must be in camelCase. Values are strings.
 
 ~> **Note** If a parameter name includes a dot, it cannot be passed in `options`.
 If you need to use such a parameter, contact [technical support].
 
-* `replication_mode` - (Optional) The replication mode in the _Patroni_ cluster.
+* `replication_mode` - (Optional, Forces new resource) The replication mode in the _Patroni_ cluster.
     * _Valid values:_ `asynchronous`, `synchronous`, `synchronous_strict`
     * _Constraints:_ The parameter must be set if `high_availability` is `true`
-* `shared_buffers` - (Optional) The amount of memory (in bytes, multiple of 1 KiB) the database server uses for shared memory buffers.
+* `shared_buffers` - (Optional, Editable) The amount of memory (in bytes, multiple of 1 KiB) the database server uses for shared memory buffers.
     * _Valid values:_ From 128 to 8589934584 KiB
   For more information about the parameter, see the [PostgreSQL documentation][doc-shared_buffers].
 * `user` - (Optional, Editable) List of PostgreSQL users with parameters. The maximum number of users is 1000.
   The structure of this block is [described below](#postgresql-user).
-* `wal_buffers` - (Optional) The amount of shared memory in 8 KiB pages used for WAL data not yet written to a volume.
+* `wal_buffers` - (Optional, Editable) The amount of shared memory in 8 KiB pages used for WAL data not yet written to a volume.
     * _Valid values:_ From 8 to 262143
-* `wal_keep_segments` - (Optional) The minimum number of log files segments that must be kept in the _pg_xlog_ directory, in case a standby server needs to fetch them for streaming replication.
+* `wal_keep_segments` - (Optional, Forces new resource) The minimum number of log files segments that must be kept in the _pg_xlog_ directory, in case a standby server needs to fetch them for streaming replication.
     * _Valid values:_ From 0 to 2147483647
     * _Constraints:_ This parameter is relevant only for PostgreSQL version 12
-* `work_mem` - (Optional) The base maximum amount of memory (in bytes, multiple of 1 KiB) to be used by a query operation (such as a sort or hash table) before writing to temporary disk files.
+* `work_mem` - (Optional, Editable) The base maximum amount of memory (in bytes, multiple of 1 KiB) to be used by a query operation (such as a sort or hash table) before writing to temporary disk files.
     * _Valid values:_ From 64 to 2147483647 KiB
 
 ### PostgreSQL database
