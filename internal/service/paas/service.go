@@ -788,6 +788,31 @@ func preserveGitLabInputOnlyParameters(parameters []interface{}, previous interf
 	}
 }
 
+// changedServiceParameters returns only the expanded parameters whose Terraform attributes have changed.
+func changedServiceParameters(d *schema.ResourceData, serviceType string, parameters services.ServiceParameters) services.ServiceParameters {
+	prefix := serviceType + ".0."
+	attribute := map[string]string{
+		"log_to":            "logging",
+		"logging_tags":      "logging",
+		"monitor_by":        "monitoring",
+		"monitoring_labels": "monitoring",
+	}
+
+	output := services.ServiceParameters{}
+	for key, value := range parameters {
+		attr := key
+		if v, ok := attribute[key]; ok {
+			attr = v
+		}
+
+		if d.HasChange(prefix + attr) {
+			output[key] = value
+		}
+	}
+
+	return output
+}
+
 func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conn := meta.(*conns.AWSClient).PaaSConn
 	id := d.Id()
@@ -892,12 +917,25 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 			manager.ExpandServiceParameters(parametersMap),
 		)
 
-		log.Printf("[DEBUG] Modifying PaaS %s Service (%s) parameters", serviceType, id)
-		_, err := conn.ModifyServiceParametersWithContext(
-			ctx,
-			input,
-			request.WithLogLevel(aws.LogOff),
-		)
+		var err error
+		if serviceType == services.ServiceTypePostgreSQL {
+			// PatchServiceParameters changes only the passed parameters, so values set outside
+			// of Terraform (for example, PgBouncer parameters) are preserved.
+			patchInput := &paas.PatchServiceParametersInput{
+				ServiceId:  aws.String(id),
+				Parameters: changedServiceParameters(d, serviceType, input.Parameters),
+			}
+
+			log.Printf("[DEBUG] Patching PaaS Service parameters: %s", patchInput)
+			_, err = conn.PatchServiceParametersWithContext(ctx, patchInput)
+		} else {
+			log.Printf("[DEBUG] Modifying PaaS %s Service (%s) parameters", serviceType, id)
+			_, err = conn.ModifyServiceParametersWithContext(
+				ctx,
+				input,
+				request.WithLogLevel(aws.LogOff),
+			)
+		}
 
 		if err != nil {
 			return diag.Errorf("error modifying PaaS Service (%s) parameters: %s", id, err)
