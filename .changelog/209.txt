@@ -9,3 +9,7 @@ resource/aws_paas_service: do not send unset `effective_io_concurrency`, `max_pa
 ```release-note:bug
 resource/aws_paas_service: send PostgreSQL `effective_cache_size` and `shared_buffers` parameters in bytes with an explicit dimension
 ```
+
+```release-note:bug
+resource/aws_paas_service: do not show a permanent diff for PostgreSQL `max_parallel_maintenance_workers` and `wal_keep_segments` removed from the configuration
+```
