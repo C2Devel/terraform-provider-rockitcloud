@@ -50,3 +50,43 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.AUTOMATION_PAT }}
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+  wait-for-public-registry:
+    needs: public-release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Wait for the released version
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          for attempt in {1..60}; do
+            if curl -fsS https://registry.terraform.io/v1/providers/c2devel/rockitcloud/versions |
+              jq -e --arg version "${VERSION#v}" 'any(.versions[]?; .version == $version)' >/dev/null; then
+              echo "Provider ${VERSION} is available in the public registry"
+              exit 0
+            fi
+            echo "Waiting for ${VERSION} (${attempt}/60)"
+            sleep 30
+          done
+          exit 1
+
+  private-release:
+    needs: wait-for-public-registry
+    uses: ./.github/workflows/private-release.yml
+    secrets:
+      s3_config: ${{ secrets.s3_config }}
+
+  publish-internal-documentation:
+    needs: private-release
+    uses: ./.github/workflows/publish-internal-docs.yml
+    secrets:
+      s3_config: ${{ secrets.s3_config }}
+
+  update-changelog:
+    needs: publish-internal-documentation
+    uses: ./.github/workflows/update-changelog.yml
+    with:
+      previous_version: ${{ github.ref_name }}
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PEM: ${{ secrets.APP_PEM }}
