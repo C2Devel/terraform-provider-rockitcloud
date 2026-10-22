@@ -215,6 +215,13 @@ func ResourceService() *schema.Resource {
 					},
 				},
 			},
+			// When true, service databases are managed by aws_paas_pgsql_database resources:
+			// the service neither reads databases into state nor sends them to the API.
+			"databases_managed_externally": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"delete_interfaces_on_destroy": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -455,6 +462,13 @@ func ResourceService() *schema.Resource {
 				ForceNew:     true,
 				RequiredWith: []string{"user_data"},
 				ValidateFunc: validation.StringInSlice([]string{"cloud-config", "x-shellscript"}, false),
+			},
+			// When true, service users are managed by aws_paas_pgsql_user resources:
+			// the service neither reads users into state nor sends them to the API.
+			"users_managed_externally": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 			"vpc_id": {
 				Type:     schema.TypeString,
@@ -698,6 +712,14 @@ func readService(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	)
 	if serviceType == services.ServiceTypeELK {
 		preserveELKInputOnlyParameters(d, parametersMap)
+	}
+	// Externally managed users and databases belong to aws_paas_pgsql_user and
+	// aws_paas_pgsql_database resources and must not appear as a diff here.
+	if serviceUsersManagedExternally(d, serviceType) {
+		parametersMap["user"] = []interface{}{}
+	}
+	if serviceDatabasesManagedExternally(d, serviceType) {
+		parametersMap["database"] = []interface{}{}
 	}
 	parametersMap["class"] = service.ServiceClass
 	d.Set(serviceType, []map[string]interface{}{parametersMap})
@@ -1045,7 +1067,13 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	userKey := fmt.Sprintf("%s.0.user", serviceType)
 	databaseKey := fmt.Sprintf("%s.0.database", serviceType)
 
-	if d.HasChanges("backup_settings", userKey, databaseKey) {
+	// Externally managed users and databases are never sent with ModifyService, because the API
+	// replaces the whole lists and would delete objects created by aws_paas_pgsql_user
+	// and aws_paas_pgsql_database.
+	usersChanged := d.HasChange(userKey) && !serviceUsersManagedExternally(d, serviceType)
+	databasesChanged := d.HasChange(databaseKey) && !serviceDatabasesManagedExternally(d, serviceType)
+
+	if usersChanged || databasesChanged || d.HasChange("backup_settings") {
 		input := &paas.ModifyServiceInput{
 			ServiceId: aws.String(id),
 		}
@@ -1057,7 +1085,7 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 			}
 		}
 
-		if d.HasChange(userKey) {
+		if usersChanged {
 			if v, ok := d.GetOk(userKey); ok {
 				input.Users = manager.ExpandUsers(v.([]interface{}), false)
 				if serviceType == services.ServiceTypePostgreSQL {
@@ -1070,7 +1098,7 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 			}
 		}
 
-		if d.HasChange(databaseKey) {
+		if databasesChanged {
 			if v, ok := d.GetOk(databaseKey); ok {
 				input.Databases = manager.ExpandDatabases(v.([]interface{}))
 			} else {
