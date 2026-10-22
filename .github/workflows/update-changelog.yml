@@ -13,9 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/create-github-app-token@v2.2.1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PEM }}
+
       - uses: actions/checkout@v5 # v5.0.0
         with:
-          token: ${{ secrets.AUTOMATION_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
 
       - name: Calculate next minor version
@@ -37,13 +43,6 @@ jobs:
           NEXT_VERSION="${MAJOR}.${NEXT_MINOR}.0"
 
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
-          echo "branch_name=changelog_update_after_${PREV_VERSION}_release" >> $GITHUB_OUTPUT
-
-      - name: Create and checkout new branch
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git checkout -b ${{ steps.version.outputs.branch_name }}
 
       - name: Update CHANGELOG.md
         run: |
@@ -73,42 +72,11 @@ jobs:
 
       - name: Commit changes
         run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add CHANGELOG.md
           git commit -m "Add changelog entry for v${{ steps.version.outputs.next_version }}"
 
       - name: Push branch
         run: |
-          git push origin ${{ steps.version.outputs.branch_name }}
-
-      - name: Create PR description
-        id: create_pr_description
-        run: |
-          cat > pr_description.md << 'EOF'
-          <!-- heimdall_github_prtemplate:grc-pci_dss-2024-01-05 -->
-
-          ## Rollback Plan
-
-          If a change needs to be reverted, we will publish an updated version of the library.
-
-          ## Changes to Security Controls
-
-          Are there any changes to security controls (access controls, encryption, logging) in this pull request? If so, explain.
-
-          ## Description
-
-          This PR adds a changelog entry for the next minor version v${{ steps.version.outputs.next_version }} following the release of v${{ github.event.inputs.previous_version }}.
-
-          - Added changelog section for v${{ steps.version.outputs.next_version }} (Unreleased)
-
-          ### Relations
-          EOF
-
-      - name: Create Pull Request
-        env:
-          GH_TOKEN: ${{ secrets.AUTOMATION_PAT }}
-        run: |
-          gh pr create \
-            --title "Add CHANGELOG entry for v${{ steps.version.outputs.next_version }}" \
-            --body-file pr_description.md \
-            --base develop \
-            --head ${{ steps.version.outputs.branch_name }}
+          git push origin HEAD:develop
