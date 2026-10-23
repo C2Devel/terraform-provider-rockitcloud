@@ -3,61 +3,82 @@ subcategory: "VPN (Site-to-Site)"
 layout: "aws"
 page_title: "aws_customer_gateway"
 description: |-
-  Manages a customer gateway inside a VPC.
+  Manages a customer gateway.
 ---
+
+[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
 
 # Resource: aws_customer_gateway
 
-Manages a customer gateway inside a VPC. These objects can be connected to VPN gateways via VPN connections, and allow you to establish tunnels between your network and the VPC.
+Manages a customer gateway.
+A customer gateway is the point of connection to the remote infrastructure.
+It stores the data about the remote device, and the VPN connections are established between it and the VPC.
+For more information, see the [`aws_vpn_connection`](vpn_connection.md) resource.
 
-## Example Usage
+~> **Note** A customer gateway cannot be deleted while it has a VPN connection.
+Delete the VPN connection first.
+
+## Example usage
 
 ```terraform
-resource "aws_customer_gateway" "main" {
+resource "aws_customer_gateway" "example" {
   bgp_asn    = 65000
   ip_address = "172.83.124.10"
   type       = "ipsec.1"
 
   tags = {
-    Name = "main-customer-gateway"
+    Name = "tf-customer-gateway"
   }
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+The following arguments are required:
 
-* `bgp_asn` - (Required) The gateway's Border Gateway Protocol (BGP) Autonomous System Number (ASN).
-* `ip_address` - (Required) The IP address of the gateway's Internet-routable external interface.
-* `type` - (Required) The type of customer gateway.
+* `bgp_asn` - (Required, Forces new resource, String) The Border Gateway Protocol (BGP) Autonomous System Number (ASN) of the gateway.
+* `ip_address` - (Required, Forces new resource, String) The IPv4 address of the gateway's Internet-routable external interface.
+* `type` - (Required, Forces new resource, String) The type of the customer gateway.
     * _Valid values:_ `ipsec.1`, `ipsec.legacy`
-* `tags` - (Optional) Map of tags to assign to the gateway. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
 
-## Attribute Reference
+The following arguments are optional:
 
-### Supported attributes
+* `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource.
+  If the [`default_tags` configuration block][default-tags] is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.
 
-In addition to all arguments above, the following attributes are exported:
+### Unsupported arguments
 
-* `id` - ID of the gateway.
-* `arn` - The Amazon Resource Name (ARN) of the customer gateway.
-* `tags_all` - Map of tags assigned to the customer gateway, including those inherited from the provider [`default_tags` configuration block][default-tags].
+~> **Note** The platform ignores these arguments, so a configuration with any of them forces a new resource on every apply.
 
-### Unsupported attributes
-
-~> **Note** These attributes may be present in the `terraform.tfstate` file, but they have preset values and cannot be specified in configuration files.
-
-The following attributes are not currently supported:
+The following arguments are not currently supported:
 
 `certificate_arn`, `device_name`.
 
+## Attribute reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `arn` - (String) The ARN of the customer gateway.
+* `id` - (String) The ID of the customer gateway.
+* `tags_all` - (Map of strings) Key-value pairs assigned to the resource, including any tags inherited from the [`default_tags` configuration block][default-tags] if used within a provider configuration.
+
+## Timeouts
+
+Timeouts usage for customer gateways is not currently supported.
+
 ## Import
 
-Customer gateways can be imported using `id`, e.g.,
+In Terraform v1.5.0 or later, the customer gateway can be imported by `id` using the `import` block.
 
-```
-$ terraform import aws_customer_gateway.main cgw-12345678
+```terraform
+import {
+  to = aws_customer_gateway.example
+  id = "cgw-12345678"
+}
 ```
 
-[default-tags]: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags-configuration-block
+In older Terraform versions, the customer gateway can be imported by its `id` using `terraform import`, for example:
+
+```console
+% terraform import aws_customer_gateway.example cgw-12345678
+```
