@@ -347,6 +347,7 @@ the following attributes are exported only for a Memcached service:
 
 The `database` block has the following structure:
 
+* `backup_enabled` - Indicates whether backup is enabled for the database.
 * `id` - The ID of the database.
 * `name` - The database name.
 * `user` - List of database users with parameters. The structure of this block is [described below](#mongodb-database-user).

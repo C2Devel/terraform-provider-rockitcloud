@@ -864,6 +864,8 @@ To enable it again, increase `max_size_gb`.
 
 ~> **Note** All the parameters in the `backup_settings` block are editable.
 
+MongoDB supports this block. Also set `mongodb.database.backup_enabled = true` for each database to back up.
+
 The `backup_settings` block has the following structure:
 
 * `bucket_name` - (Optional) The name of the bucket in object storage where the service backup is saved.
@@ -877,6 +879,8 @@ The `backup_settings` block has the following structure:
   The parameter must be set if `enabled` is `true`.
 * `user_login` - (Optional) The login of a user with write permissions to the bucket in object storage (e.g. `user@company`).
   The parameter must be set if `enabled` is `true`.
+  Use the `login` returned by the `aws_paas_backup_users` data source, not the user ID.
+  The user must belong to the current project and have only the `PaaSBackupPolicy` policy.
 
 ### data_volume
 
@@ -1236,6 +1240,8 @@ If you need to use such a parameter, contact [technical support].
 
 The `database` block has the following structure:
 
+* `backup_enabled` - (Optional) Indicates whether the database is included in automatic backups configured in `backup_settings`.
+    * _Default value:_ `false`
 * `name` - (Required) The database name.
 * `user` - (Optional) List of database users with parameters. The structure of this block is [described below](#mongodb-database-user).
 

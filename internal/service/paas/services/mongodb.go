@@ -17,7 +17,7 @@ var MongoDB = mongoDBManager{
 		class:              []string{ServiceClassDatabase},
 		defaultClass:       ServiceClassDatabase,
 		allowArbitrator:    true,
-		allowBackup:        false,
+		allowBackup:        true,
 		dataVolumeRequired: true,
 		usersEnabled:       true,
 		databasesEnabled:   true,

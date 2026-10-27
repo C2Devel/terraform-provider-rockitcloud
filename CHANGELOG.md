@@ -1,5 +1,11 @@
 ## 26.3.0 (Unreleased)
 
+## 26.2.3 (October 26, 2026)
+
+ENHANCEMENTS:
+
+* resource/aws_paas_service, data-source/aws_paas_service: Support MongoDB automatic backups with `backup_settings` and per-database `backup_enabled`. ([#221](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/221))
+
 ## 26.2.2 (October 22, 2026)
 
 ENHANCEMENTS:
