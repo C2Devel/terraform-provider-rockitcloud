@@ -1,5 +1,11 @@
 ## 26.3.0 (Unreleased)
 
+## 26.2.4 (October 28, 2026)
+
+ENHANCEMENTS:
+
+* resource/aws_ami: Allow setting `encrypted` in `ebs_block_device` together with `snapshot_id` ([#185](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/185))
+
 ## 26.2.3 (October 26, 2026)
 
 ENHANCEMENTS:
