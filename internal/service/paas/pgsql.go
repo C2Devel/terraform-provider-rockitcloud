@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/paas"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-provider-aws/internal/service/paas/services"
 )
 
 func validatePostgreSQLServiceConfiguration(d *schema.ResourceDiff) error {
@@ -24,6 +25,44 @@ func validatePostgreSQLServiceConfiguration(d *schema.ResourceDiff) error {
 			}
 		}
 	}
+	return nil
+}
+
+// serviceUsersManagedExternally reports whether users of the service are managed
+// by standalone aws_paas_pgsql_user resources instead of the user blocks.
+func serviceUsersManagedExternally(d *schema.ResourceData, serviceType string) bool {
+	return serviceType == services.ServiceTypePostgreSQL && d.Get("users_managed_externally").(bool)
+}
+
+// serviceDatabasesManagedExternally reports whether databases of the service are managed
+// by standalone aws_paas_pgsql_database resources instead of the database blocks.
+func serviceDatabasesManagedExternally(d *schema.ResourceData, serviceType string) bool {
+	return serviceType == services.ServiceTypePostgreSQL && d.Get("databases_managed_externally").(bool)
+}
+
+// validateManagedExternally rejects configurations where the same users or databases would be
+// managed both by the service and by standalone resources.
+func validateManagedExternally(d *schema.ResourceDiff) error {
+	for _, v := range []struct {
+		flag, block, resource string
+	}{
+		{"users_managed_externally", "user", "aws_paas_pgsql_user"},
+		{"databases_managed_externally", "database", "aws_paas_pgsql_database"},
+	} {
+		if !d.Get(v.flag).(bool) {
+			continue
+		}
+
+		if _, ok := d.GetOk(services.ServiceTypePostgreSQL); !ok {
+			return fmt.Errorf("%s is supported only for %s services", v.flag, services.ServiceTypePostgreSQL)
+		}
+
+		key := services.ServiceTypePostgreSQL + ".0." + v.block
+		if d.NewValueKnown(key) && len(d.Get(key).([]interface{})) > 0 {
+			return fmt.Errorf("%s must not be set when %s is true, use %s resources instead", key, v.flag, v.resource)
+		}
+	}
+
 	return nil
 }
 
