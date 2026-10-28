@@ -131,6 +131,7 @@ nav:
       - aws_paas_clickhouse_shard: resources/paas_clickhouse_shard.md
       - aws_paas_kafka_topic: resources/paas_kafka_topic.md
       - aws_paas_logstash_pipeline: resources/paas_logstash_pipeline.md
+      - aws_paas_pgsql: resources/paas_pgsql.md
       - aws_paas_pgsql_database: resources/paas_pgsql_database.md
       - aws_paas_pgsql_user: resources/paas_pgsql_user.md
       - aws_paas_prometheus_notification_channel: resources/paas_prometheus_notification_channel.md

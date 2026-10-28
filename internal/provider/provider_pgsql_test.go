@@ -6,7 +6,7 @@ func TestProviderRegistersPostgreSQLUserAndDatabase(t *testing.T) {
 	t.Parallel()
 
 	provider := Provider()
-	for _, name := range []string{"aws_paas_pgsql_database", "aws_paas_pgsql_user"} {
+	for _, name := range []string{"aws_paas_pgsql", "aws_paas_pgsql_database", "aws_paas_pgsql_user"} {
 		if resource, ok := provider.ResourcesMap[name]; !ok || resource == nil {
 			t.Fatalf("expected %s to be registered", name)
 		}

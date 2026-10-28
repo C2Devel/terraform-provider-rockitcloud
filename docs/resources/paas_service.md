@@ -1446,6 +1446,8 @@ The following arguments are optional:
 
 ## PostgreSQL argument reference
 
+-> **Note** For PostgreSQL services, you can also use the [`aws_paas_pgsql`](paas_pgsql.md) resource.
+
 In addition to the common arguments for all services [described above](#argument-reference),
 the `pgsql` block can contain arguments described below.
 
@@ -1604,7 +1606,8 @@ Standalone resources are recommended, because:
 * Deleting a database is shown in the plan as destroying the `aws_paas_pgsql_database` resource,
   instead of an in-place update of the service.
 
-To use standalone resources, set `users_managed_externally = true` and `databases_managed_externally = true`
+The [`aws_paas_pgsql`](paas_pgsql.md) resource always uses standalone resources and needs no additional settings.
+To use standalone resources with `aws_paas_service`, set `users_managed_externally = true` and `databases_managed_externally = true`
 and do not specify the `pgsql.user` and `pgsql.database` blocks:
 
 ```terraform
