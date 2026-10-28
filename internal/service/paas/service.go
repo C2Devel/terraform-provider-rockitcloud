@@ -715,11 +715,13 @@ func readService(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	}
 	// Externally managed users and databases belong to aws_paas_pgsql_user and
 	// aws_paas_pgsql_database resources and must not appear as a diff here.
+	// The keys are deleted rather than set to empty lists: d.Set writes missing blocks
+	// as empty, and the read does not require the blocks to be in the schema.
 	if serviceUsersManagedExternally(d, serviceType) {
-		parametersMap["user"] = []interface{}{}
+		delete(parametersMap, "user")
 	}
 	if serviceDatabasesManagedExternally(d, serviceType) {
-		parametersMap["database"] = []interface{}{}
+		delete(parametersMap, "database")
 	}
 	parametersMap["class"] = service.ServiceClass
 	d.Set(serviceType, []map[string]interface{}{parametersMap})
