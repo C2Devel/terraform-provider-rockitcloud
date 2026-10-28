@@ -65,6 +65,7 @@ The `ebs_block_device` block has the following structure:
     * _Valid values:_ `disk<N>`, `cdrom<N>`, `floppy<N>`, where `<N>` is a disk number
 * `delete_on_termination` - (Optional) Controls whether the EBS volumes will be deleted once the instance for which they were created is terminated.
     * _Default value:_ `true`
+* `encrypted` - (Optional) If the EBS volume is encrypted.
 * `iops` - (Optional) Number of I/O operations per second the
   created volumes will support.
     * _Constraints:_ Required if `volume_type` is `io2`
@@ -107,7 +108,7 @@ In addition to all arguments above, the following attributes are exported:
 
 The following attributes are not currently supported:
 
-`boot_mode`, `deprecation_time`, `ebs_block_device.encrypted`, `ebs_block_device.kms_key_id`, `ebs_block_device.outpost_arn`, `ebs_block_device.throughput`, `ena_support`, `hypervisor`, `image_location`, `kernel_id`, `platform_details`, `ramdisk_id`, `sriov_net_support`, `usage_operation`.
+`boot_mode`, `deprecation_time`, `ebs_block_device.kms_key_id`, `ebs_block_device.outpost_arn`, `ebs_block_device.throughput`, `ena_support`, `hypervisor`, `image_location`, `kernel_id`, `platform_details`, `ramdisk_id`, `sriov_net_support`, `usage_operation`.
 
 ## Timeouts
 
