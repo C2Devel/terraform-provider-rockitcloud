@@ -16,10 +16,21 @@ jobs:
     - name: Install s3cmd
       run: sudo pip install s3cmd==2.4.0 mkdocs mkdocs-material mkdocs-awesome-pages-plugin
 
-    - name: Create S3 config
-      run: echo "${{ secrets.s3_config }}" > ./.s3cfg
+    - name: Create S3 configs
+      env:
+        S3_CONFIG: ${{ secrets.s3_config }}
+        S3_CONFIG_ROCKIT: ${{ secrets.s3_config_rockit }}
+      run: |
+        if [[ -z "$S3_CONFIG" ]]; then
+          echo "The s3_config secret must be configured." >&2
+          exit 1
+        fi
+        umask 077
+        printf '%s\n' "$S3_CONFIG" > ./.s3cfg
+        printf '%s' "$S3_CONFIG_ROCKIT" > ./.s3cfg-rockit
 
     - name: Run script
       env:
         S3_CMD_CFG_LOCATION: "./.s3cfg"
+        S3_CMD_CFG_LOCATION_ROCKIT: "./.s3cfg-rockit"
       run: ./scripts/build-docs.sh --push
