@@ -550,6 +550,28 @@ func TestResourceServicePostgreSQLManagedExternallyRequests(t *testing.T) {
 	}
 }
 
+// The data source shares the read function with the resource, but has no
+// users_managed_externally and databases_managed_externally arguments.
+func TestDataSourceServicePostgreSQLReadsUsersAndDatabases(t *testing.T) {
+	t.Parallel()
+
+	conn := testPaaSClientWithDebugBodyLogging(&recordingSDKLogger{}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		return jsonResponse(request, testPostgreSQLServiceWithUsersAndDatabasesResponse(t)), nil
+	}))
+	data := schema.TestResourceDataRaw(t, DataSourceService().Schema, map[string]interface{}{"id": testPostgreSQLServiceID})
+
+	if diags := dataSourceServiceRead(context.Background(), data, testPaaSClientMeta(conn)); diags.HasError() {
+		t.Fatalf("reading PostgreSQL service with data source: %#v", diags)
+	}
+
+	state := data.State().Attributes
+	for key, want := range map[string]string{"pgsql.0.user.#": "2", "pgsql.0.database.#": "1"} {
+		if got := state[key]; got != want {
+			t.Errorf("%s = %q, want %q: all users and databases must be read by the data source", key, got, want)
+		}
+	}
+}
+
 func testPostgreSQLServiceWithUsersAndDatabasesResponse(t *testing.T) string {
 	t.Helper()
 

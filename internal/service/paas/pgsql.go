@@ -31,13 +31,21 @@ func validatePostgreSQLServiceConfiguration(d *schema.ResourceDiff) error {
 // serviceUsersManagedExternally reports whether users of the service are managed
 // by standalone aws_paas_pgsql_user resources instead of the user blocks.
 func serviceUsersManagedExternally(d *schema.ResourceData, serviceType string) bool {
-	return serviceType == services.ServiceTypePostgreSQL && d.Get("users_managed_externally").(bool)
+	return serviceType == services.ServiceTypePostgreSQL && managedExternallyFlag(d, "users_managed_externally")
 }
 
 // serviceDatabasesManagedExternally reports whether databases of the service are managed
 // by standalone aws_paas_pgsql_database resources instead of the database blocks.
 func serviceDatabasesManagedExternally(d *schema.ResourceData, serviceType string) bool {
-	return serviceType == services.ServiceTypePostgreSQL && d.Get("databases_managed_externally").(bool)
+	return serviceType == services.ServiceTypePostgreSQL && managedExternallyFlag(d, "databases_managed_externally")
+}
+
+// managedExternallyFlag returns the value of the flag, or false if the schema has no such flag.
+// The aws_paas_service data source shares the read function with the resource, but has no flags,
+// so it reads all users and databases.
+func managedExternallyFlag(d *schema.ResourceData, key string) bool {
+	v, _ := d.Get(key).(bool)
+	return v
 }
 
 // validateManagedExternally rejects configurations where the same users or databases would be
