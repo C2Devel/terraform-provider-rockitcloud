@@ -28,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/service/paas"
 	"github.com/hashicorp/terraform-provider-aws/internal/service/route53"
 	"github.com/hashicorp/terraform-provider-aws/internal/service/s3"
+	"github.com/hashicorp/terraform-provider-aws/internal/service/secretsmanager"
 	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
 	"github.com/hashicorp/terraform-provider-aws/internal/verify"
 	"github.com/hashicorp/terraform-provider-aws/names"
@@ -686,10 +687,10 @@ func Provider() *schema.Provider {
 
 			// "aws_sagemaker_prebuilt_ecr_image": sagemaker.DataSourcePrebuiltECRImage(),
 			//
-			// "aws_secretsmanager_secret":          secretsmanager.DataSourceSecret(),
+			"aws_secretsmanager_secret":          secretsmanager.DataSourceSecret(),
 			// "aws_secretsmanager_secret_rotation": secretsmanager.DataSourceSecretRotation(),
-			// "aws_secretsmanager_secret_version":  secretsmanager.DataSourceSecretVersion(),
-			// "aws_secretsmanager_secrets":         secretsmanager.DataSourceSecrets(),
+			"aws_secretsmanager_secret_version":  secretsmanager.DataSourceSecretVersion(),
+			"aws_secretsmanager_secrets":         secretsmanager.DataSourceSecrets(),
 			//
 			// "aws_serverlessapplicationrepository_application": serverlessrepo.DataSourceApplication(),
 			//
@@ -1713,10 +1714,10 @@ func Provider() *schema.Provider {
 			// "aws_schemas_registry":   schemas.ResourceRegistry(),
 			// "aws_schemas_schema":     schemas.ResourceSchema(),
 			//
-			// "aws_secretsmanager_secret":          secretsmanager.ResourceSecret(),
+			"aws_secretsmanager_secret":          secretsmanager.ResourceSecret(),
 			// "aws_secretsmanager_secret_policy":   secretsmanager.ResourceSecretPolicy(),
 			// "aws_secretsmanager_secret_rotation": secretsmanager.ResourceSecretRotation(),
-			// "aws_secretsmanager_secret_version":  secretsmanager.ResourceSecretVersion(),
+			"aws_secretsmanager_secret_version":  secretsmanager.ResourceSecretVersion(),
 			//
 			// "aws_securityhub_account":                    securityhub.ResourceAccount(),
 			// "aws_securityhub_action_target":              securityhub.ResourceActionTarget(),

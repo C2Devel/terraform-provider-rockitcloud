@@ -6,24 +6,55 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
-	"github.com/hashicorp/terraform-provider-aws/internal/generate/namevaluesfilters"
 )
 
 func DataSourceSecrets() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceSecretsRead,
 		Schema: map[string]*schema.Schema{
-			"arns": {
+			"filter": {
 				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateFunc: validation.StringInSlice([]string{
+								"description",
+								"name",
+								"all",
+							}, false),
+						},
+						"values": {
+							Type:     schema.TypeSet,
+							Required: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
 			},
-			"filter": namevaluesfilters.Schema(),
+			"include_planned_deletion": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"names": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"sort_by": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"created-date",
+					"last-accessed-date",
+					"last-changed-date",
+					"name",
+				}, false),
 			},
 		},
 	}
@@ -35,7 +66,26 @@ func dataSourceSecretsRead(d *schema.ResourceData, meta interface{}) error {
 	input := &secretsmanager.ListSecretsInput{}
 
 	if v, ok := d.GetOk("filter"); ok {
-		input.Filters = namevaluesfilters.New(v.(*schema.Set)).SecretsmanagerFilters()
+		var filters []*secretsmanager.Filter
+		for _, f := range v.(*schema.Set).List() {
+			m := f.(map[string]interface{})
+			filter := &secretsmanager.Filter{
+				Key: aws.String(m["key"].(string)),
+			}
+			for _, val := range m["values"].(*schema.Set).List() {
+				filter.Values = append(filter.Values, aws.String(val.(string)))
+			}
+			filters = append(filters, filter)
+		}
+		input.Filters = filters
+	}
+
+	if v, ok := d.GetOk("include_planned_deletion"); ok {
+		input.IncludePlannedDeletion = aws.Bool(v.(bool))
+	}
+
+	if v, ok := d.GetOk("sort_by"); ok {
+		input.SortBy = aws.String(v.(string))
 	}
 
 	var results []*secretsmanager.SecretListEntry
@@ -60,15 +110,13 @@ func dataSourceSecretsRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("listing Secrets Manager Secrets: %w", err)
 	}
 
-	var arns, names []string
+	var names []string
 
 	for _, r := range results {
-		arns = append(arns, aws.StringValue(r.ARN))
 		names = append(names, aws.StringValue(r.Name))
 	}
 
 	d.SetId(meta.(*conns.AWSClient).Region)
-	d.Set("arns", arns)
 	d.Set("names", names)
 
 	return nil
