@@ -65,6 +65,21 @@ func validAmazonSideASN(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+func validCustomerGatewayBGPASN(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+
+	asn, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		errors = append(errors, fmt.Errorf("%q (%q) must be a 64-bit integer", k, v))
+		return
+	}
+
+	if (asn < 1 || asn > 2147483647) && (asn < 4200000000 || asn > 4294967294) {
+		errors = append(errors, fmt.Errorf("%q (%q) must be in the range 1 to 2147483647 or 4200000000 to 4294967294", k, v))
+	}
+	return
+}
+
 func valid4ByteASN(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 
