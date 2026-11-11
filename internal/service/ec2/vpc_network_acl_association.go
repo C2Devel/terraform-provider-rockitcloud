@@ -115,9 +115,14 @@ func networkACLAssociationCreate(conn *ec2.EC2, naclID, subnetID string) (string
 	}
 
 	log.Printf("[DEBUG] Creating EC2 Network ACL Association: %s", input)
-	outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(propagationTimeout, func() (interface{}, error) {
-		return conn.ReplaceNetworkAclAssociation(input)
-	}, ErrCodeInvalidAssociationIDNotFound)
+	outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(
+		propagationTimeout,
+		func() (interface{}, error) {
+			return conn.ReplaceNetworkAclAssociation(input)
+		},
+		ErrCodeInvalidAssociationIDNotFound,
+		ErrCodeOperationInProgress,
+	)
 
 	if err != nil {
 		return "", fmt.Errorf("error creating EC2 Network ACL (%s) Association: %w", naclID, err)
@@ -154,7 +159,13 @@ func networkACLAssociationDelete(conn *ec2.EC2, associationID, naclID string) er
 	}
 
 	log.Printf("[DEBUG] Deleting EC2 Network ACL Association: %s", associationID)
-	_, err := conn.ReplaceNetworkAclAssociation(input)
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		propagationTimeout,
+		func() (interface{}, error) {
+			return conn.ReplaceNetworkAclAssociation(input)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidAssociationIDNotFound) {
 		return nil
