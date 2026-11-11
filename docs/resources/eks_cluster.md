@@ -81,6 +81,29 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
+### EKS v3 control plane tier
+
+For EKS v3, set `control_plane_scaling_config.tier` when creating the cluster.
+Changing the value later updates the same cluster in place.
+
+```terraform
+resource "aws_eks_cluster" "v3" {
+  name    = "example-v3"
+  version = var.eks_v3_version
+
+  vpc_config {
+    subnet_ids = var.subnet_ids
+  }
+
+  control_plane_scaling_config {
+    tier = "tier-large"
+  }
+}
+```
+
+Existing EKS v3 clusters may report `standard`. It can be read from state,
+but it cannot be selected for new clusters. The block is unavailable for EKS v2.
+
 ### EKS cluster with high-availability disabled
 
 ~> **Note**
@@ -214,12 +237,17 @@ The following arguments are required:
 
 The following arguments are optional:
 
+* `control_plane_scaling_config` - (Optional) Control plane performance tier for EKS v3 clusters. Updating the tier changes the existing cluster in place. If omitted, the service selects its default tier. Existing clusters can report `standard`, which cannot be selected for new clusters.
 * `kubernetes_network_config` - (Optional) Configuration block with kubernetes network configuration for the cluster. Detailed below. If removed, Terraform will only perform drift detection if a configuration value is provided.
 * `legacy_cluster_params` - (Optional) The parameters for fine-tuning the Kubernetes cluster.
   The structure of this block is [described below](#legacy_cluster_params).
 * `remote_access_config` - (Optional) K2 control-plane remote access configuration. The block accepts `ec2_ssh_key`.
 * `role_arn` - (Optional) K2 service-user ARN. Empty values are not sent to the API.
 * `tags` - (Optional) Map of tags to assign to the cluster. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+
+### control_plane_scaling_config
+
+The `control_plane_scaling_config` block supports `tier` (Required): `tier-large`, `tier-2large`, `tier-4large`, or `tier-8large`. This block is available only for EKS v3.
 
 ### kubernetes_network_config
 
