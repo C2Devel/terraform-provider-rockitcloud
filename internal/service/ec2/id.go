@@ -65,6 +65,15 @@ func VPNGatewayVPCAttachmentCreateID(vpnGatewayID, vpcID string) string {
 	return fmt.Sprintf("vpn-attachment-%x", create.StringHashcode(fmt.Sprintf("%s-%s", vpcID, vpnGatewayID)))
 }
 
+// VPN gateway ID is same as ID of its VPC (vgw-ABCD1234/vpc-ABCD1234).
+func NormalizeVPNGatewayID(id string) string {
+	if v, ok := strings.CutPrefix(id, "vpc-"); ok {
+		return "vgw-" + v
+	}
+
+	return id
+}
+
 const vpnGatewayRoutePropagationIDSeparator = "_"
 
 func VPNGatewayRoutePropagationCreateID(routeTableID, gatewayID string) string {

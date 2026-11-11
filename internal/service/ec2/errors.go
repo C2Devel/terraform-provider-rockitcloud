@@ -85,6 +85,8 @@ const (
 	ErrCodeInvalidVpnGatewayIDNotFound                    = "InvalidVpnGatewayID.NotFound"
 	ErrCodeInvalidNatGatewayIDNotFound                    = "InvalidNatGatewayID.NotFound"
 	ErrCodeOperationInProgress                            = "OperationInProgress"
+	ErrCodePropagationAlreadyEnabled                      = "Propagation.AlreadyEnabled"
+	ErrCodePropagationDifferentRouteTableInUse            = "Propagation.DifferentRouteTableInUse"
 	ErrCodeUnsupportedOperation                           = "UnsupportedOperation"
 	ErrCodeVolumeInUse                                    = "VolumeInUse"
 )

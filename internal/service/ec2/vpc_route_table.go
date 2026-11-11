@@ -670,8 +670,55 @@ func ec2RouteTableDisableVgwRoutePropagation(conn *ec2.EC2, routeTableID, gatewa
 	log.Printf("[DEBUG] Disabling Route Table (%s) VPN Gateway (%s) route propagation", routeTableID, gatewayID)
 	_, err := conn.DisableVgwRoutePropagation(input)
 
+	// Propagation is already moved to another route table of VPC.
+	if tfawserr.ErrCodeEquals(err, ErrCodePropagationDifferentRouteTableInUse) {
+		return nil
+	}
+
 	if err != nil {
 		return fmt.Errorf("error disabling Route Table (%s) VPN Gateway (%s) route propagation: %w", routeTableID, gatewayID, err)
+	}
+
+	return nil
+}
+
+// Disables VGW route propagation in other route tables of VPC.
+func ec2RouteTableDisableVgwRoutePropagationInVPC(conn *ec2.EC2, routeTableID, gatewayID string) error {
+	routeTable, err := FindRouteTableByID(conn, routeTableID)
+
+	if err != nil {
+		return fmt.Errorf("error reading Route Table (%s): %w", routeTableID, err)
+	}
+
+	vpcID := aws.StringValue(routeTable.VpcId)
+	routeTables, err := FindRouteTables(conn, &ec2.DescribeRouteTablesInput{
+		Filters: BuildAttributeFilterList(map[string]string{
+			"vpc-id": vpcID,
+		}),
+	})
+
+	if err != nil {
+		return fmt.Errorf("error reading Route Tables of VPC (%s): %w", vpcID, err)
+	}
+
+	gatewayID = NormalizeVPNGatewayID(gatewayID)
+
+	for _, v := range routeTables {
+		id := aws.StringValue(v.RouteTableId)
+
+		if id == routeTableID {
+			continue
+		}
+
+		for _, vgw := range v.PropagatingVgws {
+			if aws.StringValue(vgw.GatewayId) != gatewayID {
+				continue
+			}
+
+			if err := ec2RouteTableDisableVgwRoutePropagation(conn, id, gatewayID); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -694,6 +741,15 @@ func ec2RouteTableEnableVgwRoutePropagation(conn *ec2.EC2, routeTableID, gateway
 		},
 		ErrCodeGatewayNotAttached,
 	)
+
+	// VGW routes are propagated into single route table of VPC, propagation is moved.
+	if tfawserr.ErrCodeEquals(err, ErrCodePropagationAlreadyEnabled) {
+		if err := ec2RouteTableDisableVgwRoutePropagationInVPC(conn, routeTableID, gatewayID); err != nil {
+			return err
+		}
+
+		_, err = conn.EnableVgwRoutePropagation(input)
+	}
 
 	if err != nil {
 		return fmt.Errorf("error enabling Route Table (%s) VPN Gateway (%s) route propagation: %w", routeTableID, gatewayID, err)
