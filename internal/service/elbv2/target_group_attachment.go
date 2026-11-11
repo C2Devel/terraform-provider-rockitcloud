@@ -80,6 +80,7 @@ func resourceAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 			return conn.RegisterTargets(params)
 		},
 		"InvalidTarget",
+		ErrCodeOperationInProgress,
 	)
 
 	if err != nil {
@@ -113,12 +114,14 @@ func resourceAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	const timeout = 10 * time.Minute
+	// SDK may get LoadBalancerNotFound if target group listener deleted concurrently
 	_, err := tfresource.RetryWhenAWSErrCodeEquals(
 		timeout,
 		func() (interface{}, error) {
 			return conn.DeregisterTargets(params)
 		},
-		"OperationInProgress",
+		ErrCodeOperationInProgress,
+		elbv2.ErrCodeLoadBalancerNotFoundException,
 	)
 
 	if err != nil && !tfawserr.ErrCodeEquals(err, elbv2.ErrCodeTargetGroupNotFoundException) {
