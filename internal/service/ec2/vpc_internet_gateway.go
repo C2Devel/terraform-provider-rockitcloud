@@ -193,9 +193,14 @@ func attachInternetGateway(conn *ec2.EC2, internetGatewayID, vpcID string) error
 	}
 
 	log.Printf("[INFO] Attaching EC2 Internet Gateway: %s", input)
-	_, err := tfresource.RetryWhenAWSErrCodeEquals(propagationTimeout, func() (interface{}, error) {
-		return conn.AttachInternetGateway(input)
-	}, ErrCodeInvalidInternetGatewayIDNotFound)
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		propagationTimeout,
+		func() (interface{}, error) {
+			return conn.AttachInternetGateway(input)
+		},
+		ErrCodeInvalidInternetGatewayIDNotFound,
+		ErrCodeOperationInProgress,
+	)
 
 	if err != nil {
 		return fmt.Errorf("error attaching EC2 Internet Gateway (%s) to VPC (%s): %w", internetGatewayID, vpcID, err)
@@ -217,9 +222,14 @@ func detachInternetGateway(conn *ec2.EC2, internetGatewayID, vpcID string) error
 	}
 
 	log.Printf("[INFO] Detaching EC2 Internet Gateway: %s", input)
-	_, err := tfresource.RetryWhenAWSErrCodeEquals(internetGatewayDetachedTimeout, func() (interface{}, error) {
-		return conn.DetachInternetGateway(input)
-	}, ErrCodeDependencyViolation)
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		internetGatewayDetachedTimeout,
+		func() (interface{}, error) {
+			return conn.DetachInternetGateway(input)
+		},
+		ErrCodeDependencyViolation,
+		ErrCodeOperationInProgress,
+	)
 
 	if tfawserr.ErrCodeEquals(err, ErrCodeGatewayNotAttached) {
 		return nil

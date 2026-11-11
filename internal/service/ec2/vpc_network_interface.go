@@ -1098,12 +1098,19 @@ func attachNetworkInterface(conn *ec2.EC2, networkInterfaceID, instanceID string
 	}
 
 	log.Printf("[INFO] Attaching EC2 Network Interface: %s", input)
-	output, err := conn.AttachNetworkInterface(input)
+	outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(
+		timeout,
+		func() (interface{}, error) {
+			return conn.AttachNetworkInterface(input)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if err != nil {
 		return "", fmt.Errorf("error attaching EC2 Network Interface (%s/%s): %w", networkInterfaceID, instanceID, err)
 	}
 
+	output := outputRaw.(*ec2.AttachNetworkInterfaceOutput)
 	attachmentID := aws.StringValue(output.AttachmentId)
 
 	_, err = WaitNetworkInterfaceAttached(conn, attachmentID, timeout)
