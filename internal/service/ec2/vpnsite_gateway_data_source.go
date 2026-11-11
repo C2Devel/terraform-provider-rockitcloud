@@ -2,14 +2,12 @@ package ec2
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
-	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
 	"github.com/hashicorp/terraform-provider-aws/internal/tfresource"
 )
 
@@ -18,11 +16,6 @@ func DataSourceVPNGateway() *schema.Resource {
 		Read: dataSourceVPNGatewayRead,
 
 		Schema: map[string]*schema.Schema{
-			"amazon_side_asn": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
 			"arn": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -35,7 +28,6 @@ func DataSourceVPNGateway() *schema.Resource {
 			"availability_zone": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"filter": CustomFiltersSchema(),
 			"id": {
@@ -48,14 +40,12 @@ func DataSourceVPNGateway() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"tags": tftags.TagsSchemaComputed(),
 		},
 	}
 }
 
 func dataSourceVPNGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*conns.AWSClient).EC2Conn
-	ignoreTagsConfig := meta.(*conns.AWSClient).IgnoreTagsConfig
 
 	input := &ec2.DescribeVpnGatewaysInput{}
 
@@ -69,13 +59,6 @@ func dataSourceVPNGatewayRead(d *schema.ResourceData, meta interface{}) error {
 			"availability-zone": d.Get("availability_zone").(string),
 		},
 	)
-	if asn, ok := d.GetOk("amazon_side_asn"); ok {
-		input.Filters = append(input.Filters, BuildAttributeFilterList(
-			map[string]string{
-				"amazon-side-asn": asn.(string),
-			},
-		)...)
-	}
 	if id, ok := d.GetOk("attached_vpc_id"); ok {
 		input.Filters = append(input.Filters, BuildAttributeFilterList(
 			map[string]string{
@@ -84,9 +67,6 @@ func dataSourceVPNGatewayRead(d *schema.ResourceData, meta interface{}) error {
 			},
 		)...)
 	}
-	input.Filters = append(input.Filters, BuildTagFilterList(
-		Tags(tftags.New(d.Get("tags").(map[string]interface{}))),
-	)...)
 	input.Filters = append(input.Filters, BuildCustomFilterList(
 		d.Get("filter").(*schema.Set),
 	)...)
@@ -103,7 +83,6 @@ func dataSourceVPNGatewayRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(aws.StringValue(vgw.VpnGatewayId))
 
-	d.Set("amazon_side_asn", strconv.FormatInt(aws.Int64Value(vgw.AmazonSideAsn), 10))
 	arn := arn.ARN{
 		Partition: meta.(*conns.AWSClient).Partition,
 		Service:   ec2.ServiceName,
@@ -118,12 +97,7 @@ func dataSourceVPNGatewayRead(d *schema.ResourceData, meta interface{}) error {
 			break
 		}
 	}
-	d.Set("availability_zone", vgw.AvailabilityZone)
 	d.Set("state", vgw.State)
-
-	if err := d.Set("tags", KeyValueTags(vgw.Tags).IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Map()); err != nil {
-		return fmt.Errorf("error setting tags: %w", err)
-	}
 
 	return nil
 }
