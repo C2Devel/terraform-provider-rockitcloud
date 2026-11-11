@@ -661,7 +661,13 @@ func resourceTargetGroupUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if params != nil {
-			_, err := conn.ModifyTargetGroup(params)
+			_, err := tfresource.RetryWhenAWSErrCodeEquals(
+				targetGroupUpdateTimeout,
+				func() (interface{}, error) {
+					return conn.ModifyTargetGroup(params)
+				},
+				ErrCodeOperationInProgress,
+			)
 			if err != nil {
 				return fmt.Errorf("error modifying Target Group: %w", err)
 			}
@@ -836,7 +842,8 @@ func resourceTargetGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	err := resource.Retry(targetGroupDeleteTimeout, func() *resource.RetryError {
 		_, err := conn.DeleteTargetGroup(input)
 
-		if tfawserr.ErrMessageContains(err, "ResourceInUse", "is currently in use by a listener or a rule") {
+		if tfawserr.ErrMessageContains(err, "ResourceInUse", "is currently in use by a listener or a rule") ||
+			tfawserr.ErrCodeEquals(err, ErrCodeOperationInProgress) {
 			return resource.RetryableError(err)
 		}
 

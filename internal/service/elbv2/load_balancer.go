@@ -334,18 +334,27 @@ func resourceLoadBalancerCreate(d *schema.ResourceData, meta interface{}) error 
 
 	log.Printf("[DEBUG] Creating Load Balancer: %s", elbOpts)
 
-	resp, err := conn.CreateLoadBalancer(elbOpts)
+	// Concurrent LB creation in same VPC gets OperationInProgress
+	outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(
+		d.Timeout(schema.TimeoutCreate),
+		func() (interface{}, error) {
+			return conn.CreateLoadBalancer(elbOpts)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	// Some partitions may not support tag-on-create
 	if elbOpts.Tags != nil && verify.CheckISOErrorTagsUnsupported(err) {
 		log.Printf("[WARN] ELBv2 Load Balancer (%s) create failed (%s) with tags. Trying create without tags.", name, err)
 		elbOpts.Tags = nil
-		resp, err = conn.CreateLoadBalancer(elbOpts)
+		outputRaw, err = conn.CreateLoadBalancer(elbOpts)
 	}
 
 	if err != nil {
 		return fmt.Errorf("error creating %s Load Balancer: %w", d.Get("load_balancer_type").(string), err)
 	}
+
+	resp := outputRaw.(*elbv2.CreateLoadBalancerOutput)
 
 	if len(resp.LoadBalancers) != 1 {
 		return fmt.Errorf("no load balancers returned following creation of %s", d.Get("name").(string))
@@ -642,13 +651,20 @@ func resourceLoadBalancerDelete(d *schema.ResourceData, meta interface{}) error 
 	deleteElbOpts := elbv2.DeleteLoadBalancerInput{
 		LoadBalancerArn: aws.String(d.Id()),
 	}
-	if _, err := conn.DeleteLoadBalancer(&deleteElbOpts); err != nil {
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		d.Timeout(schema.TimeoutDelete),
+		func() (interface{}, error) {
+			return conn.DeleteLoadBalancer(&deleteElbOpts)
+		},
+		ErrCodeOperationInProgress,
+	)
+	if err != nil {
 		return fmt.Errorf("error deleting LB: %w", err)
 	}
 
 	ec2conn := meta.(*conns.AWSClient).EC2Conn
 
-	err := cleanupALBNetworkInterfaces(ec2conn, d.Id())
+	err = cleanupALBNetworkInterfaces(ec2conn, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Failed to cleanup ENIs for ALB %q: %#v", d.Id(), err)
 	}

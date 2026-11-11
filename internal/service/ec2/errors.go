@@ -84,6 +84,7 @@ const (
 	ErrCodeInvalidVpnGatewayAttachmentNotFound            = "InvalidVpnGatewayAttachment.NotFound"
 	ErrCodeInvalidVpnGatewayIDNotFound                    = "InvalidVpnGatewayID.NotFound"
 	ErrCodeInvalidNatGatewayIDNotFound                    = "InvalidNatGatewayID.NotFound"
+	ErrCodeOperationInProgress                            = "OperationInProgress"
 	ErrCodeUnsupportedOperation                           = "UnsupportedOperation"
 	ErrCodeVolumeInUse                                    = "VolumeInUse"
 )

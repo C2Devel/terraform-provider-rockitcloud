@@ -741,7 +741,13 @@ func resourceListenerRuleUpdate(d *schema.ResourceData, meta interface{}) error 
 			},
 		}
 
-		_, err := conn.SetRulePriorities(params)
+		_, err := tfresource.RetryWhenAWSErrCodeEquals(
+			5*time.Minute,
+			func() (interface{}, error) {
+				return conn.SetRulePriorities(params)
+			},
+			ErrCodeOperationInProgress,
+		)
 		if err != nil {
 			return err
 		}
@@ -771,11 +777,18 @@ func resourceListenerRuleUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if requestUpdate {
-		resp, err := conn.ModifyRule(params)
+		outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(
+			5*time.Minute,
+			func() (interface{}, error) {
+				return conn.ModifyRule(params)
+			},
+			ErrCodeOperationInProgress,
+		)
 		if err != nil {
 			return fmt.Errorf("Error modifying LB Listener Rule: %w", err)
 		}
 
+		resp := outputRaw.(*elbv2.ModifyRuleOutput)
 		if len(resp.Rules) == 0 {
 			return errors.New("Error modifying creating LB Listener Rule: no rules returned in response")
 		}
@@ -787,9 +800,15 @@ func resourceListenerRuleUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourceListenerRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*conns.AWSClient).ELBV2Conn
 
-	_, err := conn.DeleteRule(&elbv2.DeleteRuleInput{
-		RuleArn: aws.String(d.Id()),
-	})
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		5*time.Minute,
+		func() (interface{}, error) {
+			return conn.DeleteRule(&elbv2.DeleteRuleInput{
+				RuleArn: aws.String(d.Id()),
+			})
+		},
+		ErrCodeOperationInProgress,
+	)
 	if err != nil && !tfawserr.ErrCodeEquals(err, elbv2.ErrCodeRuleNotFoundException) {
 		return fmt.Errorf("Error deleting LB Listener Rule: %w", err)
 	}
@@ -799,13 +818,20 @@ func resourceListenerRuleDelete(d *schema.ResourceData, meta interface{}) error 
 func retryListenerRuleCreate(conn *elbv2.ELBV2, d *schema.ResourceData, params *elbv2.CreateRuleInput, listenerARN string) (*elbv2.CreateRuleOutput, error) {
 	var resp *elbv2.CreateRuleOutput
 	if v, ok := d.GetOk("priority"); ok {
-		var err error
 		params.Priority = aws.Int64(int64(v.(int)))
-		resp, err = conn.CreateRule(params)
+		outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(
+			5*time.Minute,
+			func() (interface{}, error) {
+				return conn.CreateRule(params)
+			},
+			ErrCodeOperationInProgress,
+		)
 
 		if err != nil {
 			return nil, err
 		}
+
+		resp = outputRaw.(*elbv2.CreateRuleOutput)
 	} else {
 		var priority int64
 
@@ -818,7 +844,7 @@ func retryListenerRuleCreate(conn *elbv2.ELBV2, d *schema.ResourceData, params *
 			params.Priority = aws.Int64(priority + 1)
 			resp, err = conn.CreateRule(params)
 			if err != nil {
-				if tfawserr.ErrCodeEquals(err, elbv2.ErrCodePriorityInUseException) {
+				if tfawserr.ErrCodeEquals(err, elbv2.ErrCodePriorityInUseException, ErrCodeOperationInProgress) {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)

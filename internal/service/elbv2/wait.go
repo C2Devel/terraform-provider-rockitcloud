@@ -23,12 +23,15 @@ const (
 	// Default maximum amount of time to wait for target group to delete
 	targetGroupDeleteTimeout = 2 * time.Minute
 
+	targetGroupUpdateTimeout = 5 * time.Minute
+
 	// Default maximum amount of time to wait for network interfaces to propagate
 	loadBalancerNetworkInterfaceDetachTimeout = 5 * time.Minute
 
 	loadBalancerListenerCreateTimeout = 5 * time.Minute
 	loadBalancerListenerReadTimeout   = 2 * time.Minute
 	loadBalancerListenerUpdateTimeout = 5 * time.Minute
+	loadBalancerListenerDeleteTimeout = 5 * time.Minute
 
 	propagationTimeout = 2 * time.Minute
 )

@@ -177,12 +177,19 @@ func resourceSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("[DEBUG] Creating EC2 Subnet: %s", input)
-	output, err := conn.CreateSubnet(input)
+	outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(
+		d.Timeout(schema.TimeoutCreate),
+		func() (interface{}, error) {
+			return conn.CreateSubnet(input)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if err != nil {
 		return fmt.Errorf("error creating EC2 Subnet: %w", err)
 	}
 
+	output := outputRaw.(*ec2.CreateSubnetOutput)
 	d.SetId(aws.StringValue(output.Subnet.SubnetId))
 
 	subnet, err := WaitSubnetAvailable(conn, d.Id(), d.Timeout(schema.TimeoutCreate))
