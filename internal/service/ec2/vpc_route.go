@@ -236,6 +236,7 @@ func resourceRouteCreate(d *schema.ResourceData, meta interface{}) error {
 		},
 		ErrCodeInvalidParameterException,
 		ErrCodeInvalidTransitGatewayIDNotFound,
+		ErrCodeOperationInProgress,
 	)
 
 	if err != nil {
@@ -378,7 +379,13 @@ func resourceRouteUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("[DEBUG] Updating Route: %s", input)
-	_, err = conn.ReplaceRoute(input)
+	_, err = tfresource.RetryWhenAWSErrCodeEquals(
+		d.Timeout(schema.TimeoutUpdate),
+		func() (interface{}, error) {
+			return conn.ReplaceRoute(input)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if err != nil {
 		return fmt.Errorf("error updating Route in Route Table (%s) with destination (%s): %w", routeTableID, destination, err)
@@ -430,6 +437,7 @@ func resourceRouteDelete(d *schema.ResourceData, meta interface{}) error {
 			return conn.DeleteRoute(input)
 		},
 		ErrCodeInvalidParameterException,
+		ErrCodeOperationInProgress,
 	)
 
 	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidRouteNotFound) {
