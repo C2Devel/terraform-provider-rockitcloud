@@ -36,6 +36,7 @@
 - [Выпуск внутренней документации](#выпуск-внутренней-документации)
     - [Ручная публикация документации](#ручная-публикация-документации)
     - [Автоматическая публикация документации](#автоматическая-публикация-документации)
+    - [Завершение процесса релиза](#завершение-процесса-релиза)
 - [Использование провайдера](#использование-провайдера)
     - [Локальная сборка](#локальная-сборка)
 - [TODO](#todo)
@@ -343,37 +344,25 @@ $ scripts/build-docs.sh --tools
 
 #### Автоматический режим
 
-**Важно!** В секретах репозитория уже должны быть преднастроены (делается один раз в рамках одного репозитория):
+В секретах репозитория должны быть настроены:
 
-- github token с правами public_repo - `AUTOMATION_PAT`
-- Приватный ключ GPG (без пароля) - `GPG_PRIVATE_KEY`
+- `AUTOMATION_PAT` для публикации GitHub Release и `GPG_PRIVATE_KEY` для подписи артефактов.
+- `APP_ID` и `APP_PEM` для записи в `develop`.
+- `s3_config` для приватного реестра и документации, `s3_config_rockit` для второго бакета документации при его использовании.
 
-1. Мердж PR'ов в ветку **develop**
-2. Создание релизного PR'а в ветку **develop**
-(пример: [v24.1.0](https://github.com/C2Devel/terraform-provider-rockitcloud/pull/49))
-   - **Опционально.** Обновление версии **aws-sdk-go**, если требуется
-     (см. [изменение версии aws-sdk-go](#изменение-версии-aws-sdk-go))
-   - Обновление [CHANGELOG.md](../CHANGELOG.md)
-3. Мердж релизного PR'a
-4. Установка релизного тега с версией (см. [версионирование](#версионирование)) и его публикация
+1. Влейте изменения в `develop`, включая [обновление aws-sdk-go](#изменение-версии-aws-sdk-go), если оно нужно.
+2. Запустите [Prepare Release](https://github.com/C2Devel/terraform-provider-rockitcloud/actions/workflows/prepare-release.yml)
+   на `develop`, указав `version`, например `26.2.7`. Workflow обновит верхний заголовок [CHANGELOG.md](../CHANGELOG.md)
+   и закоммитит изменение в `develop`.
+3. В [GitHub Releases](https://github.com/C2Devel/terraform-provider-rockitcloud/releases) нажмите **Draft a new release**,
+   создайте тег `v26.2.7` на подготовленном коммите из `develop`, добавьте описание из changelog и нажмите **Publish release**.
+4. Тег запустит [public-release](../.github/workflows/public-release.yml). Workflow соберёт и загрузит артефакты,
+   затем до 30 минут будет ждать эту версию в публичном Terraform Registry. После этого он обновит приватный реестр,
+   опубликует внутреннюю документацию и передаст версию без `v` в `Update Changelog`.
 
-   **Важно!** После публикации тэга автоматически запустится процесс создания релиза, но релиз будет в состоянии **draft**.
-
-   ```
-   $ git tag v1.2.3
-   $ git push <remote> v1.2.3
-   ```
-
-5. Изменение **draft** релиза
-   Необходимо перенести последние записи из CHANGELOG.md в описание релиза
-6. Выпуск релиза как **latest**
-
-   **Важно!** После этого действия релиз будет опубликован в официальном реджистри **HashiCorp**.
-   **Важно!** Бывают случаи когда последняя версия провайдера не публикуется в реджистри, для этого в официальном реджистри **HashiCorp** нужно нажать кнопку **Resync**, чтобы реджистри еще раз подтянула последний релиз из репозитория.
-
-7. Публикация в приватный реджистри (см. [Публикация провайдера в private terraform registry](#публикация-провайдера-в-private-terraform-registry))
-
-8. Выпуск внутренней документации (см. [Выпуск внутренней документации](#выпуск-внутренней-документации))
+При таймауте проверьте артефакты релиза, при необходимости выполните
+[Resync](https://developer.hashicorp.com/terraform/registry/faq#what-does-resyncing-an-artifact-do) в Terraform Registry
+и выберите **Re-run failed jobs** в запуске `public-release`.
 
 #### Ручной режим
 
@@ -382,7 +371,7 @@ $ scripts/build-docs.sh --tools
 (пример: [v24.1.0](https://github.com/C2Devel/terraform-provider-rockitcloud/pull/49))
    - **Опционально.** Обновление версии **aws-sdk-go**, если требуется
      (см. [изменение версии aws-sdk-go](#изменение-версии-aws-sdk-go))
-   - Обновление [CHANGELOG.md](../CHANGELOG.md)
+   - Обновление версии и даты выпуска в верхнем заголовке [CHANGELOG.md](../CHANGELOG.md).
 3. Локальный запуск линтеров и unit тестов на ветке **develop** + релизный PR
 
    ```
@@ -393,16 +382,8 @@ $ scripts/build-docs.sh --tools
    ```
 
 4. Мердж релизного PR'а
-5. **Опционально.** Включение автопубликации релиза в github (флаг `release.draft` в `.goreleaser.yml`)
-
-   ```
-   # .goreleaser.yml
-   ...
-   release:
-     draft: false
-   ```
-
-   По умолчанию релиз будет опубликован в origin.
+5. Для локальной сборки временно отключите `public-release` перед отправкой тега, чтобы GitHub Actions
+   не запустил параллельную сборку. Для загрузки артефактов `origin` должен указывать на основной репозиторий.
 
 6. Подготовка репозитория: на релизной ветке не должно быть незакоммиченных изменений, untracked файлов
 7. Установка релизного тега с версией (см. [версионирование](#версионирование)) и его публикация
@@ -420,21 +401,13 @@ $ scripts/build-docs.sh --tools
    $ $GOBIN/goreleaser release --rm-dist --timeout 180m  # Для версий goreleaser ниже v1.15.0
    ```
 
-9. **Опционально.** Если на шаге 2 **не** была включена автопубликация (`release.draft: true`):
-   создание релиза на github и загрузка артефактов:
-    - `dist/terraform-provider-rockitcloud_{VERSION}_{OS}_{ARCH}.zip`
-        - Для всех архитектур и ОС.
-    - `dist/terraform-provider-rockitcloud_{VERSION}_SHA256SUMS`
-    - `dist/terraform-provider-rockitcloud_{VERSION}_SHA256SUMS.sig`
-    - `terraform-provider-rockitcloud_{VERSION}_manifest.json`
-        - Файл создается вручную:
-        - `cp terraform-registry-manifest.json terraform-provider-rockitcloud_{VERSION}_manifest.json`
-
-   В описание дублируется запись из CHANGELOG.md.
+9. GoReleaser загрузит подписанные артефакты в черновик GitHub Release. Перенесите запись из `CHANGELOG.md`
+   в описание, нажмите **Publish release** и дождитесь появления версии в публичном Terraform Registry.
 
 10. Публикация в приватный реджистри (см. [Публикация провайдера в private terraform registry](#публикация-провайдера-в-private-terraform-registry))
 
 11. Выпуск внутренней документации (см. [Выпуск внутренней документации](#выпуск-внутренней-документации))
+12. Выполните [завершение процесса релиза](#завершение-процесса-релиза) и снова включите `public-release`.
 
 ## Публикация провайдера в официальном terraform registry
 
@@ -657,10 +630,9 @@ $ scripts/build-docs.sh --push
 
 ### Завершение процесса релиза
 
-После окончания работ по релизу провайдера необходимо подготовить репозиторий к последующим работам:
-
-1. поднять пулл реквест в ветку `develop` с указанием даты и уточнением версии последней версии в CHANGELOG.md.
-2. запустить экшен [update-changelog](https://github.com/C2Devel/terraform-provider-rockitcloud/actions/workflows/update-changelog.yml), указав номер только что выпущенного релиза без v (Пример: 25.4.0). Это создаст новое вхождение в CHANGELOG.md с пометкой (Unreleased)
+Автоматическая цепочка запускает `Update Changelog` после публикации внутренней документации.
+При ручном релизе запустите [Update Changelog](https://github.com/C2Devel/terraform-provider-rockitcloud/actions/workflows/update-changelog.yml)
+с версией выпущенного релиза без `v`. Например, для `26.2.7` workflow добавит `26.3.0 (Unreleased)` в `CHANGELOG.md`.
 
 
 ## Использование провайдера
