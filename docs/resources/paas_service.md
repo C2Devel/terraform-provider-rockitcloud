@@ -792,6 +792,12 @@ The following arguments are optional:
 * `data_volume` - (Optional) The data volume parameters for the service. The structure of this block is [described below](#data_volume).
   The provider schema requires this parameter for [ClickHouse], [ELK], [Elasticsearch], [GitLab], [Kafka], [Memcached], [MongoDB],
   [MySQL], [PostgreSQL], [Prometheus], [RabbitMQ] and [Redis] services.
+* `databases_managed_externally` - (Optional, Editable) Indicates whether service databases are managed by standalone
+  [`aws_paas_pgsql_database`](paas_pgsql_database.md) resources. If `true`, the service does not read databases into the state
+  and does not send them to the cloud, so databases created by `aws_paas_pgsql_database` are preserved.
+  See [PostgreSQL users and databases as standalone resources](#postgresql-users-and-databases-as-standalone-resources).
+    * _Default value:_ `false`
+    * _Constraints:_ Supported only for [PostgreSQL]. The `pgsql.database` blocks must not be specified if the value is `true`
 * `delete_interfaces_on_destroy` - (Optional) Indicates whether to delete the instance network interfaces when the service is destroyed.
     * _Default value:_ `false`
 * `high_availability` - (Optional) Indicates whether to create a high availability service.
@@ -810,6 +816,12 @@ The following arguments are optional:
 * `user_data_content_type` - (Optional) The type of `user_data`.
     * _Valid values:_ `cloud-config`, `x-shellscript`
     * _Constraints:_ Required if `user_data` is specified
+* `users_managed_externally` - (Optional, Editable) Indicates whether service users are managed by standalone
+  [`aws_paas_pgsql_user`](paas_pgsql_user.md) resources. If `true`, the service does not read users into the state
+  and does not send them to the cloud, so users created by `aws_paas_pgsql_user` are preserved.
+  See [PostgreSQL users and databases as standalone resources](#postgresql-users-and-databases-as-standalone-resources).
+    * _Default value:_ `false`
+    * _Constraints:_ Supported only for [PostgreSQL]. The `pgsql.user` blocks must not be specified if the value is `true`
 
 One of the following blocks with service parameters must be specified:
 
@@ -1522,6 +1534,9 @@ If you need to use such a parameter, contact [technical support].
 
 ~> **Note** All the parameters in the `database` block are editable.
 
+-> **Note** Databases can also be managed as standalone [`aws_paas_pgsql_database`](paas_pgsql_database.md) resources.
+See [PostgreSQL users and databases as standalone resources](#postgresql-users-and-databases-as-standalone-resources).
+
 The `database` block structure is described below.
 
 The following arguments are required:
@@ -1555,6 +1570,9 @@ The `user` block has the following structure:
 
 ~> **Note** All the parameters in the `user` block are editable.
 
+-> **Note** Users can also be managed as standalone [`aws_paas_pgsql_user`](paas_pgsql_user.md) resources.
+See [PostgreSQL users and databases as standalone resources](#postgresql-users-and-databases-as-standalone-resources).
+
 The `user` block has the following structure:
 
 * `name` - (Required) The PostgreSQL user name.
@@ -1574,6 +1592,114 @@ user {
   roles    = ["pg_monitor", "pg_signal_backend"]
 }
 ```
+
+### PostgreSQL users and databases as standalone resources
+
+PostgreSQL users and databases can be managed as standalone [`aws_paas_pgsql_user`](paas_pgsql_user.md)
+and [`aws_paas_pgsql_database`](paas_pgsql_database.md) resources instead of the `pgsql.user` and `pgsql.database` blocks.
+Standalone resources are recommended, because:
+
+* Users and databases can be imported, removed from the state or replaced one at a time.
+* A database refers to its owner and users, so Terraform creates users before databases and deletes databases before users.
+* Deleting a database is shown in the plan as destroying the `aws_paas_pgsql_database` resource,
+  instead of an in-place update of the service.
+
+To use standalone resources, set `users_managed_externally = true` and `databases_managed_externally = true`
+and do not specify the `pgsql.user` and `pgsql.database` blocks:
+
+```terraform
+resource "aws_paas_service" "pgsql" {
+  # ...
+  users_managed_externally     = true
+  databases_managed_externally = true
+
+  pgsql {
+    version = "16"
+  }
+}
+
+resource "aws_paas_pgsql_user" "app_owner" {
+  service_id = aws_paas_service.pgsql.id
+  name       = "app_owner"
+  password   = var.app_owner_password
+}
+
+resource "aws_paas_pgsql_user" "app_reader" {
+  service_id = aws_paas_service.pgsql.id
+  name       = "app_reader"
+  password   = var.app_reader_password
+  roles      = ["pg_monitor"]
+}
+
+resource "aws_paas_pgsql_database" "app" {
+  service_id = aws_paas_service.pgsql.id
+  name       = "app"
+  owner      = aws_paas_pgsql_user.app_owner.name
+  extensions = ["pgcrypto"]
+  users      = [aws_paas_pgsql_user.app_reader.name]
+}
+```
+
+~> **Note** If only `users_managed_externally` is `true`, the `pgsql.database` blocks can still be used,
+but their `owner` and `user` values are plain strings. Terraform does not know that such databases depend on
+the `aws_paas_pgsql_user` resources: in a new configuration, a database can be created before its owner,
+and `terraform destroy` fails with `CannotDeleteUser` until the database is removed from the service.
+
+#### Moving existing users and databases
+
+Users and databases created with the `pgsql.user` and `pgsql.database` blocks can be moved to standalone resources
+without recreation (Terraform 1.5 or later):
+
+1. Get the IDs of the users and databases from the state, for example, with `terraform state show aws_paas_service.pgsql`.
+2. Set `users_managed_externally = true` and `databases_managed_externally = true`
+   and remove the `pgsql.user` and `pgsql.database` blocks.
+3. Add the `aws_paas_pgsql_user` and `aws_paas_pgsql_database` resources with the same names and parameters,
+   and an `import` block for each of them:
+
+   ```terraform
+   import {
+     to = aws_paas_pgsql_user.app_owner
+     id = "fm-cluster-12345678/paas-user-12345678"
+   }
+
+   import {
+     to = aws_paas_pgsql_database.app
+     id = "fm-cluster-12345678/paas-db-12345678"
+   }
+   ```
+
+4. Run `terraform plan`. The plan shows the imported resources without changes, and an in-place update of the service
+   that removes the `user` and `database` blocks. This update only removes the blocks from the service state:
+   the provider sends no requests to the cloud, and the users and databases are preserved.
+5. Run `terraform apply`. After that, the `import` blocks can be removed.
+
+The same plan is shown after `terraform import aws_paas_service`, because the flags are not stored in the cloud
+and are imported as `false`. Applying it does not change the service.
+
+#### Switching back to the service blocks
+
+~> **Warning** If `users_managed_externally` or `databases_managed_externally` is changed from `true` to `false`,
+the service sends the full list of users or databases from its blocks to the cloud,
+and the cloud deletes all users or databases that are not in the list, including those created by standalone resources.
+
+To switch back without data loss:
+
+1. Add the `pgsql.user` and `pgsql.database` blocks for all existing users and databases.
+2. Remove the standalone resources from the state without deleting them in the cloud,
+   with `terraform state rm` or a `removed` block (Terraform 1.7 or later):
+
+   ```terraform
+   removed {
+     from = aws_paas_pgsql_database.app
+
+     lifecycle {
+       destroy = false
+     }
+   }
+   ```
+
+3. Set the flags to `false` and run `terraform plan`. The plan shows the `user` and `database` blocks as added,
+   because they are not in the service state. Make sure that they include all users and databases that must be kept.
 
 ## Kafka argument reference
 

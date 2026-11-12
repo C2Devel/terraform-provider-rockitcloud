@@ -1,0 +1,11 @@
+```release-note:new-resource
+aws_paas_pgsql_user
+```
+
+```release-note:new-resource
+aws_paas_pgsql_database
+```
+
+```release-note:enhancement
+resource/aws_paas_service: Add `users_managed_externally` and `databases_managed_externally` arguments to manage PostgreSQL users and databases with the standalone `aws_paas_pgsql_user` and `aws_paas_pgsql_database` resources
+```

@@ -325,6 +325,12 @@ func (s postgreSQLManager) userParametersSchema() map[string]*schema.Schema {
 	}
 }
 
+// UserParametersSchema returns the schema of PostgreSQL user parameters
+// for the standalone aws_paas_pgsql_user resource.
+func (s postgreSQLManager) UserParametersSchema() map[string]*schema.Schema {
+	return s.userParametersSchema()
+}
+
 func (s postgreSQLManager) userParametersDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"roles": {
@@ -338,6 +344,12 @@ func (s postgreSQLManager) userParametersDataSourceSchema() map[string]*schema.S
 			Sensitive: true,
 		},
 	}
+}
+
+// DatabaseParametersSchema returns the schema of PostgreSQL database parameters
+// for the standalone aws_paas_pgsql_database resource.
+func (s postgreSQLManager) DatabaseParametersSchema() map[string]*schema.Schema {
+	return s.databaseParametersSchema()
 }
 
 func (s postgreSQLManager) databaseParametersSchema() map[string]*schema.Schema {

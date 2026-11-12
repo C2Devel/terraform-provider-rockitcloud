@@ -49,6 +49,146 @@ func findServiceByID(ctx context.Context, conn *paas.PaaS, id string) (*paas.Ser
 	return output.Service, nil
 }
 
+func FindPostgreSQLUserByID(conn *paas.PaaS, serviceID, id string) (*paas.UserResponse, error) {
+	return findPostgreSQLUserByID(context.Background(), conn, serviceID, id)
+}
+
+// findPostgreSQLUserByID checks that the user exists with ListUsers, because the
+// error code returned by DescribeUser for a missing user is not documented,
+// and then reads the user parameters with DescribeUser.
+func findPostgreSQLUserByID(ctx context.Context, conn *paas.PaaS, serviceID, id string) (*paas.UserResponse, error) {
+	listInput := &paas.ListUsersInput{
+		ServiceId: aws.String(serviceID),
+	}
+
+	listOutput, err := conn.ListUsersWithContext(ctx, listInput)
+
+	if tfawserr.ErrCodeEquals(err, ServiceNotFoundCode) {
+		return nil, &resource.NotFoundError{
+			LastError:   err,
+			LastRequest: listInput,
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if listOutput == nil {
+		return nil, tfresource.NewEmptyResultError(listInput)
+	}
+
+	found := false
+	for _, user := range listOutput.Users {
+		if user != nil && aws.StringValue(user.Id) == id {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return nil, &resource.NotFoundError{
+			LastRequest: listInput,
+		}
+	}
+
+	input := &paas.DescribeUserInput{
+		ServiceId: aws.String(serviceID),
+		UserId:    aws.String(id),
+	}
+
+	output, err := conn.DescribeUserWithContext(
+		ctx,
+		input,
+		request.WithLogLevel(aws.LogOff),
+	)
+
+	if tfawserr.ErrCodeEquals(err, ServiceNotFoundCode, ResourceDoesNotExistCode) {
+		return nil, &resource.NotFoundError{
+			LastError:   err,
+			LastRequest: input,
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if output == nil || output.User == nil {
+		return nil, tfresource.NewEmptyResultError(input)
+	}
+
+	return output.User, nil
+}
+
+func FindPostgreSQLDatabaseByID(conn *paas.PaaS, serviceID, id string) (*paas.DatabaseResponse, error) {
+	return findPostgreSQLDatabaseByID(context.Background(), conn, serviceID, id)
+}
+
+// findPostgreSQLDatabaseByID checks that the database exists with ListDatabases, because the
+// error code returned by DescribeDatabase for a missing database is not documented,
+// and then reads the database parameters with DescribeDatabase.
+func findPostgreSQLDatabaseByID(ctx context.Context, conn *paas.PaaS, serviceID, id string) (*paas.DatabaseResponse, error) {
+	listInput := &paas.ListDatabasesInput{
+		ServiceId: aws.String(serviceID),
+	}
+
+	listOutput, err := conn.ListDatabasesWithContext(ctx, listInput)
+
+	if tfawserr.ErrCodeEquals(err, ServiceNotFoundCode) {
+		return nil, &resource.NotFoundError{
+			LastError:   err,
+			LastRequest: listInput,
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if listOutput == nil {
+		return nil, tfresource.NewEmptyResultError(listInput)
+	}
+
+	found := false
+	for _, database := range listOutput.Databases {
+		if database != nil && aws.StringValue(database.Id) == id {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return nil, &resource.NotFoundError{
+			LastRequest: listInput,
+		}
+	}
+
+	input := &paas.DescribeDatabaseInput{
+		DatabaseId: aws.String(id),
+		ServiceId:  aws.String(serviceID),
+	}
+
+	output, err := conn.DescribeDatabaseWithContext(ctx, input)
+
+	if tfawserr.ErrCodeEquals(err, ServiceNotFoundCode, ResourceDoesNotExistCode) {
+		return nil, &resource.NotFoundError{
+			LastError:   err,
+			LastRequest: input,
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if output == nil || output.Database == nil {
+		return nil, tfresource.NewEmptyResultError(input)
+	}
+
+	return output.Database, nil
+}
+
 func FindClickHouseProfileByID(conn *paas.PaaS, serviceID, id string) (*paas.ClickHouseProfile, error) {
 	return findClickHouseProfileByID(context.Background(), conn, serviceID, id)
 }

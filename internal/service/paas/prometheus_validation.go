@@ -15,6 +15,9 @@ func validateServiceConfiguration(ctx context.Context, d *schema.ResourceDiff, m
 	if err := validatePostgreSQLServiceConfiguration(d); err != nil {
 		return err
 	}
+	if err := validateManagedExternally(d); err != nil {
+		return err
+	}
 	if err := validateKafkaServiceConfiguration(ctx, d, meta); err != nil {
 		return err
 	}
