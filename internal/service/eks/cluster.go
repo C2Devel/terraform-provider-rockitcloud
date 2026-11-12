@@ -401,8 +401,11 @@ func ResourceCluster() *schema.Resource {
 				},
 			},
 			"platform_version": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"eks.1", "eks.3"}, false),
 			},
 			"role_arn": {
 				Type:         schema.TypeString,
@@ -484,6 +487,9 @@ func resourceClusterCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("control_plane_scaling_config"); ok {
 		input.ControlPlaneScalingConfig = expandControlPlaneScalingConfig(v.([]interface{}))
+	}
+	if v, ok := d.GetOk("platform_version"); ok {
+		input.PlatformVersion = aws.String(v.(string))
 	}
 
 	if v, ok := d.GetOk("role_arn"); ok && v.(string) != "" {

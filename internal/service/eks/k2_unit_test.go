@@ -105,6 +105,10 @@ func TestUpdateClusterControlPlaneTierWireAndWait(t *testing.T) {
 
 func TestControlPlaneScalingConfigUpdatesInPlace(t *testing.T) {
 	resource := ResourceCluster()
+	platform := resource.Schema["platform_version"]
+	if !platform.Optional || !platform.Computed || !platform.ForceNew {
+		t.Fatal("platform_version must select the platform at create and remain immutable")
+	}
 	block := resource.Schema["control_plane_scaling_config"]
 	if block.ForceNew || !block.Optional || !block.Computed {
 		t.Fatal("control_plane_scaling_config must be optional, readable and update in place")
