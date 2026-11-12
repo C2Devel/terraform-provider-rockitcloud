@@ -1,5 +1,22 @@
 ## 26.3.0 (Unreleased)
 
+FEATURES:
+
+* **New Resource:** `aws_paas_pgsql_database` ([#220](https://github.com/C2Devel/terraform-provider-rockitcloud/pull/220))
+* **New Resource:** `aws_paas_pgsql_user` ([#220](https://github.com/C2Devel/terraform-provider-rockitcloud/pull/220))
+
+ENHANCEMENTS:
+
+* resource/aws_paas_service: Add `users_managed_externally` and `databases_managed_externally` arguments to manage PostgreSQL users and databases with the standalone `aws_paas_pgsql_user` and `aws_paas_pgsql_database` resources ([#220](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/220))
+
+## 26.2.5 (October 11, 2026)
+
+BUG FIXES:
+
+* resource/aws_default_route_table, resource/aws_internet_gateway, resource/aws_internet_gateway_attachment, resource/aws_lb, resource/aws_lb_listener, resource/aws_lb_listener_rule, resource/aws_lb_target_group, resource/aws_lb_target_group_attachment, resource/aws_network_acl, resource/aws_network_acl_association, resource/aws_network_interface, resource/aws_network_interface_attachment, resource/aws_route, resource/aws_route_table, resource/aws_subnet: retry operations that fail with `OperationInProgress` ([#227](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/227))
+* resource/aws_lb_target_group_attachment: fix destroy failing with `LoadBalancerNotFound` when the listener is deleted at the same time ([#227](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/227))
+* resource/aws_nat_gateway: wait for the gateway to be deleted if the delete request was retried ([#227](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/227))
+
 ## 26.2.4 (October 28, 2026)
 
 ENHANCEMENTS:

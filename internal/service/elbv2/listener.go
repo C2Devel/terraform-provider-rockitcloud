@@ -606,7 +606,7 @@ func resourceListenerUpdate(d *schema.ResourceData, meta interface{}) error {
 		err := resource.Retry(loadBalancerListenerUpdateTimeout, func() *resource.RetryError {
 			_, err := conn.ModifyListener(params)
 
-			if tfawserr.ErrCodeEquals(err, elbv2.ErrCodeCertificateNotFoundException) {
+			if tfawserr.ErrCodeEquals(err, elbv2.ErrCodeCertificateNotFoundException, ErrCodeOperationInProgress) {
 				return resource.RetryableError(err)
 			}
 
@@ -666,9 +666,15 @@ func resourceListenerUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceListenerDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*conns.AWSClient).ELBV2Conn
 
-	_, err := conn.DeleteListener(&elbv2.DeleteListenerInput{
-		ListenerArn: aws.String(d.Id()),
-	})
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		loadBalancerListenerDeleteTimeout,
+		func() (interface{}, error) {
+			return conn.DeleteListener(&elbv2.DeleteListenerInput{
+				ListenerArn: aws.String(d.Id()),
+			})
+		},
+		ErrCodeOperationInProgress,
+	)
 	if err != nil {
 		return fmt.Errorf("error deleting Listener (%s): %w", d.Id(), err)
 	}
@@ -684,7 +690,7 @@ func retryListenerCreate(conn *elbv2.ELBV2, params *elbv2.CreateListenerInput) (
 
 		output, err = conn.CreateListener(params)
 
-		if tfawserr.ErrCodeEquals(err, elbv2.ErrCodeCertificateNotFoundException) {
+		if tfawserr.ErrCodeEquals(err, elbv2.ErrCodeCertificateNotFoundException, ErrCodeOperationInProgress) {
 			return resource.RetryableError(err)
 		}
 

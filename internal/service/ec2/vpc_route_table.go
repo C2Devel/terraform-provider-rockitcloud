@@ -192,12 +192,19 @@ func resourceRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("[DEBUG] Creating Route Table: %s", input)
-	output, err := conn.CreateRouteTable(input)
+	outputRaw, err := tfresource.RetryWhenAWSErrCodeEquals(
+		d.Timeout(schema.TimeoutCreate),
+		func() (interface{}, error) {
+			return conn.CreateRouteTable(input)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if err != nil {
 		return fmt.Errorf("error creating Route Table: %w", err)
 	}
 
+	output := outputRaw.(*ec2.CreateRouteTableOutput)
 	d.SetId(aws.StringValue(output.RouteTable.RouteTableId))
 
 	if _, err := WaitRouteTableReady(conn, d.Id(), d.Timeout(schema.TimeoutCreate)); err != nil {
@@ -401,9 +408,15 @@ func resourceRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("[INFO] Deleting Route Table: %s", d.Id())
-	_, err = conn.DeleteRouteTable(&ec2.DeleteRouteTableInput{
-		RouteTableId: aws.String(d.Id()),
-	})
+	_, err = tfresource.RetryWhenAWSErrCodeEquals(
+		d.Timeout(schema.TimeoutDelete),
+		func() (interface{}, error) {
+			return conn.DeleteRouteTable(&ec2.DeleteRouteTableInput{
+				RouteTableId: aws.String(d.Id()),
+			})
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidRouteTableIDNotFound) {
 		return nil
@@ -526,6 +539,7 @@ func ec2RouteTableAddRoute(conn *ec2.EC2, routeTableID string, tfMap map[string]
 		},
 		ErrCodeInvalidParameterException,
 		ErrCodeInvalidTransitGatewayIDNotFound,
+		ErrCodeOperationInProgress,
 	)
 
 	if err != nil {
@@ -566,7 +580,13 @@ func ec2RouteTableDeleteRoute(conn *ec2.EC2, routeTableID string, tfMap map[stri
 	}
 
 	log.Printf("[DEBUG] Deleting Route: %s", input)
-	_, err := conn.DeleteRoute(input)
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		timeout,
+		func() (interface{}, error) {
+			return conn.DeleteRoute(input)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidRouteNotFound) {
 		return nil
@@ -618,7 +638,13 @@ func ec2RouteTableUpdateRoute(conn *ec2.EC2, routeTableID string, tfMap map[stri
 	input.RouteTableId = aws.String(routeTableID)
 
 	log.Printf("[DEBUG] Updating Route: %s", input)
-	_, err := conn.ReplaceRoute(input)
+	_, err := tfresource.RetryWhenAWSErrCodeEquals(
+		timeout,
+		func() (interface{}, error) {
+			return conn.ReplaceRoute(input)
+		},
+		ErrCodeOperationInProgress,
+	)
 
 	if err != nil {
 		return fmt.Errorf("error updating Route in Route Table (%s) with destination (%s): %w", routeTableID, destination, err)

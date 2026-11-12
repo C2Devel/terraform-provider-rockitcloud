@@ -134,9 +134,9 @@ The following attributes are not currently supported:
 
 The `timeouts` block allows you to specify [timeouts] for certain actions:
 
-* `create` - (Default `5 minutes`) Used for route creation.
+* `create` - (Default `5 minutes`) Used for route table creation.
 * `update` - (Default `2 minutes`) Used for updating the route.
-* `delete` - (Default `5 minutes`) Used for route deletion.
+* `delete` - (Default `5 minutes`) Used for route table deletion.
 
 ## Import
 

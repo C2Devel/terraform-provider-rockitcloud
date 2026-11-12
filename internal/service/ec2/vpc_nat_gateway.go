@@ -303,14 +303,11 @@ func resourceNATGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 		NatGatewayId: aws.String(d.Id()),
 	})
 
-	if tfawserr.ErrCodeEquals(err, ErrCodeInvalidNatGatewayIDNotFound) {
-		return nil
-	}
-
-	if err != nil {
+	if err != nil && !tfawserr.ErrCodeEquals(err, ErrCodeInvalidNatGatewayIDNotFound) {
 		return fmt.Errorf("error deleting EC2 NAT Gateway (%s): %w", d.Id(), err)
 	}
 
+	// SDK retry may get NotFound while gateway still deleting
 	if _, err := WaitNATGatewayDeleted(conn, d.Id()); err != nil {
 		return fmt.Errorf("error waiting for EC2 NAT Gateway (%s) delete: %w", d.Id(), err)
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
 	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
+	"github.com/hashicorp/terraform-provider-aws/internal/tfresource"
 	"github.com/hashicorp/terraform-provider-aws/internal/verify"
 )
 
@@ -216,7 +217,13 @@ func resourceDefaultRouteTableCreate(d *schema.ResourceData, meta interface{}) e
 		}
 
 		log.Printf("[DEBUG] Deleting Route: %s", input)
-		_, err := conn.DeleteRoute(input)
+		_, err := tfresource.RetryWhenAWSErrCodeEquals(
+			d.Timeout(schema.TimeoutCreate),
+			func() (interface{}, error) {
+				return conn.DeleteRoute(input)
+			},
+			ErrCodeOperationInProgress,
+		)
 
 		if tfawserr.ErrCodeEquals(err, ErrCodeInvalidRouteNotFound) {
 			continue
