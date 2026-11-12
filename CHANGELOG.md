@@ -2,6 +2,7 @@
 
 FEATURES:
 
+* **New Resource:** `aws_paas_pgsql` ([#225](https://github.com/C2Devel/terraform-provider-rockitcloud/pull/225))
 * **New Resource:** `aws_paas_pgsql_database` ([#220](https://github.com/C2Devel/terraform-provider-rockitcloud/pull/220))
 * **New Resource:** `aws_paas_pgsql_user` ([#220](https://github.com/C2Devel/terraform-provider-rockitcloud/pull/220))
 
