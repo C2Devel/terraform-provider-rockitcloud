@@ -7,6 +7,12 @@ on:
         description: 'Previous semver version (e.g., 1.2.3)'
         required: true
         type: string
+  workflow_call:
+    inputs:
+      previous_version:
+        description: 'Previous semver version (e.g., 1.2.3)'
+        required: true
+        type: string
 
 jobs:
   update-changelog:
@@ -27,11 +33,15 @@ jobs:
 
       - name: Calculate next minor version
         id: version
+        env:
+          PREV_VERSION: ${{ inputs.previous_version }}
         run: |
-          PREV_VERSION="${{ github.event.inputs.previous_version }}"
-
           # Remove 'v' prefix if present
           PREV_VERSION=${PREV_VERSION#v}
+          if [[ ! "$PREV_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo 'previous_version must be a version such as 1.2.3 or v1.2.3.' >&2
+            exit 1
+          fi
 
           # Split version into parts
           IFS='.' read -ra VERSION_PARTS <<< "$PREV_VERSION"

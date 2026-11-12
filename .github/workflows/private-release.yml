@@ -2,13 +2,16 @@ name: Release of the provider to private registry
 
 on:
   workflow_dispatch:
-    
+  workflow_call:
+
 jobs:
   private-release:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || (github.event_name == 'push' && github.ref_type == 'tag')
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: refs/heads/develop
 
     - uses: actions/setup-python@v5 
       with:

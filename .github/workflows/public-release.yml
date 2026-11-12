@@ -50,3 +50,50 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.AUTOMATION_PAT }}
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+  wait-for-public-registry:
+    needs: public-release
+    runs-on: ubuntu-22.04
+    timeout-minutes: 32
+    outputs:
+      version: ${{ steps.wait.outputs.version }}
+    steps:
+    - name: Wait for the released version in Terraform Registry
+      id: wait
+      shell: bash
+      run: |
+        VERSION=${GITHUB_REF_NAME#v}
+        deadline=$((SECONDS + 1800))
+        while (( SECONDS < deadline )); do
+          if curl --fail --silent --show-error --max-time 10 \
+            https://registry.terraform.io/v1/providers/c2devel/rockitcloud/versions \
+            | jq --exit-status --arg version "$VERSION" \
+              'any(.versions[]; .version == $version and (.platforms | length > 0))' >/dev/null; then
+            echo "Provider $VERSION is available in the public Terraform Registry."
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Waiting for provider $VERSION in the public Terraform Registry."
+          sleep 30
+        done
+
+        echo "::error::Provider $VERSION did not appear in the public Terraform Registry within 30 minutes. Check the release and its Terraform Registry sync."
+        exit 1
+
+  private-release:
+    needs: wait-for-public-registry
+    uses: ./.github/workflows/private-release.yml
+    secrets: inherit
+
+  publish-internal-docs:
+    needs: private-release
+    uses: ./.github/workflows/publish-internal-docs.yml
+    secrets: inherit
+
+  update-changelog:
+    needs: [wait-for-public-registry, publish-internal-docs]
+    uses: ./.github/workflows/update-changelog.yml
+    with:
+      previous_version: ${{ needs.wait-for-public-registry.outputs.version }}
+    secrets: inherit
