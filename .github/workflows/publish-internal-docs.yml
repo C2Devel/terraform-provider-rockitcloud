@@ -2,12 +2,15 @@ name: Publishing of the internal documentation
 
 on:
   workflow_dispatch:
-    
+  workflow_call:
+
 jobs:
   publish-internal-doc:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event_name != 'workflow_dispatch' && 'refs/heads/develop' || '' }}
 
     - uses: actions/setup-python@v5 
       with:
