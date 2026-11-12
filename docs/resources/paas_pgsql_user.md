@@ -12,6 +12,7 @@ Manages a user of a PaaS PostgreSQL service as a standalone resource.
 ~> **Important** Set `users_managed_externally = true` in the parent `aws_paas_service` and remove the `pgsql.user` blocks.
 Otherwise, the service manages the full list of users and deletes users created by this resource on the next apply.
 See [PostgreSQL users and databases as standalone resources](paas_service.md#postgresql-users-and-databases-as-standalone-resources).
+For a service managed by [`aws_paas_pgsql`](paas_pgsql.md), no additional settings are needed.
 
 -> **Note** Each operation switches the service to the `UPDATING` status until the change is applied.
 Operations on users and databases of the same service are performed one at a time, so they are processed sequentially

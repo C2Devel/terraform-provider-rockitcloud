@@ -1,0 +1,19 @@
+# Copy this file to terraform.tfvars and fill in the values that suit
+# your environment.
+#
+#   cp terraform.tfvars.example terraform.tfvars
+#
+# Passwords must not contain ', ", ` and \.
+# Instead of terraform.tfvars, the passwords can be passed with environment variables,
+# for example: export TF_VAR_app_owner_password='...'
+
+app_owner_password  = "change-me-Owner1"
+app_reader_password = "change-me-Reader1"
+monitoring_password = "change-me-Monitor1"
+
+# Optional overrides:
+# region            = "ru-msk"
+# availability_zone = "ru-msk-vol52"
+# service_name      = "terraform-pgsql-resource-example"
+# pgsql_version     = "16"
+# instance_type     = "c5.large"

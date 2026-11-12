@@ -717,6 +717,8 @@ func readService(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	// aws_paas_pgsql_database resources and must not appear as a diff here.
 	// The keys are deleted rather than set to empty lists: d.Set writes missing blocks
 	// as empty, and the read does not require the blocks to be in the schema.
+	// aws_paas_pgsql has no user and database blocks, and d.Set rejects the whole
+	// block with keys missing in the schema.
 	if serviceUsersManagedExternally(d, serviceType) {
 		delete(parametersMap, "user")
 	}
