@@ -797,6 +797,15 @@ func updateClusterControlPlaneTier(conn *eks.EKS, name string, config *eks.Contr
 	if err != nil {
 		return fmt.Errorf("error updating EKS Cluster (%s) control plane tier: %w", name, err)
 	}
+	if output == nil || output.Update == nil {
+		return fmt.Errorf("empty EKS Cluster (%s) control plane tier update response", name)
+	}
+	if status := aws.StringValue(output.Update.Status); status == eks.UpdateStatusFailed || status == eks.UpdateStatusCancelled {
+		if details := ErrorDetailsError(output.Update.Errors); details != nil {
+			return fmt.Errorf("EKS Cluster (%s) control plane tier update %s: %w", name, status, details)
+		}
+		return fmt.Errorf("EKS Cluster (%s) control plane tier update %s", name, status)
+	}
 	updateID := aws.StringValue(output.Update.Id)
 	if _, err := waitClusterUpdateSuccessful(conn, name, updateID, timeout); err != nil {
 		return fmt.Errorf("error waiting for EKS Cluster (%s) control plane tier update (%s): %w", name, updateID, err)

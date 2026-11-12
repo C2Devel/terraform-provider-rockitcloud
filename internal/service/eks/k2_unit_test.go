@@ -103,6 +103,28 @@ func TestUpdateClusterControlPlaneTierWireAndWait(t *testing.T) {
 	}
 }
 
+func TestUpdateClusterControlPlaneTierRejectsSynchronousFailure(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/clusters/test/update-config" {
+			t.Errorf("unexpected request: %s", r.URL.Path)
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"update":{"id":"update-1","status":"Failed","errors":[{"errorCode":"ClusterIsNotHealthy","errorMessage":"Cluster is not healthy."}]}}`))
+	}))
+	defer server.Close()
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+	err := updateClusterControlPlaneTier(conn, "test", &eks.ControlPlaneScalingConfig{Tier: aws.String("tier-2large")}, 10*time.Second)
+	if err == nil || !strings.Contains(err.Error(), "ClusterIsNotHealthy") {
+		t.Fatalf("expected synchronous update failure details, got %v", err)
+	}
+}
+
 func TestControlPlaneScalingConfigUpdatesInPlace(t *testing.T) {
 	resource := ResourceCluster()
 	platform := resource.Schema["platform_version"]
