@@ -1,6 +1,6 @@
 ## 26.3.0 (Unreleased)
 
-## 26.2.6 (October 12, 2026)
+## 26.2.6 (November 12, 2026)
 
 FEATURES:
 
@@ -12,7 +12,7 @@ ENHANCEMENTS:
 
 * resource/aws_paas_service: Add `users_managed_externally` and `databases_managed_externally` arguments to manage PostgreSQL users and databases with the standalone `aws_paas_pgsql_user` and `aws_paas_pgsql_database` resources ([#220](https://github.com/C2Devel/terraform-provider-rockitcloud/issues/220))
 
-## 26.2.5 (October 11, 2026)
+## 26.2.5 (November 11, 2026)
 
 BUG FIXES:
 
