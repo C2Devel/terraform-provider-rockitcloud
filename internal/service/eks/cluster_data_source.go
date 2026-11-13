@@ -30,6 +30,13 @@ func DataSourceCluster() *schema.Resource {
 					},
 				},
 			},
+			"control_plane_scaling_config": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+					"tier": {Type: schema.TypeString, Computed: true},
+				}},
+			},
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -329,6 +336,10 @@ func dataSourceClusterRead(d *schema.ResourceData, meta interface{}) error {
 
 	if err := d.Set("certificate_authority", flattenCertificate(cluster.CertificateAuthority)); err != nil {
 		return fmt.Errorf("error setting certificate_authority: %w", err)
+	}
+
+	if err := d.Set("control_plane_scaling_config", flattenControlPlaneScalingConfig(cluster.ControlPlaneScalingConfig)); err != nil {
+		return fmt.Errorf("error setting control_plane_scaling_config: %w", err)
 	}
 
 	d.Set("created_at", aws.TimeValue(cluster.CreatedAt).String())

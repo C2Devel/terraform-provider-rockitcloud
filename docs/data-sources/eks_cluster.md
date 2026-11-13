@@ -32,6 +32,7 @@ In addition to all arguments above, the following attributes are exported:
 * `certificate_authority` - Nested attribute containing `certificate-authority-data` for your cluster.
     * `data` - The base64 encoded certificate data required to communicate with your cluster. Add this to the `certificate-authority-data` section of the `kubeconfig` file for your cluster.
 * `created_at` - The Unix epoch time stamp in seconds for when the cluster was created.
+* `control_plane_scaling_config` - EKS v3 control plane tier, exposed as the nested `tier` value. Absent for EKS v2 clusters.
 * `id` - The name of the cluster.
 * `kubernetes_network_config` - The Kubernetes network configuration.
   The structure of this block is [described below](#kubernetes_network_config).

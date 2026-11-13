@@ -61,6 +61,19 @@ func ResourceCluster() *schema.Resource {
 					},
 				},
 			},
+			"control_plane_scaling_config": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+					"tier": {
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringInSlice([]string{"tier-large", "tier-2large", "tier-4large", "tier-8large"}, false),
+					},
+				}},
+			},
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -388,8 +401,11 @@ func ResourceCluster() *schema.Resource {
 				},
 			},
 			"platform_version": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"eks.1", "eks.3"}, false),
 			},
 			"role_arn": {
 				Type:         schema.TypeString,
@@ -467,6 +483,13 @@ func resourceClusterCreate(d *schema.ResourceData, meta interface{}) error {
 	input := &eks.CreateClusterInput{
 		Name:               aws.String(name),
 		ResourcesVpcConfig: testAccClusterConfig_expandVPCRequest(d.Get("vpc_config").([]interface{})),
+	}
+
+	if v, ok := d.GetOk("control_plane_scaling_config"); ok {
+		input.ControlPlaneScalingConfig = expandControlPlaneScalingConfig(v.([]interface{}))
+	}
+	if v, ok := d.GetOk("platform_version"); ok {
+		input.PlatformVersion = aws.String(v.(string))
 	}
 
 	if v, ok := d.GetOk("role_arn"); ok && v.(string) != "" {
@@ -586,6 +609,10 @@ func resourceClusterRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("error setting certificate_authority: %w", err)
 	}
 
+	if err := d.Set("control_plane_scaling_config", flattenControlPlaneScalingConfig(cluster.ControlPlaneScalingConfig)); err != nil {
+		return fmt.Errorf("error setting control_plane_scaling_config: %w", err)
+	}
+
 	d.Set("created_at", aws.TimeValue(cluster.CreatedAt).String())
 
 	if err := d.Set("enabled_cluster_log_types", flattenEnabledLogTypes(cluster.Logging)); err != nil {
@@ -688,6 +715,12 @@ func resourceClusterUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if d.HasChange("control_plane_scaling_config") {
+		if err := updateClusterControlPlaneTier(conn, d.Id(), expandControlPlaneScalingConfig(d.Get("control_plane_scaling_config").([]interface{})), d.Timeout(schema.TimeoutUpdate)); err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange("tags_all") {
 		o, n := d.GetChange("tags_all")
 		// FIXME: Use eks.UpdateTags after TagResource and UntagResource are supported in C2 EKS API.
@@ -752,6 +785,46 @@ func resourceClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
+}
+
+func updateClusterControlPlaneTier(conn *eks.EKS, name string, config *eks.ControlPlaneScalingConfig, timeout time.Duration) error {
+	input := &eks.UpdateClusterConfigInput{
+		Name:                      aws.String(name),
+		ControlPlaneScalingConfig: config,
+	}
+	log.Printf("[DEBUG] Updating EKS Cluster (%s) control plane tier: %s", name, input)
+	output, err := conn.UpdateClusterConfig(input)
+	if err != nil {
+		return fmt.Errorf("error updating EKS Cluster (%s) control plane tier: %w", name, err)
+	}
+	if output == nil || output.Update == nil {
+		return fmt.Errorf("empty EKS Cluster (%s) control plane tier update response", name)
+	}
+	if status := aws.StringValue(output.Update.Status); status == eks.UpdateStatusFailed || status == eks.UpdateStatusCancelled {
+		if details := ErrorDetailsError(output.Update.Errors); details != nil {
+			return fmt.Errorf("EKS Cluster (%s) control plane tier update %s: %w", name, status, details)
+		}
+		return fmt.Errorf("EKS Cluster (%s) control plane tier update %s", name, status)
+	}
+	updateID := aws.StringValue(output.Update.Id)
+	if _, err := waitClusterUpdateSuccessful(conn, name, updateID, timeout); err != nil {
+		return fmt.Errorf("error waiting for EKS Cluster (%s) control plane tier update (%s): %w", name, updateID, err)
+	}
+	return nil
+}
+
+func expandControlPlaneScalingConfig(config []interface{}) *eks.ControlPlaneScalingConfig {
+	if len(config) == 0 || config[0] == nil {
+		return nil
+	}
+	return &eks.ControlPlaneScalingConfig{Tier: aws.String(config[0].(map[string]interface{})["tier"].(string))}
+}
+
+func flattenControlPlaneScalingConfig(config *eks.ControlPlaneScalingConfig) []interface{} {
+	if config == nil {
+		return nil
+	}
+	return []interface{}{map[string]interface{}{"tier": aws.StringValue(config.Tier)}}
 }
 
 func testAccClusterConfig_expandVPCRequest(l []interface{}) *eks.VpcConfigRequest {

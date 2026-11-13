@@ -81,6 +81,31 @@ resource "aws_eks_cluster" "example" {
 }
 ```
 
+### EKS v3 control plane tier
+
+For EKS v3, set `platform_version = "eks.3"` and
+`control_plane_scaling_config.tier` when creating the cluster.
+Changing the value later updates the same cluster in place.
+
+```terraform
+resource "aws_eks_cluster" "v3" {
+  name    = "example-v3"
+  version = var.eks_v3_version
+  platform_version = "eks.3"
+
+  vpc_config {
+    subnet_ids = var.subnet_ids
+  }
+
+  control_plane_scaling_config {
+    tier = "tier-large"
+  }
+}
+```
+
+Existing EKS v3 clusters may report `standard`. It can be read from state,
+but it cannot be selected for new clusters. The block is unavailable for EKS v2.
+
 ### EKS cluster with high-availability disabled
 
 ~> **Note**
@@ -214,12 +239,18 @@ The following arguments are required:
 
 The following arguments are optional:
 
+* `platform_version` - (Optional) C2 EKS platform version: `eks.1` or `eks.3`. Omit to use the service default (`eks.1`). Changing this value recreates the cluster. Set `eks.3` to create an EKS v3 cluster.
+* `control_plane_scaling_config` - (Optional) Control plane performance tier for EKS v3 clusters. Updating the tier changes the existing cluster in place. If omitted, the service selects its default tier. Existing clusters can report `standard`, which cannot be selected for new clusters.
 * `kubernetes_network_config` - (Optional) Configuration block with kubernetes network configuration for the cluster. Detailed below. If removed, Terraform will only perform drift detection if a configuration value is provided.
 * `legacy_cluster_params` - (Optional) The parameters for fine-tuning the Kubernetes cluster.
   The structure of this block is [described below](#legacy_cluster_params).
 * `remote_access_config` - (Optional) K2 control-plane remote access configuration. The block accepts `ec2_ssh_key`.
 * `role_arn` - (Optional) K2 service-user ARN. Empty values are not sent to the API.
 * `tags` - (Optional) Map of tags to assign to the cluster. If a provider [`default_tags` configuration block][default-tags] is used, tags with matching keys will overwrite those defined at the provider level.
+
+### control_plane_scaling_config
+
+The `control_plane_scaling_config` block supports `tier` (Required): `tier-large`, `tier-2large`, `tier-4large`, or `tier-8large`. This block is available only for EKS v3.
 
 ### kubernetes_network_config
 
@@ -346,7 +377,6 @@ In addition to all arguments above, the following attributes are exported:
     * `data` - The base64 encoded certificate data required to communicate with your cluster. Add this to the `certificate-authority-data` section of the `kubeconfig` file for your cluster.
 * `created_at` - The Unix epoch time stamp in seconds for when the cluster was created.
 * `id` - The name of the cluster.
-* `platform_version` - The platform version for the cluster.
 * `status` - The status of the EKS cluster. One of `CLAIMED`, `CREATING`, `DELETED`, `DELETING`, `ERROR`, `FAILED`, `MODIFYING`, `PENDING`, `PROVISIONING`, `READY`, `REPAIRING`, `UPDATING`.
 Cluster creation and deletion waiter failures include health issue details returned by K2.
 * `tags_all` - Map of tags assigned to the cluster, including those inherited from the provider [`default_tags` configuration block][default-tags].

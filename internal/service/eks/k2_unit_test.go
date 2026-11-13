@@ -2,6 +2,7 @@ package eks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -61,6 +62,106 @@ func TestResourceClusterK2Schema(t *testing.T) {
 
 	if got := resource.Timeouts.Delete; got == nil || *got != 60*time.Minute {
 		t.Fatalf("cluster delete timeout must match the 60 minute delete retry window, got %v", got)
+	}
+}
+
+func TestUpdateClusterControlPlaneTierWireAndWait(t *testing.T) {
+	var posted map[string]interface{}
+	var described bool
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/clusters/test/update-config":
+			if err := json.NewDecoder(r.Body).Decode(&posted); err != nil {
+				t.Errorf("decode update request: %v", err)
+			}
+			_, _ = w.Write([]byte(`{"update":{"id":"update-1","status":"InProgress"}}`))
+		case "/clusters/test/updates/update-1":
+			described = true
+			_, _ = w.Write([]byte(`{"update":{"id":"update-1","status":"Successful"}}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+	if err := updateClusterControlPlaneTier(conn, "test", &eks.ControlPlaneScalingConfig{Tier: aws.String("tier-2large")}, 10*time.Second); err != nil {
+		t.Fatal(err)
+	}
+	if !described {
+		t.Fatal("the update must be waited for")
+	}
+	if got := posted["controlPlaneScalingConfig"].(map[string]interface{})["tier"]; got != "tier-2large" {
+		t.Fatalf("unexpected posted tier: %v", got)
+	}
+	if _, present := posted["resourcesVpcConfig"]; present {
+		t.Fatal("tier update must not include security group changes")
+	}
+}
+
+func TestUpdateClusterControlPlaneTierRejectsSynchronousFailure(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/clusters/test/update-config" {
+			t.Errorf("unexpected request: %s", r.URL.Path)
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"update":{"id":"update-1","status":"Failed","errors":[{"errorCode":"ClusterIsNotHealthy","errorMessage":"Cluster is not healthy."}]}}`))
+	}))
+	defer server.Close()
+	conn := eks.New(session.Must(session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials("test", "test", ""),
+		Endpoint:    aws.String(server.URL),
+		Region:      aws.String("ru-msk"),
+	})))
+	err := updateClusterControlPlaneTier(conn, "test", &eks.ControlPlaneScalingConfig{Tier: aws.String("tier-2large")}, 10*time.Second)
+	if err == nil || !strings.Contains(err.Error(), "ClusterIsNotHealthy") {
+		t.Fatalf("expected synchronous update failure details, got %v", err)
+	}
+}
+
+func TestControlPlaneScalingConfigUpdatesInPlace(t *testing.T) {
+	resource := ResourceCluster()
+	platform := resource.Schema["platform_version"]
+	if !platform.Optional || !platform.Computed || !platform.ForceNew {
+		t.Fatal("platform_version must select the platform at create and remain immutable")
+	}
+	block := resource.Schema["control_plane_scaling_config"]
+	if block.ForceNew || !block.Optional || !block.Computed {
+		t.Fatal("control_plane_scaling_config must be optional, readable and update in place")
+	}
+	dataSource := DataSourceCluster()
+	if field := dataSource.Schema["control_plane_scaling_config"]; field == nil || !field.Computed {
+		t.Fatal("EKS cluster data source must expose the control plane tier")
+	}
+	if block.Elem.(*schema.Resource).Schema["tier"].ForceNew {
+		t.Fatal("control plane tier must update in place")
+	}
+
+	for _, tier := range []string{"tier-large", "tier-2large", "tier-4large", "tier-8large"} {
+		config := expandControlPlaneScalingConfig([]interface{}{map[string]interface{}{"tier": tier}})
+		if got := aws.StringValue(config.Tier); got != tier {
+			t.Fatalf("unexpected expanded tier: %q", got)
+		}
+		got := flattenControlPlaneScalingConfig(config)[0].(map[string]interface{})["tier"]
+		if got != tier {
+			t.Fatalf("unexpected flattened tier: %v", got)
+		}
+	}
+	if flattenControlPlaneScalingConfig(nil) != nil || expandControlPlaneScalingConfig(nil) != nil {
+		t.Fatal("legacy clusters must not gain a control plane tier")
+	}
+	if got := flattenControlPlaneScalingConfig(&eks.ControlPlaneScalingConfig{Tier: aws.String("standard")})[0].(map[string]interface{})["tier"]; got != "standard" {
+		t.Fatal("existing standard tier must remain readable")
+	}
+	d := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{})
+	if err := d.Set("control_plane_scaling_config", flattenControlPlaneScalingConfig(&eks.ControlPlaneScalingConfig{Tier: aws.String("standard")})); err != nil {
+		t.Fatalf("existing standard tier must be stored in state: %v", err)
 	}
 }
 
