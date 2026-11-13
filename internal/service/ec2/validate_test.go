@@ -105,3 +105,35 @@ func TestValid4ByteASN(t *testing.T) {
 		}
 	}
 }
+
+func TestValidCustomerGatewayBGPASN(t *testing.T) {
+	validAsns := []string{
+		"1",
+		"65000",
+		"2147483647",
+		"4200000000",
+		"4294967294",
+	}
+	for _, v := range validAsns {
+		_, errors := validCustomerGatewayBGPASN(v, "bgp_asn")
+		if len(errors) != 0 {
+			t.Fatalf("%q should be a valid ASN: %q", v, errors)
+		}
+	}
+
+	invalidAsns := []string{
+		"-1",
+		"0",
+		"ABCDEFG",
+		"",
+		"2147483648",
+		"4199999999",
+		"4294967295",
+	}
+	for _, v := range invalidAsns {
+		_, errors := validCustomerGatewayBGPASN(v, "bgp_asn")
+		if len(errors) == 0 {
+			t.Fatalf("%q should be an invalid ASN", v)
+		}
+	}
+}

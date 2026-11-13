@@ -115,18 +115,11 @@ func testAccCheckVPNGatewayRoutePropagationDestroy(s *terraform.State) error {
 	return nil
 }
 
+// VPN gateway is created together with VPC.
 func testAccVPNGatewayRoutePropagationBasicConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_vpc" "test" {
   cidr_block = "10.1.0.0/16"
-
-  tags = {
-    Name = %[1]q
-  }
-}
-
-resource "aws_vpn_gateway" "test" {
-  vpc_id = aws_vpc.test.id
 
   tags = {
     Name = %[1]q
@@ -142,7 +135,7 @@ resource "aws_route_table" "test" {
 }
 
 resource "aws_vpn_gateway_route_propagation" "test" {
-  vpn_gateway_id = aws_vpn_gateway.test.id
+  vpn_gateway_id = aws_vpc.test.id
   route_table_id = aws_route_table.test.id
 }
 `, rName)

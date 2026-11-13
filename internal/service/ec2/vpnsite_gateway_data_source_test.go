@@ -11,12 +11,13 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/acctest"
 )
 
-func TestAccVPNSiteGatewayDataSource_unattached(t *testing.T) {
+func TestAccVPNSiteGatewayDataSource_basic(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
-	dataSourceNameById := "data.aws_vpn_gateway.test_by_id"
-	dataSourceNameByTags := "data.aws_vpn_gateway.test_by_tags"
-	dataSourceNameByAsn := "data.aws_vpn_gateway.test_by_amazon_side_asn"
-	resourceName := "aws_vpn_gateway.test"
+	dataSourceNameByID := "data.aws_vpn_gateway.test_by_id"
+	dataSourceNameByVPCID := "data.aws_vpn_gateway.test_by_vpc_id"
+	dataSourceNameByAttachedVPCID := "data.aws_vpn_gateway.test_by_attached_vpc_id"
+	dataSourceNameByFilter := "data.aws_vpn_gateway.test_by_filter"
+	vpcResourceName := "aws_vpc.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -24,71 +25,23 @@ func TestAccVPNSiteGatewayDataSource_unattached(t *testing.T) {
 		ProviderFactories: acctest.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVPNGatewayUnattachedDataSourceConfig(rName),
+				Config: testAccVPNGatewayDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(dataSourceNameById, "id", resourceName, "id"),
-					resource.TestCheckResourceAttrPair(dataSourceNameById, "arn", resourceName, "arn"),
-					resource.TestCheckResourceAttrPair(dataSourceNameByTags, "id", resourceName, "id"),
-					resource.TestCheckResourceAttrPair(dataSourceNameByAsn, "id", resourceName, "id"),
-					resource.TestCheckResourceAttrSet(dataSourceNameById, "state"),
-					resource.TestCheckResourceAttr(dataSourceNameByTags, "tags.%", "3"),
-					resource.TestCheckNoResourceAttr(dataSourceNameById, "attached_vpc_id"),
-					resource.TestCheckResourceAttr(dataSourceNameByAsn, "amazon_side_asn", "4294967293"),
+					resource.TestMatchResourceAttr(dataSourceNameByID, "id", regexp.MustCompile(`^vgw-.+`)),
+					acctest.MatchResourceAttrRegionalARN(dataSourceNameByID, "arn", "ec2", regexp.MustCompile(`vpn-gateway/vgw-.+`)),
+					resource.TestCheckResourceAttrPair(dataSourceNameByID, "attached_vpc_id", vpcResourceName, "id"),
+					resource.TestCheckResourceAttr(dataSourceNameByID, "state", "available"),
+					resource.TestCheckResourceAttrPair(dataSourceNameByVPCID, "id", dataSourceNameByID, "id"),
+					resource.TestCheckResourceAttrPair(dataSourceNameByAttachedVPCID, "id", dataSourceNameByID, "id"),
+					resource.TestCheckResourceAttrPair(dataSourceNameByFilter, "id", dataSourceNameByID, "id"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccVPNSiteGatewayDataSource_attached(t *testing.T) {
-	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
-	dataSourceName := "data.aws_vpn_gateway.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ErrorCheck:        acctest.ErrorCheck(t, ec2.EndpointsID),
-		ProviderFactories: acctest.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccVPNGatewayAttachedDataSourceConfig(rName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(dataSourceName, "id", "aws_vpn_gateway.test", "id"),
-					resource.TestCheckResourceAttrPair(dataSourceName, "attached_vpc_id", "aws_vpc.test", "id"),
-					resource.TestMatchResourceAttr(dataSourceName, "state", regexp.MustCompile("(?i)available")),
-				),
-			},
-		},
-	})
-}
-
-func testAccVPNGatewayUnattachedDataSourceConfig(rName string) string {
-	return fmt.Sprintf(`
-resource "aws_vpn_gateway" "test" {
-  tags = {
-    Name = %[1]q
-    ABC  = "abc"
-    XYZ  = "xyz"
-  }
-
-  amazon_side_asn = 4294967293
-}
-
-data "aws_vpn_gateway" "test_by_id" {
-  id = aws_vpn_gateway.test.id
-}
-
-data "aws_vpn_gateway" "test_by_tags" {
-  tags = aws_vpn_gateway.test.tags
-}
-
-data "aws_vpn_gateway" "test_by_amazon_side_asn" {
-  amazon_side_asn = aws_vpn_gateway.test.amazon_side_asn
-  state           = "available"
-}
-`, rName)
-}
-
-func testAccVPNGatewayAttachedDataSourceConfig(rName string) string {
+// VPN gateway is created together with VPC.
+func testAccVPNGatewayDataSourceConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_vpc" "test" {
   cidr_block = "10.1.0.0/16"
@@ -98,19 +51,24 @@ resource "aws_vpc" "test" {
   }
 }
 
-resource "aws_vpn_gateway" "test" {
-  tags = {
-    Name = %[1]q
+data "aws_vpn_gateway" "test_by_id" {
+  id = replace(aws_vpc.test.id, "vpc-", "vgw-")
+}
+
+data "aws_vpn_gateway" "test_by_vpc_id" {
+  id = aws_vpc.test.id
+}
+
+data "aws_vpn_gateway" "test_by_attached_vpc_id" {
+  attached_vpc_id = aws_vpc.test.id
+  state           = "available"
+}
+
+data "aws_vpn_gateway" "test_by_filter" {
+  filter {
+    name   = "attachment.vpc-id"
+    values = [aws_vpc.test.id]
   }
-}
-
-resource "aws_vpn_gateway_attachment" "test" {
-  vpc_id         = aws_vpc.test.id
-  vpn_gateway_id = aws_vpn_gateway.test.id
-}
-
-data "aws_vpn_gateway" "test" {
-  attached_vpc_id = aws_vpn_gateway_attachment.test.vpc_id
 }
 `, rName)
 }
