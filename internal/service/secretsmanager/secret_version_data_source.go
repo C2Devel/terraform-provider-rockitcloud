@@ -7,9 +7,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/hashicorp/aws-sdk-go-base/v2/awsv1shim/v2/tfawserr"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
 	"github.com/hashicorp/terraform-provider-aws/internal/flex"
+	"github.com/hashicorp/terraform-provider-aws/internal/tfresource"
 )
 
 func DataSourceSecretVersion() *schema.Resource {
@@ -17,10 +19,6 @@ func DataSourceSecretVersion() *schema.Resource {
 		Read: dataSourceSecretVersionRead,
 
 		Schema: map[string]*schema.Schema{
-			"arn": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"secret_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -43,7 +41,7 @@ func DataSourceSecretVersion() *schema.Resource {
 			"version_stage": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "AWSCURRENT",
+				Default:  "CLOUDCURRENT",
 			},
 			"version_stages": {
 				Type:     schema.TypeSet,
@@ -74,7 +72,33 @@ func dataSourceSecretVersionRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	log.Printf("[DEBUG] Reading Secrets Manager Secret Version: %s", input)
-	output, err := conn.GetSecretValue(input)
+
+	var output *secretsmanager.GetSecretValueOutput
+
+	err := resource.Retry(PropagationTimeout, func() *resource.RetryError {
+		var err error
+
+		output, err = conn.GetSecretValue(input)
+
+		if tfawserr.ErrCodeEquals(err, secretsmanager.ErrCodeResourceNotFoundException) {
+			return resource.RetryableError(err)
+		}
+
+		if tfawserr.ErrMessageContains(err, secretsmanager.ErrCodeInvalidRequestException, "You can’t perform this operation on the secret because it was deleted") {
+			return resource.RetryableError(err)
+		}
+
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if tfresource.TimedOut(err) {
+		output, err = conn.GetSecretValue(input)
+	}
+
 	if err != nil {
 		if tfawserr.ErrCodeEquals(err, secretsmanager.ErrCodeResourceNotFoundException) {
 			return fmt.Errorf("Secrets Manager Secret %q Version %q not found", secretID, version)
@@ -90,7 +114,6 @@ func dataSourceSecretVersionRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("secret_string", output.SecretString)
 	d.Set("version_id", output.VersionId)
 	d.Set("secret_binary", string(output.SecretBinary))
-	d.Set("arn", output.ARN)
 
 	if err := d.Set("version_stages", flex.FlattenStringList(output.VersionStages)); err != nil {
 		return fmt.Errorf("error setting version_stages: %w", err)
