@@ -1,0 +1,23 @@
+```release-note:enhancement
+resource/aws_customer_gateway: make `bgp_asn` optional
+```
+
+```release-note:note
+resource/aws_customer_gateway, data-source/aws_customer_gateway: remove `certificate_arn` and `device_name`
+```
+
+```release-note:enhancement
+data-source/aws_vpn_gateway: support the `attached_vpc_id`, `availability_zone`, `state` and `filter` arguments
+```
+
+```release-note:note
+data-source/aws_vpn_gateway: remove `amazon_side_asn` and `tags`
+```
+
+```release-note:enhancement
+resource/aws_vpn_gateway_route_propagation: accept the VPC ID as `vpn_gateway_id`
+```
+
+```release-note:bug
+resource/aws_vpn_gateway_route_propagation, resource/aws_route_table: fix `Propagation.AlreadyEnabled` when the route propagation is enabled in a route table other than the main one
+```

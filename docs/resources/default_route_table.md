@@ -94,6 +94,8 @@ The following arguments are required:
 The following arguments are optional:
 
 * `propagating_vgws` - (Optional, Editable, List of strings) The list of virtual gateways for propagation.
+  The routes of a VPN gateway are propagated into one route table of the VPC, so enabling the propagation in a route table disables it in the previous one.
+    * _Constraints:_ The IDs must be specified in the `vgw-ABCD1234` form
 * `route` - (Optional, Editable, [Block](#route)) One or more route objects. This argument is processed in [attribute-as-blocks mode][attribute-as-blocks].
 It means that omitting this argument is interpreted as ignoring any existing routes. To remove all managed routes an empty list should be specified. See the [example above](#specific-example-removing-all-managed-routes-subsequently).
 * `tags` - (Optional, Editable, Map of strings) Key-value pairs to assign to the resource. If the [`default_tags` configuration block][default-tags] block is used within a provider configuration, the tags with matching keys will overwrite those defined at the provider level.

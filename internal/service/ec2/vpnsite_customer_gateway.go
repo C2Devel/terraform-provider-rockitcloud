@@ -35,21 +35,10 @@ func ResourceCustomerGateway() *schema.Resource {
 			},
 			"bgp_asn": {
 				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: valid4ByteASN,
-			},
-			"certificate_arn": {
-				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ForceNew:     true,
-				ValidateFunc: verify.ValidARN,
-			},
-			"device_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringLenBetween(1, 255),
+				ValidateFunc: validCustomerGatewayBGPASN,
 			},
 			"ip_address": {
 				Type:         schema.TypeString,
@@ -76,25 +65,20 @@ func resourceCustomerGatewayCreate(d *schema.ResourceData, meta interface{}) err
 	defaultTagsConfig := meta.(*conns.AWSClient).DefaultTagsConfig
 	tags := defaultTagsConfig.MergeTags(tftags.New(d.Get("tags").(map[string]interface{})))
 
-	i64BgpAsn, err := strconv.ParseInt(d.Get("bgp_asn").(string), 10, 64)
-
-	if err != nil {
-		return err
-	}
-
 	input := &ec2.CreateCustomerGatewayInput{
-		BgpAsn:            aws.Int64(i64BgpAsn),
 		PublicIp:          aws.String(d.Get("ip_address").(string)),
 		TagSpecifications: ec2TagSpecificationsFromKeyValueTags(tags, ec2.ResourceTypeCustomerGateway),
 		Type:              aws.String(d.Get("type").(string)),
 	}
 
-	if v, ok := d.GetOk("certificate_arn"); ok {
-		input.CertificateArn = aws.String(v.(string))
-	}
+	if v, ok := d.GetOk("bgp_asn"); ok {
+		v, err := strconv.ParseInt(v.(string), 10, 64)
 
-	if v, ok := d.GetOk("device_name"); ok {
-		input.DeviceName = aws.String(v.(string))
+		if err != nil {
+			return err
+		}
+
+		input.BgpAsn = aws.Int64(v)
 	}
 
 	log.Printf("[DEBUG] Creating EC2 Customer Gateway: %s", input)
@@ -139,8 +123,6 @@ func resourceCustomerGatewayRead(d *schema.ResourceData, meta interface{}) error
 	}.String()
 	d.Set("arn", arn)
 	d.Set("bgp_asn", customerGateway.BgpAsn)
-	d.Set("certificate_arn", customerGateway.CertificateArn)
-	d.Set("device_name", customerGateway.DeviceName)
 	d.Set("ip_address", customerGateway.IpAddress)
 	d.Set("type", customerGateway.Type)
 

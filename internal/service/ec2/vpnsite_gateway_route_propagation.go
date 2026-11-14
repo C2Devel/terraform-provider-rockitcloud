@@ -32,6 +32,9 @@ func ResourceVPNGatewayRoutePropagation() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				StateFunc: func(v interface{}) string {
+					return NormalizeVPNGatewayID(v.(string))
+				},
 			},
 		},
 	}
@@ -40,7 +43,7 @@ func ResourceVPNGatewayRoutePropagation() *schema.Resource {
 func resourceVPNGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*conns.AWSClient).EC2Conn
 
-	gatewayID := d.Get("vpn_gateway_id").(string)
+	gatewayID := NormalizeVPNGatewayID(d.Get("vpn_gateway_id").(string))
 	routeTableID := d.Get("route_table_id").(string)
 	err := ec2RouteTableEnableVgwRoutePropagation(conn, routeTableID, gatewayID, d.Timeout(schema.TimeoutCreate))
 

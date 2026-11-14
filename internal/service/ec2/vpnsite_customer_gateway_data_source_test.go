@@ -28,8 +28,6 @@ func TestAccVPNSiteCustomerGatewayDataSource_filter(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(resourceName, "arn", dataSourceName, "arn"),
 					resource.TestCheckResourceAttrPair(resourceName, "bgp_asn", dataSourceName, "bgp_asn"),
-					resource.TestCheckResourceAttrPair(resourceName, "certificate_arn", dataSourceName, "certificate_arn"),
-					resource.TestCheckResourceAttrPair(resourceName, "device_name", dataSourceName, "device_name"),
 					resource.TestCheckResourceAttrPair(resourceName, "ip_address", dataSourceName, "ip_address"),
 					resource.TestCheckResourceAttrPair(resourceName, "tags.%", dataSourceName, "tags.%"),
 					resource.TestCheckResourceAttrPair(resourceName, "type", dataSourceName, "type"),
@@ -57,8 +55,6 @@ func TestAccVPNSiteCustomerGatewayDataSource_id(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(resourceName, "arn", dataSourceName, "arn"),
 					resource.TestCheckResourceAttrPair(resourceName, "bgp_asn", dataSourceName, "bgp_asn"),
-					resource.TestCheckResourceAttrPair(resourceName, "certificate_arn", dataSourceName, "certificate_arn"),
-					resource.TestCheckResourceAttrPair(resourceName, "device_name", dataSourceName, "device_name"),
 					resource.TestCheckResourceAttrPair(resourceName, "ip_address", dataSourceName, "ip_address"),
 					resource.TestCheckResourceAttrPair(resourceName, "tags.%", dataSourceName, "tags.%"),
 					resource.TestCheckResourceAttrPair(resourceName, "type", dataSourceName, "type"),
@@ -92,10 +88,9 @@ data "aws_customer_gateway" "test" {
 func testAccCustomerGatewayIDDataSourceConfig(rName string, asn, hostOctet int) string {
 	return fmt.Sprintf(`
 resource "aws_customer_gateway" "test" {
-  bgp_asn     = %[2]d
-  ip_address  = "50.0.0.%[3]d"
-  device_name = "test"
-  type        = "ipsec.1"
+  bgp_asn    = %[2]d
+  ip_address = "50.0.0.%[3]d"
+  type       = "ipsec.1"
 
   tags = {
     Name = %[1]q
