@@ -2836,6 +2836,35 @@ func FindVPNConnectionByID(conn *ec2.EC2, id string) (*ec2.VpnConnection, error)
 	return output, nil
 }
 
+func FindVPNConnectionByCustomerGatewayIDAndVPNGatewayID(conn *ec2.EC2, customerGatewayID, vpnGatewayID string) (*ec2.VpnConnection, error) {
+	input := &ec2.DescribeVpnConnectionsInput{
+		Filters: BuildAttributeFilterList(map[string]string{
+			"customer-gateway-id": customerGatewayID,
+			"vpn-gateway-id":      vpnGatewayID,
+		}),
+	}
+
+	output, err := conn.DescribeVpnConnections(input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range output.VpnConnections {
+		if v == nil {
+			continue
+		}
+
+		if state := aws.StringValue(v.State); state == ec2.VpnStateDeleted || state == ec2.VpnStateDeleting {
+			continue
+		}
+
+		return v, nil
+	}
+
+	return nil, tfresource.NewEmptyResultError(input)
+}
+
 func FindVPNConnection(conn *ec2.EC2, input *ec2.DescribeVpnConnectionsInput) (*ec2.VpnConnection, error) {
 	output, err := conn.DescribeVpnConnections(input)
 

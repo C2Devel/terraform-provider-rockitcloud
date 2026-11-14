@@ -1,0 +1,7 @@
+```release-note:enhancement
+resource/aws_vpn_connection: support VPN connections of K2 Cloud: create a single tunnel if only the options of the first tunnel are specified, read the tunnel options from the API, accept the VPC ID as `vpn_gateway_id`
+```
+
+```release-note:note
+resource/aws_vpn_connection: remove the arguments and attributes that are not supported by K2 Cloud; a change of any argument except `tags` forces a new resource
+```
