@@ -31,7 +31,7 @@ func TestValidateKafkaServiceConfig(t *testing.T) {
 			config: kafkaServiceConfig{
 				isKafka:        true,
 				hasDataVolume:  true,
-				dataVolumeSize: 63,
+				dataVolumeSize: 7,
 			},
 			expectErr: true,
 		},
@@ -51,7 +51,7 @@ func TestValidateKafkaServiceConfig(t *testing.T) {
 				highAvailability:          true,
 				hasCoordinatorBlock:       true,
 				hasCoordinatorDataVolume:  true,
-				coordinatorDataVolumeSize: 63,
+				coordinatorDataVolumeSize: 7,
 			},
 			expectErr: true,
 		},
@@ -65,6 +65,27 @@ func TestValidateKafkaServiceConfig(t *testing.T) {
 				hasCoordinatorBlock:       true,
 				hasCoordinatorDataVolume:  true,
 				coordinatorDataVolumeSize: 64,
+			},
+		},
+		{
+			name: "kafka accepts minimum service data volume",
+			config: kafkaServiceConfig{
+				isKafka:            true,
+				hasDataVolume:      true,
+				dataVolumeSize:     8,
+				hasCoordinatorRole: true,
+			},
+		},
+		{
+			name: "ha kafka accepts minimum coordinator data volume",
+			config: kafkaServiceConfig{
+				isKafka:                   true,
+				highAvailability:          true,
+				hasDataVolume:             true,
+				dataVolumeSize:            8,
+				hasCoordinatorBlock:       true,
+				hasCoordinatorDataVolume:  true,
+				coordinatorDataVolumeSize: 8,
 			},
 		},
 		{

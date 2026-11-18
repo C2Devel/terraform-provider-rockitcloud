@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/service/paas/services"
 )
 
+// kafkaMinDataVolumeSize is the minimum Kafka data volume size (GiB) accepted by K2 Cloud.
+// The platform lowered it from 64 to 8 GiB on 2026-05-27 (K2 Cloud changelog, May 2026, "Fixes").
+const kafkaMinDataVolumeSize = 8
+
 type kafkaServiceConfig struct {
 	isKafka                   bool
 	highAvailability          bool
@@ -86,16 +90,16 @@ func validateKafkaServiceConfig(config kafkaServiceConfig) error {
 		return nil
 	}
 
-	if config.hasDataVolume && config.dataVolumeSize < 64 {
-		return fmt.Errorf("kafka data_volume.size must be at least 64 GiB")
+	if config.hasDataVolume && config.dataVolumeSize < kafkaMinDataVolumeSize {
+		return fmt.Errorf("kafka data_volume.size must be at least %d GiB", kafkaMinDataVolumeSize)
 	}
 
 	if config.hasCoordinatorBlock {
 		if !config.hasCoordinatorDataVolume {
-			return fmt.Errorf("kafka coordinator.data_volume_size must be set to at least 64 GiB")
+			return fmt.Errorf("kafka coordinator.data_volume_size must be set to at least %d GiB", kafkaMinDataVolumeSize)
 		}
-		if config.coordinatorDataVolumeSize < 64 {
-			return fmt.Errorf("kafka coordinator.data_volume_size must be at least 64 GiB")
+		if config.coordinatorDataVolumeSize < kafkaMinDataVolumeSize {
+			return fmt.Errorf("kafka coordinator.data_volume_size must be at least %d GiB", kafkaMinDataVolumeSize)
 		}
 	}
 

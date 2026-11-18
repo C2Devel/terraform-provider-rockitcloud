@@ -890,7 +890,7 @@ The `data_volume` block has the following structure:
   The parameter must be set if `type` is `io2`.
 * `size` - (Optional) The size of the data volume in GiB.
     * _Default value:_ `32`
-    * _Constraints:_ For [Kafka], the minimum value is `64`
+    * _Constraints:_ For [Kafka], the minimum value is `8`
     * _Constraints:_ If `auto_disk_expansion` is enabled, the difference is not shown when the actual size is greater
 * `type` - (Optional) The type of the data volume.
     * _Default value:_ `st2`
@@ -902,7 +902,7 @@ The `coordinator` block has the following structure:
 * `data_volume_iops` - (Optional) The number of read/write operations per second for the coordinator data volume.
   The parameter must be set if `data_volume_type` is `io2`.
 * `data_volume_size` - (Optional) The size of the coordinator data volume in GiB.
-    * _Constraints:_ For [Kafka], set this to at least `64`
+    * _Constraints:_ For [Kafka], set this to at least `8`
 * `data_volume_type` - (Optional) The type of the coordinator data volume.
 * `instance_type` - (Required) The instance type for coordinator nodes.
 * `root_volume_iops` - (Optional) The number of read/write operations per second for the coordinator root volume.
