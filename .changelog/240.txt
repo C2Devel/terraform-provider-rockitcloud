@@ -1,0 +1,3 @@
+```release-note:bug
+resource/aws_paas_service: Lower the minimum Kafka `data_volume.size` and `coordinator.data_volume_size` from 64 to 8 GiB to match the K2 Cloud platform limit
+```
